@@ -1,0 +1,188 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourist Review Feature</title>
+    <link rel="stylesheet" href="css/reviews.css">
+    <!-- <script type="module" src="js/admin-control.js"></script> -->
+    <script type="module" src="js/reviews.js"></script>
+</head>
+<body>
+    <!-- Navigation Section -->
+    <nav>
+        <a href="sagada.html#home">Home</a>
+        <a href="sagada.html#about">About</a>
+        <a href="sagada.html#contact">Contact</a>
+        <a href="register.html">Register</a>
+    </nav>
+
+    <!-- Admin Controls Section 
+    <div id="admin-controls">
+        <button onclick="toggleAdminMode()">Toggle Admin Mode</button>
+        <div id="admin-edit-section" style="display: none;">
+            <h3>Admin Edit Section</h3>
+            <button onclick="addNewReview()">Add New Review</button>
+            <button onclick="deleteReview()">Delete Review</button>
+        </div>
+    </div> -->
+
+    <div class="review-container">
+        <h2>Destination Review</h2>
+        <!-- Review Form -->
+        <form id="reviewForm">
+            <label for="comment">Comment:</label>
+            <textarea id="comment" name="comment" required></textarea>
+
+            <label for="rating">Rating:</label>
+            <select id="rating" name="rating" required>
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+            </select>
+
+            <label for="imageUpload">Upload Image:</label>
+                <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
+
+            <button type="submit">Submit Review</button>
+        </form>
+
+        <!-- Review Display Section -->
+        <div id="reviewDisplay" style="display: none;">
+            <p>Comment: <span id="displayComment"></span></p>
+            <p>Rating: <span id="displayRatingStars">☆☆☆☆☆</span> (<span id="displayRatingValue">0</span> stars)</p>
+            <p>Date: <span id="displayDate"></span></p>
+        </div>
+
+        <div class="review-list" id="reviewList">
+            <h3>Reviews</h3>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('reviewForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent form submission
+
+            // Get form values
+            const comment = document.getElementById('comment').value;
+            const rating = document.getElementById('rating').value;
+
+            // Update the review display section
+            document.getElementById('displayComment').textContent = comment;
+            document.getElementById('displayRatingValue').textContent = rating;
+            document.getElementById('displayRatingStars').textContent = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+
+            // Set the current date
+            const currentDate = new Date().toLocaleString();
+            document.getElementById('displayDate').textContent = currentDate;
+
+            // Show the review display section
+            document.getElementById('reviewDisplay').style.display = 'block';
+
+            // Reset the form (optional)
+            this.reset();
+        });
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const reviewForm = document.getElementById('reviewForm');
+            const reviewList = document.getElementById('reviewList');
+            let isAdminMode = false;
+
+            async function loadReviews() {
+                reviewList.innerHTML = "";
+                const q = query(collection(db, "reviews"), orderBy("date", "desc"));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach(doc => displayReview(doc.id, doc.data()));
+            }
+
+        function displayReview(id, review) {
+            const reviewDiv = document.createElement('div');
+            reviewDiv.classList.add('review');
+
+            const commentPara = document.createElement('p');
+            commentPara.textContent = `Comment: ${review.comment}`;
+
+            const ratingPara = document.createElement('p');
+            ratingPara.textContent = `Rating: ${review.rating || 'No rating'}`;
+
+            const datePara = document.createElement('p');
+            datePara.textContent = `Date: ${review.date}`;
+
+            if (review.imageBase64) {
+                const imageElement = document.createElement('img');
+                imageElement.src = review.imageBase64;
+                imageElement.alt = "Attached Image";
+                imageElement.style.maxWidth = "200px";
+                reviewDiv.appendChild(imageElement);
+            }
+
+            if (isAdminMode) {
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = "Delete";
+                deleteButton.onclick = () => deleteReview(id);
+                reviewDiv.appendChild(deleteButton);
+            }
+
+            reviewDiv.appendChild(commentPara);
+            reviewDiv.appendChild(ratingPara);
+            reviewDiv.appendChild(datePara);
+            reviewList.appendChild(reviewDiv);
+        }
+
+        async function deleteReview(id) {
+            if (confirm("Are you sure you want to delete this review?")) {
+                await deleteDoc(doc(db, "reviews", id));
+                loadReviews();
+            }
+        }
+
+        reviewForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const comment = document.getElementById('comment').value;
+            const rating = document.querySelector('input[name="rating"]:checked')?.value || 'No rating';
+            const date = new Date().toLocaleString();
+            const imageInput = document.getElementById('image');
+            const imageFile = imageInput.files[0];
+
+            let imageBase64 = null;
+            if (imageFile) {
+                imageBase64 = await convertImageToBase64(imageFile);
+            }
+
+            await saveReview(comment, rating, date, imageBase64);
+            reviewForm.reset();
+            loadReviews();
+        });
+
+        async function convertImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function saveReview(comment, rating, date, imageBase64) {
+            await addDoc(collection(db, "reviews"), { comment, rating, date, imageBase64 });
+        }
+
+        // Toggle admin mode
+        window.toggleAdminMode = function () {
+            isAdminMode = !isAdminMode;
+            loadReviews();
+        };
+
+        loadReviews();
+    });
+    </script>
+    
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2023 Tourist Dashboard. All rights reserved.</p>
+    </footer>
+</body>
+</html>

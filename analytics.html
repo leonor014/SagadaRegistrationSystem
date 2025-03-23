@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourism Analytics</title>
+    <link rel="stylesheet" href="css/analytics.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- <script type="module" src="js/admin-control.js"></script> -->
+    <script type="module" src="js/analytics.js"></script>
+    
+</head>
+<body>
+
+<!-- Navigation Section -->
+<nav>
+    <a href="sagada.html#home">Home</a>
+    <a href="sagada.html#about">About</a>
+    <a href="sagada.html@contact">Contact</a>
+    <a href="register.html">Register</a>
+</nav>
+
+<!-- Admin Controls Section 
+<div id="admin-controls">
+    <button onclick="toggleAdminMode()">Toggle Admin Mode</button>
+    <div id="admin-edit-section" style="display: none;">
+        <h3>Admin Edit Section</h3>
+        <button onclick="addNewMonthlyStat()">Add New Monthly Stat</button>
+        <button onclick="deleteMonthlyStat()">Delete Monthly Stat</button>
+    </div>
+</div> -->
+
+<header>
+    <h1>Tourism Analytics</h1>
+    <p>Discover insights about tourist visits and trends in Sagada</p>
+</header>
+
+<div class="analytics-container">
+
+    <!-- Monthly Statistics -->
+    <div class="site-title" onclick="toggleContent('monthlyContent')">Monthly</div>
+    <div id="monthlyContent" class="site-content">
+        <div class="spot">
+            <div class="spot-info">
+                <h3>Monthly Statistics</h3>
+                <p>Which Month Does Tourists Mostly Visit?</p>
+            </div>
+        </div>
+        <canvas id="peakseasonMonth"></canvas>
+    </div>
+
+    <!-- Top 10 Non-Filipino Tourists -->
+    <div class="site-title" onclick="toggleContent('nonFilipinoContent')">Top 10 Non-Filipino Tourists</div>
+    <div id="nonFilipinoContent" class="site-content">
+        <h3>Top 10 Non-Filipino Tourists</h3>
+        <canvas id="topNonFilipinoTourists"></canvas>
+    </div>
+
+    <!-- Top 10 Philippine Regions -->
+    <div class="site-title" onclick="toggleContent('topRegionsContent')">Top 10 Philippine Regions</div>
+    <div id="topRegionsContent" class="site-content">
+        <h3>Top 10 Philippine Regions of Registered Tourists</h3>
+        <canvas id="topPhilippineRegions"></canvas>
+    </div>
+
+    <!-- Sex Analytics  -->
+    <div class="site-title" onclick="toggleContent('sexContent')">Sex Demographics</div>
+    <div id="sexContent" class="site-content">
+        <div class="spot">
+            <div class="spot-info">
+                <h3>Sex Demographics</h3>
+                <p>Whhich Population is most Common?</p>
+            </div>
+        </div>
+        <canvas id="SexDemog"></canvas>
+    </div>
+
+    <!-- Sumaguing Cave Analytics -->
+    <div class="site-title" onclick="toggleContent('sumaguingContent')">Sumaguing Cave Analytics</div>
+    <div id="sumaguingContent" class="site-content">
+        <div class="spot">
+            <img src="images/sumaguing-cave.jpg" alt="Sumaguing Cave">
+            <div class="spot-info">
+                <h3>Sumaguing Cave</h3>
+                <p>The most visited tourist spot known for its limestone formations and caving adventures.</p>
+            </div>
+        </div>
+        <canvas id="sumaguingChart"></canvas>
+        <canvas id="sumaguingNationalityChart"></canvas>
+        <canvas id="sumaguingGenderChart"></canvas>
+    </div>
+
+
+    <!-- Hanging Coffins Analytics -->
+    <div class="site-title" onclick="toggleContent('hangingCoffinsContent')">Hanging Coffins Analytics</div>
+    <div id="hangingCoffinsContent" class="site-content">
+        <div class="spot">
+            <img src="images/hanging-coffins.jpg" alt="Hanging Coffins">
+            <div class="spot-info">
+                <h3>Hanging Coffins</h3>
+                <p>A historical site where ancient burial traditions are visible in the cliffs of Sagada.</p>
+            </div>
+        </div>
+        <canvas id="hangingCoffinsChart"></canvas>
+        <canvas id="hangingCoffinsNationalityChart"></canvas>
+        <canvas id="hangingCoffinsGenderChart"></canvas>
+    </div>
+
+    <!-- Bomod-ok Falls Analytics -->
+    <div class="site-title" onclick="toggleContent('bomod-okContent')">Bomod-ok Falls Analytics</div>
+    <div id="bomod-okContent" class="site-content">
+        <div class="spot">
+            <img src="images/bomod-ok-falls.jpg" alt="Bomod-ok Falls">
+            <div class="spot-info">
+                <h3>Bomod-ok Falls</h3>
+                <p>A Refreshing waterfall stands about 200 feet (60 meters) high, cascading into a refreshing natural pool surrounded by lush greenery and towering rock formations.</p>
+            </div>
+        </div>
+        <canvas id="bomod-okChart"></canvas>
+        <canvas id="bomod-okNationalityChart"></canvas>
+        <canvas id="bomod-okGenderChart"></canvas>
+    </div>
+</div>
+<!-- Add New Analytics Data -->
+<div id="add-analytics">
+    <h2>Add New Data</h2>
+    <input type="text" id="analytics-name" placeholder="Data Name">
+    <input type="number" id="analytics-value" placeholder="Data Value">
+    <button onclick="addAnalytics()">Add Data</button>
+</div>
+
+<div style="text-align: center;">
+    <a href="sagada.html" class="back-button">Back to Home</a>
+</div>
+
+
+<script>
+    // Function to toggle content visibility
+    function toggleContent(id) {
+        const content = document.getElementById(id);
+        if (content.style.display === "none" || content.style.display === "") {
+            content.style.display = "block";
+        } else {
+            content.style.display = "none";
+        }
+    }
+
+    // Chart.js Data for each site
+    const chartsData = [
+        // Monthly
+        {canvas: 'peakseasonMonth', type: 'line', labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], data: [300, 350, 500, 1000, 800, 912, 2100, 750, 650, 600, 550, 900], backgroundColor: 'rgba(30, 144, 255, 0.2)', borderColor: '#1e90ff'},
+
+        // Sex Demographics       
+        {canvas: 'SexDemog', type: 'pie', labels: ['Male', 'Female'], data: [200, 600], backgroundColor: ['#ff6384', '#ffb3b3']},
+
+        // Top 10 Non-Filipino Tourists
+        {canvas: 'topNonFilipinoTourists', type: 'bar', labels: ['USA', 'Japan', 'Australia', 'China', 'Germany', 'France', 'UK', 'Canada', 'India', 'South Korea'], data: [500, 450, 400, 350, 300, 250, 200, 150, 100, 90], backgroundColor: '#32CD32'},
+        
+        // Top 10 Philippine Regions
+        {canvas: 'topPhilippineRegions', type: 'bar', labels: ['NCR', 'Region IV-A', 'Region III', 'Region VII', 'Region XI', 'Region VI', 'Region X', 'Region IX', 'Region V', 'Region I'], data: [800, 750, 700, 650, 600, 550, 500, 450, 400, 350], backgroundColor: '#ff6384'},
+
+        // Sumaguing Cave Charts
+        {canvas: 'sumaguingChart', type: 'line', labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], data: [250, 300, 400, 450, 550, 600, 500, 480, 460, 500, 530, 540], backgroundColor: 'rgba(34, 139, 34, 0.2)', borderColor: '#228B22'},
+        {canvas: 'sumaguingNationalityChart', type: 'bar', labels: ['USA', 'Japan', 'Australia', 'Philippines', 'France'], data: [100, 50, 280, 700, 250], backgroundColor: ['#32CD32', '#98FB98', '#006400', '#00FF00', '#228B22'], borderColor: '#228B22'},
+        {canvas: 'sumaguingGenderChart', type: 'pie', labels: ['Male', 'Female'], data: [320, 480], backgroundColor: ['#32CD32', '#006400']},
+
+
+        // Hanging Coffins Charts
+        {canvas: 'hangingCoffinsChart', type: 'line', labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], data: [250, 300, 400, 450, 550, 600, 500, 480, 460, 500, 530, 540], backgroundColor: 'rgba(34, 139, 34, 0.2)', borderColor: '#228B22'},
+        {canvas: 'hangingCoffinsNationalityChart', type: 'bar', labels: ['USA', 'Japan', 'Australia', 'Philippines', 'France'], data: [350, 320, 280, 300, 250], backgroundColor: ['#32CD32', '#98FB98', '#006400', '#00FF00', '#228B22'], borderColor: '#228B22'},
+        {canvas: 'hangingCoffinsGenderChart', type: 'pie', labels: ['Male', 'Female'], data: [320, 480], backgroundColor: ['#32CD32', '#006400']},
+
+        // Echo Valley Charts
+        {canvas: 'bomod-okChart', type: 'line', labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], data: [150, 180, 230, 280, 350, 400, 380, 360, 310, 290, 270, 250], backgroundColor: 'rgba(255, 99, 132, 0.2)', borderColor: '#ff6384'},
+        {canvas: 'bomod-okNationalityChart', type: 'bar', labels: ['USA', 'China', 'Australia', 'UK', 'India'], data: [550, 490, 430, 420, 370], backgroundColor: ['#ff6384', '#ff4f58', '#ff7f6d', '#ffb3b3', '#ff99cc'], borderColor: '#ff6384'},
+        {canvas: 'bomod-okGenderChart', type: 'pie', labels: ['Male', 'Female'], data: [400, 600], backgroundColor: ['#ff6384', '#ffb3b3']},
+    ];
+
+    // Initialize each chart using the data above
+    chartsData.forEach(chartData => {
+        const ctx = document.getElementById(chartData.canvas).getContext('2d');
+        new Chart(ctx, {
+            type: chartData.type,
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    data: chartData.data,
+                    backgroundColor: chartData.backgroundColor,
+                    borderColor: chartData.borderColor,
+                    borderWidth: 1
+                }]
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
