@@ -261,6 +261,35 @@ nav a:hover {
     display: block; /* Show content when active */
 }
 
+/* Admin Auth Modal */
+#admin-auth-modal {
+    font-family: 'Roboto', sans-serif;
+}
+  
+#admin-auth-modal input {
+    margin-bottom: 10px;
+}
+  
+#admin-auth-modal button {
+    transition: opacity 0.3s;
+    cursor: pointer;
+}
+  
+#admin-auth-modal button:hover {
+    opacity: 0.9;
+}
+  
+/* Toggle Admin Button */
+#toggle-admin-btn {
+    padding: 10px 15px;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+
 /* Footer */
 footer {
     background-color: #2e7d32; /* Green color matching SDG theme */
