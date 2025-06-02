@@ -1,0 +1,125 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+header {
+    text-align: center;
+    padding: 20px;
+    background-color: #4CAF50;
+    color: rgb(241, 125, 125);
+}
+/* h2 {
+    text-align: center;
+} */
+.container {
+    width: 80%;
+    margin: 20px auto;
+}
+select {
+    padding: 10px;
+    font-size: 16px;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 400px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.spot {
+    margin-bottom: 20px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.spot img {
+    width: 100%;
+    max-width: 400px;
+}
+.spot-content ul {
+    list-style: none;
+    padding-left: 0;
+}
+.spot-content li {
+    margin: 5px 0;
+}
+.spot-content h2 {
+    margin-top: 0;
+}
+.editable {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+}
+.button-group {
+    margin-top: 10px;
+}
+.button-group button {
+    margin-right: 5px;
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.button-group button:hover {
+    background-color: #45a049;
+}
+.edit-form {
+    display: none;
+    margin-top: 10px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+}
+.edit-form input,
+.edit-form textarea,
+.edit-form select {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+.edit-form button {
+    margin-right: 5px;
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.edit-form button:hover {
+    background-color: #45a049;
+}
+/* Sticky Navigation Bar */
+nav {
+    background-color: #2e7d32; /* Green color matching SDG theme */
+    padding: 0.5rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays above other content */
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: bold;
+    font-size: 1rem;
+}
+/* Footer */
+footer {
+    background-color: #2e7d32; /* Green color matching SDG theme */
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+html {
+    scroll-behavior: smooth;
+}

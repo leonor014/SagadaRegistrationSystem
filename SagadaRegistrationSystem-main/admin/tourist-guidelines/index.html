@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <title>Admin - Tourist Guidelines</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="./script.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <nav>
+            <div class="logo-name">
+                <div class="logo-image">
+                    <img id="userAvatar" src="https://avatar.iran.liara.run/username?username=Sagada+Registration"
+                        alt="Sagada Logo">
+                </div>
+                <span class="logo_name" id="userNameDisplay"></span>
+            </div>
+            <div class="menu-items">
+                <ul class="nav-links">
+                    <li><a href="../dashboard/">
+                            <i class="uil uil-estate"></i>
+                            <span class="link-name">Dashboard</span>
+                        </a></li>
+                    <li><a href="../analytics/">
+                            <i class="uil uil-chart-line"></i>
+                            <span class="link-name">Analytics</span>
+                        </a></li>
+                    <li><a href="../reviews/">
+                            <i class="uil uil-comments"></i>
+                            <span class="link-name">Reviews</span>
+                        </a></li>
+                    <li><a href="../tourist-spots/">
+                            <i class="uil uil-location-point"></i>
+                            <span class="link-name">Tourist Spots</span>
+                        </a></li>
+                    <li><a href="../tourist-guidelines/">
+                            <i class="uil uil-book-open"></i>
+                            <span class="link-name">Tourist Guidelines</span>
+                        </a></li>
+                    <li><a href="../faq/">
+                            <i class="uil uil-question-circle"></i>
+                            <span class="link-name">FAQ</span>
+                        </a></li>
+                    <li><a href="../admins/">
+                            <i class="uil uil-users-alt"></i>
+                            <span class="link-name">Admins</span>
+                        </a></li>
+                </ul>
+                <ul class="logout-mode">
+                    <li>
+                        <div>
+                            <i class="uil uil-signout" id="logoutIcon"></i>
+                            <button class="link-name logout-button" id="logoutBtn">Logout</button>
+                        </div>
+                    </li>
+                    <li class="mode">
+                        <a>
+                            <i class="uil uil-moon"></i>
+                            <span class="link-name">Dark Mode</span>
+                        </a>
+                        <div class="mode-toggle">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <section class="dashboard">
+            <div class="top">
+                <i class="uil uil-bars sidebar-toggle"></i>
+                <!-- <div class="search-box">
+                <i class="uil uil-search"></i>
+                <input type="text" placeholder="Search here...">
+
+            <img src="https://avatar.iran.liara.run/public/34" alt="Profile Icon"> -->
+            </div>
+            <div class="dash-content">
+                <div class="activity">
+                    <div class="title">
+                        <i class="uil uil-book-open icon-title"></i>
+                        <span class="text">Tourist Guidelines Management</span>
+                        <button class="add-btn" id="addTouristGuidelineBtn">
+                            <i class="uil uil-plus"></i>
+                        </button>
+                    </div>
+                    <hr>
+                    <div class="table-container">
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Guidelines</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tourist-guidelinesTableBody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Edit Tourist Guideline Modal -->
+    <div id="editModal" class="modal" style="visibility: hidden;">
+        <div class="modal-content">
+            <button class="close-button" id="editModalClose" aria-label="Close">
+                <i class="uil uil-times"></i>
+            </button>
+            <h2 class="modal-title">Edit Tourist Guideline</h2>
+            <form class="editTouristGuidelineForm" id="editTouristGuidelineForm">
+                <input type="hidden" id="editTouristGuidelineId" />
+
+                <div class="form-group">
+                    <label for="editTouristGuidelineName">Name</label>
+                    <input type="text" id="editTouristGuidelineName" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="editTouristGuidelineGuideline">Guidelines</label>
+                    <div id="editGuidelinesContainer" class="guidelines-container">
+                        <!-- Dynamic inputs will be inserted here -->
+                    </div>
+                    <button type="button" id="editAddGuidelineBtn" class="add-guideline-btn">+ Add Guideline</button>
+                </div>
+
+                <!-- <div class="form-group">
+                    <label for="editTouristGuidelineCreatedAt">Created At</label>
+                    <input type="text" id="editTouristGuidelineCreatedAt" readonly />
+                </div> -->
+
+                <button type="submit" class="submit-button">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Tourist Guideline Modal -->
+    <div id="addModal" class="modal" style="visibility: hidden;">
+        <div class="modal-content">
+            <button class="close-button" id="addModalClose" aria-label="Close">
+                <i class="uil uil-times"></i>
+            </button>
+            <h2 class="modal-title">Add Tourist Guideline</h2>
+            <form id="addTouristGuidelineForm" class="editTouristGuidelineForm">
+                <div class="form-group">
+                    <label for="addTouristGuidelineName">Name</label>
+                    <input type="text" id="addTouristGuidelineName" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="addTouristGuidelineGuideline">Guidelines</label>
+                    <div id="addGuidelinesContainer" class="guidelines-container">
+                        <!-- Dynamic inputs will be inserted here -->
+                    </div>
+                    <button type="button" id="addAddGuidelineBtn" class="add-guideline-btn">+ Add Guideline</button>
+                </div>
+
+                <button type="submit" class="submit-button">Add Guideline</button>
+            </form>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

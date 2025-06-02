@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <title>Admin - Reviews</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="./script.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <nav>
+            <div class="logo-name">
+                <div class="logo-image">
+                    <img id="userAvatar" src="https://avatar.iran.liara.run/username?username=Sagada+Registration"
+                        alt="Sagada Logo">
+                </div>
+                <span class="logo_name" id="userNameDisplay"></span>
+            </div>
+            <div class="menu-items">
+                <ul class="nav-links">
+                    <li><a href="../dashboard/">
+                            <i class="uil uil-estate"></i>
+                            <span class="link-name">Dashboard</span>
+                        </a></li>
+                    <li><a href="../analytics/">
+                            <i class="uil uil-chart-line"></i>
+                            <span class="link-name">Analytics</span>
+                        </a></li>
+                    <li><a href="../reviews/">
+                            <i class="uil uil-comments"></i>
+                            <span class="link-name">Reviews</span>
+                        </a></li>
+                    <li><a href="../tourist-spots/">
+                            <i class="uil uil-location-point"></i>
+                            <span class="link-name">Tourist Spots</span>
+                        </a></li>
+                    <li><a href="../tourist-guidelines/">
+                            <i class="uil uil-book-open"></i>
+                            <span class="link-name">Tourist Guidelines</span>
+                        </a></li>
+                    <li><a href="../faq/">
+                            <i class="uil uil-question-circle"></i>
+                            <span class="link-name">FAQ</span>
+                        </a></li>
+                    <li><a href="../admins/">
+                            <i class="uil uil-users-alt"></i>
+                            <span class="link-name">Admins</span>
+                        </a></li>
+                </ul>
+                <ul class="logout-mode">
+                    <li>
+                        <div>
+                            <i class="uil uil-signout" id="logoutIcon"></i>
+                            <button class="link-name logout-button" id="logoutBtn">Logout</button>
+                        </div>
+                    </li>
+                    <li class="mode">
+                        <a>
+                            <i class="uil uil-moon"></i>
+                            <span class="link-name">Dark Mode</span>
+                        </a>
+                        <div class="mode-toggle">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <section class="dashboard">
+            <div class="top">
+                <i class="uil uil-bars sidebar-toggle"></i>
+                <!-- <div class="search-box">
+                <i class="uil uil-search"></i>
+                <input type="text" placeholder="Search here...">
+
+            <img src="https://avatar.iran.liara.run/public/34" alt="Profile Icon"> -->
+            </div>
+            <div class="dash-content">
+                <div class="activity">
+                    <div class="title">
+                        <i class="uil uil-comments"></i>
+                        <span class="text">Reviews Management</span>
+                    </div>
+                    <hr>
+                    <div class="table-container">
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Comment</th>
+                                    <th>Rating</th>
+                                    <th>Created At</th>
+                                    <th>Image</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reviewsTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Edit Review Modal -->
+    <div id="editModal" class="modal" style="visibility: hidden;">
+        <div class="modal-content">
+            <button class="close-button" id="editModalClose" aria-label="Close">
+                <i class="uil uil-times"></i>
+            </button>
+            <h2 class="modal-title">Edit Review</h2>
+            <form id="editReviewForm">
+                <input type="hidden" id="editReviewId" />
+                <div class="form-group">
+                    <label for="editReviewComments">Comments</label>
+                    <textarea id="editReviewComments" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="editReviewRating">Rating</label>
+                    <select id="editReviewRating" required>
+                        <option value="" disabled selected>Select rating</option>
+                        <option value="1">1 - Poor</option>
+                        <option value="2">2 - Fair</option>
+                        <option value="3">3 - Good</option>
+                        <option value="4">4 - Very Good</option>
+                        <option value="5">5 - Excellent</option>
+                    </select>
+                </div>
+
+                <!-- <div class="form-group">
+                    <label for="editReviewCreatedAt">Created At</label>
+                    <input type="text" id="editReviewCreatedAt" readonly />
+                </div> -->
+
+                <div class="form-group">
+                    <label for="editReviewImage">Image</label>
+                    <img id="editReviewImagePreview" alt="Image Preview" />
+                    <input type="file" id="editReviewImage" accept="image/*" />
+                </div>
+
+                <button type="submit" class="submit-button">Save Changes</button>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

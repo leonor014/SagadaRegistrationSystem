@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <title>Admin - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="./script.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <nav>
+            <div class="logo-name">
+                <div class="logo-image">
+                    <img id="userAvatar" src="https://avatar.iran.liara.run/username?username=Sagada+Registration"
+                        alt="Admin Profile">
+                </div>
+                <span class="logo_name" id="userNameDisplay"><span class="spinner"></span></span>
+            </div>
+            <div class="menu-items">
+                <ul class="nav-links">
+                    <li><a href="../dashboard/">
+                            <i class="uil uil-estate"></i>
+                            <span class="link-name">Dashboard</span>
+                        </a></li>
+                    <li><a href="../analytics/">
+                            <i class="uil uil-chart-line"></i>
+                            <span class="link-name">Analytics</span>
+                        </a></li>
+                    <li><a href="../reviews/">
+                            <i class="uil uil-comments"></i>
+                            <span class="link-name">Reviews</span>
+                        </a></li>
+                    <li><a href="../tourist-spots/">
+                            <i class="uil uil-location-point"></i>
+                            <span class="link-name">Tourist Spots</span>
+                        </a></li>
+                    <li><a href="../tourist-guidelines/">
+                            <i class="uil uil-book-open"></i>
+                            <span class="link-name">Tourist Guidelines</span>
+                        </a></li>
+                    <li><a href="../faq/">
+                            <i class="uil uil-question-circle"></i>
+                            <span class="link-name">FAQ</span>
+                        </a></li>
+                    <li><a href="../admins/">
+                            <i class="uil uil-users-alt"></i>
+                            <span class="link-name">Admins</span>
+                        </a></li>
+                </ul>
+                <ul class="logout-mode">
+                    <li>
+                        <div>
+                            <i class="uil uil-signout" id="logoutIcon"></i>
+                            <button class="link-name logout-button" id="logoutBtn">Logout</button>
+                        </div>
+                    </li>
+                    <li class="mode">
+                        <a>
+                            <i class="uil uil-moon"></i>
+                            <span class="link-name">Dark Mode</span>
+                        </a>
+                        <div class="mode-toggle">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <section class="dashboard">
+            <div class="top">
+                <i class="uil uil-bars sidebar-toggle"></i>
+                <!-- <div class="search-box">
+                <i class="uil uil-search"></i>
+                <input type="text" placeholder="Search here...">
+
+            <img src="https://avatar.iran.liara.run/public/34" alt="Profile Icon"> -->
+            </div>
+            <div class="dash-content">
+                <div class="overview">
+                    <div class="title">
+                        <i class="uil uil-tachometer-fast-alt"></i>
+                        <span class="text">Dashboard</span>
+                    </div>
+                    <div class="boxes">
+                        <div class="box box1">
+                            <i class="uil uil-chart-line"></i>
+                            <span class="text">Total Analytics</span>
+                            <span class="number">5</span>
+                        </div>
+                        <div class="box box2">
+                            <i class="uil uil-comments"></i>
+                            <span class="text">Total Reviews</span>
+                            <span class="number" data-type="reviews"><span class="spinner"></span></span>
+                        </div>
+                        <div class="box box3">
+                            <i class="uil uil-location-point"></i>
+                            <span class="text">Total Tourist Spots</span>
+                            <span class="number" data-type="tourist-spots"><span class="spinner"></span></span>
+                        </div>
+                        <div class="box box4">
+                            <i class="uil uil-book-open"></i>
+                            <span class="text">Total Tourist Guidelines</span>
+                            <span class="number" data-type="tourist-guidelines"><span class="spinner"></span></span>
+                        </div>
+                        <div class="box box5">
+                            <i class="uil uil-question-circle"></i>
+                            <span class="text">Total FAQ</span>
+                            <span class="number" data-type="FAQs"><span class="spinner"></span></span>
+                        </div>
+                        <div class="box box6">
+                            <i class="uil uil-users-alt"></i>
+                            <span class="text">Total Admins</span>
+                            <span class="number" data-type="admins"><span class="spinner"></span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="activity">
+                    <div class="title">
+                        <i class="uil uil-clock-three"></i>
+                        <span class="text">Recent Activity</span>
+                    </div>
+                    <hr>
+                    <div class="table-container">
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>test@gmail.com</td>
+                                    <td>Date</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</body>
+
+</html>

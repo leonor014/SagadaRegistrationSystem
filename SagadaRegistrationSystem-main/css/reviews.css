@@ -1,0 +1,216 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #3b86f5;
+    margin: 0;
+    padding: 20px;
+}
+.review-container {
+    max-width: 400px;
+    margin: auto;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.review-container h2 {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+}
+textarea {
+    width: 100%;
+    height: 80px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+input[type="file"] {
+    margin-bottom: 15px;
+}
+.rating {
+    margin-bottom: 15px;
+    /* text-align: center; */
+}
+.rating label {
+    font-size: 30px;
+    color: #ccc;
+    cursor: pointer;
+}
+.rating input {
+    display: none;
+}
+.rating input:checked ~ label,
+.rating label:hover,
+.rating label:hover ~ label {
+    color: gold;
+}
+.submit-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+.submit-btn:hover {
+    background-color: #0056b3;
+}
+.review-list {
+    margin-top: 20px;
+}
+.review {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Added style below */
+    display: flex;
+    flex-direction: column;
+}
+.review p {
+    margin: 5px 0;
+}
+.review img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+.edit-btn, .save-btn, .delete-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.edit-btn {
+    background-color: #7c5af7;
+    color: white;
+}
+.edit-btn:hover {
+    background-color: #43129e;
+}
+.save-btn {
+    background-color: #ffc107;
+    color: black;
+}
+.save-btn:hover {
+    background-color: #e0a800;
+}
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+.delete-btn:hover {
+    background-color: #c82333;
+}
+/* Sticky Navigation Bar */
+nav {
+    background-color: #2e7d32; /* Green color matching SDG theme */
+    padding: 0.5rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays above other content */
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: bold;
+    font-size: 1rem;
+}
+#displayRatingStars {
+    font-size: 24px;
+    color: gold; /* Color for filled stars */
+}
+
+#displayRatingStars::after {
+    color: lightgray; /* Color for empty stars */
+}
+.stars {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    color: gold;
+}
+.stars span {
+    color: lightgray;
+    margin-left: 5px;
+}
+.review-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+.review-breakdown {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+}
+.review-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.review-item .bar {
+    width: 100px;
+    height: 10px;
+    background: lightgray;
+    margin-left: 10px;
+    border-radius: 5px;
+    position: relative;
+}
+.review-item .bar .fill {
+    height: 100%;
+    background: gold;
+    border-radius: 5px;
+}
+#reviewDisplay {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+.stars {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+}
+.stars input {
+    display: none;
+}
+.stars label {
+    color: gray;
+}
+.stars input:checked ~ label,
+.stars label:hover,
+.stars label:hover ~ label {
+    color: gold;
+}
+/* Footer */
+footer {
+    background-color: #2e7d32; /* Green color matching SDG theme */
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+html {
+    scroll-behavior: smooth;
+}

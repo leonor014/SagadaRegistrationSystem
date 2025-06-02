@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/tourist-spots.css" />
+  <script type="module" src="js/tourist-spots.js"></script>
+  <title>Tourist Spots in Sagada</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .container {
+      width: 80%;
+      margin: 20px auto;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      margin: 20px 0;
+      width: 100%;
+      max-width: 400px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .spot {
+      margin-bottom: 20px;
+    }
+
+    .spot img {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .spot-content {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .spot-content h2 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="sagada.html#home">Home</a>
+    <a href="sagada.html#about">About</a>
+    <a href="sagada.html#contact">Contact</a>
+    <a href="register.html">Register</a>
+  </nav>
+
+  <header>
+    <h1>Top Tourist Spots in Sagada</h1>
+    <p>Explore the natural and cultural wonders of Sagada</p>
+  </header>
+
+  <!-- Category Dropdown -->
+  <div class="container">
+    <select id="categorySelect">
+      <option value="">Loading categories...</option>
+    </select>
+  </div>
+
+  <!-- Display Container -->
+  <div class="container" id="spotsContainer">
+    <!-- Rendered tourist spots will appear here -->
+  </div>
+
+  <footer>
+    <p>&copy; 2023 Tourist Dashboard. All rights reserved.</p>
+  </footer>
+</body>
+</html>
