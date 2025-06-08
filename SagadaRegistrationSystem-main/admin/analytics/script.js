@@ -173,6 +173,7 @@ function bindEditAndDeleteButtons() {
           );
           editContainer.innerHTML = "";
 
+          
           const dataMap = AnalyticsData.data || {};
           Object.entries(dataMap).forEach(([key, value]) => {
             addAnalyticsInput("editAnalyticsContainer", key, value);
