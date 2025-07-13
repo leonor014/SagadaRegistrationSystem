@@ -715,6 +715,11 @@ td li {
   color: var(--text-color);
 }
 
+#analyticsTableBody td {
+  vertical-align: top;
+}
+
+
 @media (max-width: 1000px) {
     nav{
         width: 73px;

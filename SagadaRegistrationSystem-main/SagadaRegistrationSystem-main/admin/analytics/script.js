@@ -31,14 +31,27 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-function addAnalyticsInput(containerId, key = "", value = "") {
+function addAnalyticsInput(containerId, key = "", value = "", order = "") {
   const container = document.getElementById(containerId);
+
+  if (order === "") {
+    const orderInputs = container.querySelectorAll(".order-input");
+    let maxOrder = 0;
+    orderInputs.forEach((input) => {
+      const val = parseInt(input.value);
+      if (!isNaN(val) && val > maxOrder) {
+        maxOrder = val;
+      }
+    });
+    order = maxOrder + 1;
+  }
 
   const div = document.createElement("div");
   div.className = "analytics-item";
   div.innerHTML = `
-    <input type="text" placeholder="Key" class="analytics-input" value="${key}" required />
-    <input type="number" placeholder="Value" class="analytics-input" value="${value}" required />
+    <input type="text" placeholder="Key" class="analytics-input key-input" value="${key}" required />
+    <input type="number" placeholder="Value" class="analytics-input value-input" value="${value}" required />
+    <input type="number" placeholder="Order" class="analytics-input order-input" value="${order}" required />
     <button type="button" class="remove-analytics-btn" title="Remove"><i class="uil uil-times"></i></button>
   `;
 
@@ -57,7 +70,7 @@ const loadAnalytics = () => {
   const tableBody = document.getElementById("analyticsTableBody");
   tableBody.innerHTML = `
     <tr>
-      <td colspan="5" style="text-align: center;">Loading...</td>
+      <td colspan="7" style="text-align: center;">Loading...</td>
     </tr>
   `;
 
@@ -78,7 +91,7 @@ const loadAnalytics = () => {
       if (querySnapshot.empty) {
         tableBody.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align: center;">No analytics found.</td>
+          <td colspan="7" style="text-align: center;">No analytics found.</td>
         </tr>
       `;
         return;
@@ -97,18 +110,21 @@ const loadAnalytics = () => {
         const Analytics = docSnap.data();
         const tr = document.createElement("tr");
 
+        const category = Analytics.category || "—";
         const title = Analytics.title || "—";
         const description = Analytics.description || "—";
         const type = Analytics.type || "—";
-        const dataMap = Analytics.data || {};
-        const analytics = Object.entries(dataMap).length
-          ? `<ul>${Object.entries(dataMap)
-              .map(([key, value]) => `<li>${key}: ${value}</li>`)
+        const dataArray = Analytics.data || [];
+        const analytics = dataArray.length
+          ? `<ul>${dataArray
+              .sort((a, b) => a.order - b.order)
+              .map((item) => `<li>${item.key}: ${item.value}</li>`)
               .join("")}</ul>`
           : "—";
         const createdAt = Analytics.createdAt?.toDate().toLocaleString() || "—";
 
         tr.innerHTML = `
+        <td>${category}</td>
         <td>${title}</td>
         <td>${description}</td>
         <td>${type}</td>
@@ -130,7 +146,7 @@ const loadAnalytics = () => {
       if (!hasAnalytics) {
         tableBody.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align: center;">No analytics found.</td>
+          <td colspan="7" style="text-align: center;">No analytics found.</td>
         </tr>
       `;
       }
@@ -141,7 +157,7 @@ const loadAnalytics = () => {
       console.error("Error loading real-time analytics:", error);
       tableBody.innerHTML = `
       <tr>
-        <td colspan="5" style="text-align: center; color: red;">
+        <td colspan="7" style="text-align: center; color: red;">
           Failed to load data.
         </td>
       </tr>
@@ -162,6 +178,8 @@ function bindEditAndDeleteButtons() {
         if (AnalyticsSnap.exists()) {
           const AnalyticsData = AnalyticsSnap.data();
           document.getElementById("editAnalyticsId").value = id;
+          document.getElementById("editAnalyticsCategory").value =
+            AnalyticsData.category || "";
           document.getElementById("editAnalyticsTitle").value =
             AnalyticsData.title || "";
           document.getElementById("editAnalyticsDescription").value =
@@ -173,10 +191,9 @@ function bindEditAndDeleteButtons() {
           );
           editContainer.innerHTML = "";
 
-          
-          const dataMap = AnalyticsData.data || {};
-          Object.entries(dataMap).forEach(([key, value]) => {
-            addAnalyticsInput("editAnalyticsContainer", key, value);
+          const dataArray = AnalyticsData.data || [];
+          dataArray.forEach(({ key, value, order }) => {
+            addAnalyticsInput("editAnalyticsContainer", key, value, order);
           });
 
           document.getElementById("editModal").style.visibility = "visible";
@@ -330,24 +347,50 @@ window.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
 
       const id = document.getElementById("editAnalyticsId").value;
+      const category = document
+        .getElementById("editAnalyticsCategory")
+        .value.trim();
       const title = document.getElementById("editAnalyticsTitle").value.trim();
       const description = document
         .getElementById("editAnalyticsDescription")
         .value.trim();
-      const type = document.getElementById("editAnalyticsType").value.trim();
-      const data = {};
+      const type = document.getElementById("editAnalyticsType").value.trim().toLowerCase();
+      const data = [];
       document
         .querySelectorAll("#editAnalyticsContainer .analytics-item")
         .forEach((item) => {
-          const [keyInput, valueInput] = item.querySelectorAll("input");
-          const key = keyInput?.value?.trim();
-          const value = parseFloat(valueInput?.value?.trim());
-          if (key && !isNaN(value) && value >= 0) {
-            data[key] = value;
+          const key = item.querySelector(".key-input")?.value?.trim();
+          const value = parseFloat(
+            item.querySelector(".value-input")?.value?.trim()
+          );
+          const order = parseInt(
+            item.querySelector(".order-input")?.value?.trim(),
+            10
+          );
+
+          if (key && !isNaN(value) && !isNaN(order)) {
+            data.push({ key, value, order });
           }
         });
 
-      if (!title || !description || !type || Object.keys(data).length === 0) {
+      const orderSet = new Set();
+      const hasDuplicateOrder = data.some((item) => {
+        if (orderSet.has(item.order)) return true;
+        orderSet.add(item.order);
+        return false;
+      });
+
+      if (hasDuplicateOrder) {
+        Swal.fire(
+          "Duplicate Order",
+          "Each item must have a unique order value.",
+          "warning"
+        );
+        submitBtn.disabled = false;
+        return;
+      }
+
+      if (!category || !title || !description || !type || data.length === 0) {
         Swal.fire("Missing Fields", "Please fill in all fields.", "warning");
         submitBtn.disabled = false;
         return;
@@ -366,6 +409,7 @@ window.addEventListener("DOMContentLoaded", () => {
         const createdAt = existingData.createdAt || new Date();
 
         const updateData = {
+          category,
           title,
           description,
           type,
@@ -398,6 +442,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("addModal").style.visibility = "hidden";
     document.body.classList.remove("modal-open");
     document.getElementById("addAnalyticsForm").reset();
+    document.getElementById("addAnalyticsContainer").innerHTML = "";
   });
 
   document
@@ -410,24 +455,50 @@ window.addEventListener("DOMContentLoaded", () => {
       );
       submitBtn.disabled = true;
 
+      const category = document
+        .getElementById("addAnalyticsCategory")
+        .value.trim();
       const title = document.getElementById("addAnalyticsTitle").value.trim();
       const description = document
         .getElementById("addAnalyticsDescription")
         .value.trim();
-      const type = document.getElementById("addAnalyticsType").value.trim();
-      const data = {};
+      const type = document.getElementById("addAnalyticsType").value.trim().toLowerCase();
+      const data = [];
       document
         .querySelectorAll("#addAnalyticsContainer .analytics-item")
         .forEach((item) => {
-          const [keyInput, valueInput] = item.querySelectorAll("input");
-          const key = keyInput?.value?.trim();
-          const value = parseFloat(valueInput?.value?.trim());
-          if (key && !isNaN(value)) {
-            data[key] = value;
+          const key = item.querySelector(".key-input")?.value?.trim();
+          const value = parseFloat(
+            item.querySelector(".value-input")?.value?.trim()
+          );
+          const order = parseInt(
+            item.querySelector(".order-input")?.value?.trim(),
+            10
+          );
+
+          if (key && !isNaN(value) && !isNaN(order)) {
+            data.push({ key, value, order });
           }
         });
 
-      if (!title || !description || !type || Object.keys(data).length === 0) {
+      const orderSet = new Set();
+      const hasDuplicateOrder = data.some((item) => {
+        if (orderSet.has(item.order)) return true;
+        orderSet.add(item.order);
+        return false;
+      });
+
+      if (hasDuplicateOrder) {
+        Swal.fire(
+          "Duplicate Order",
+          "Each item must have a unique order value.",
+          "warning"
+        );
+        submitBtn.disabled = false;
+        return;
+      }
+
+      if (!category || !title || !description || !type || data.length === 0) {
         Swal.fire("Missing Fields", "Please fill in all fields.", "warning");
         submitBtn.disabled = false;
         return;
@@ -443,6 +514,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         const newAnalyticsRef = doc(collection(db, "analytics"));
         await setDoc(newAnalyticsRef, {
+          category,
           title,
           description,
           type,
@@ -453,6 +525,7 @@ window.addEventListener("DOMContentLoaded", () => {
         Swal.fire("Success!", "Analytics added successfully.", "success");
 
         document.getElementById("addAnalyticsForm").reset();
+        document.getElementById("addAnalyticsContainer").innerHTML = "";
         document.getElementById("addModal").style.visibility = "hidden";
         document.body.classList.remove("modal-open");
       } catch (error) {

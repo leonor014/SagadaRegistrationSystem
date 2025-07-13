@@ -133,3 +133,50 @@ footer {
 html {
     scroll-behavior: smooth;
 }
+
+.dynamic-charts-section {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.chart-wrapper {
+  border: 1px solid #ddd;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  max-height: 500px; /* limit height */
+  overflow-y: auto;  /* scroll if content overflows */
+  position: relative;
+}
+
+.chart-wrapper canvas {
+  width: 100% !important;
+  height: 400px !important; /* fixed canvas height */
+}
+
+.category-wrapper {
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f9f9f9;
+}
+
+.category-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.category-content {
+  margin-top: 10px;
+}
+
+.chart-wrapper {
+  margin-bottom: 20px;
+}
+
+.chart-description {
+  font-size: 0.9rem;
+  color: #666;
+}

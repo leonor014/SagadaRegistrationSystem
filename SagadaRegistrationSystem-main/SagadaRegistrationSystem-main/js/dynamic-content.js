@@ -34,7 +34,7 @@ function loadGuidelines() {
   );
   const guidelinesQuery = query(
     collection(db, "tourist-guidelines"),
-    orderBy("name")
+    orderBy("createdAt", "asc")
   );
 
   onSnapshot(
@@ -67,7 +67,10 @@ function loadGuidelines() {
 
 function loadFAQs() {
   const faqContainer = document.getElementById("faq-sections-container");
-  const faqsCollection = collection(db, "faqs");
+  const faqsCollection = query(
+    collection(db, "faqs"),
+    orderBy("createdAt", "asc")
+  );
 
   onSnapshot(
     faqsCollection,
