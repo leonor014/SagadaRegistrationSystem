@@ -1,6 +1,7 @@
 /* General Styles */
 body {
     font-family: 'Roboto', sans-serif;
+    text-align: center;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -32,20 +33,22 @@ nav a:hover {
 
 /* Grouped Buttons Section */
 .button-group {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columns for rectangular layout */
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
     gap: 1rem; /* Space between buttons */
-    padding: 2rem;
+    padding: 2%;
     background-color: white;
+    flex-wrap: nowrap; /* Keep them in one line, no wrapping */
 }
 
 .button-group .button {
-    background-color: #4a82eb; /* Blue color for buttons */
+    background-color: #4a82eb;
     color: white;
     border: none;
-    padding: 20px;
+    width: 200px;   /* Square size */
+    height: 200px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 10px;
     font-size: 1rem;
     font-weight: bold;
     text-align: center;
@@ -56,6 +59,8 @@ nav a:hover {
     justify-content: center;
 }
 
+
+
 .button-group .button:hover {
     background-color: #3a6bb2; /* Darker blue on hover */
 }
@@ -63,7 +68,12 @@ nav a:hover {
 .button-group .button img {
     width: 50px; /* Adjust image size */
     height: 50px; /* Adjust image size */
-    margin-bottom: 10px; /* Space between image and text */
+    margin-bottom: 8px; /* Space between image and text */
+}
+.button-group .button span {
+    text-align: center;   /* force text to center */
+    display: block;
+    width: 100%;          /* ensures even short words are aligned */
 }
 
 /* Details Section */

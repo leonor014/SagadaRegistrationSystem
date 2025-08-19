@@ -20,7 +20,7 @@
     <div class="container">
         <h2>Tourist Site Registration</h2>
         <label for="registrationNumber">Enter Registration Number:</label>
-        <input type="text" id="registrationNumber" placeholder="Enter your registration number">
+        <input type="text" id="registrationNumber" value="REG-" oninput="enforcePrefix(this)">
         <button onclick="fetchDetails()">Fetch Details</button>
 
         <p id="error" class="error"></p>
@@ -32,7 +32,7 @@
             <table id="touristTable" border="1">
                 <thead>
                     <tr>
-                        <th>Select</th>
+                        <th><input type="checkbox" id="selectAll"></th>
                         <th>Tourist Name</th>
                         <th>Age</th>
                         <th>Sex</th>
@@ -41,6 +41,7 @@
                 </thead>
                 <tbody id="touristList"></tbody>
             </table>
+            <div id="pagination" style="text-align:center; margin-top:10px;"></div>
 
             <label for="siteSelect">Select Tourist Site:</label>
             <select id="siteSelect">
@@ -71,7 +72,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCt1EginvMZvYdlrseVPBiyvfto4bvED5Y",
@@ -85,6 +86,10 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        let allTourists = [];
+        let currentPage = 1;
+        const rowsPerPage = 10;
 
         function calculateAge(dob) {
             let birthDate = new Date(dob);
@@ -290,9 +295,132 @@
             return nationalityMap[country] || "Unknown";
         }
 
+        function enforcePrefix(input) {
+            if (!input.value.startsWith("REG-")) {
+                input.value = "REG-";
+            }
+        }
+
+        function renderTablePage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const touristListDiv = document.getElementById("touristList");
+            touristListDiv.innerHTML = "";
+
+            allTourists.slice(start, end).forEach(tourist => {
+                let row = `<tr>
+                    <td><input type="checkbox" value="${tourist.name}"></td>
+                    <td>${tourist.name}</td>
+                    <td>${tourist.age}</td>
+                    <td>${tourist.sex}</td>
+                    <td>${tourist.nationality}</td>
+                </tr>`;
+                touristListDiv.innerHTML += row;
+            });
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const paginationDiv = document.getElementById("pagination");
+            paginationDiv.innerHTML = "";
+            let totalPages = Math.ceil(allTourists.length / rowsPerPage);
+
+            // Create main container with flex display
+            let container = document.createElement("div");
+            container.style.display = "flex";
+            container.style.gap = "6px";
+            container.style.justifyContent = "center";
+            container.style.alignItems = "center";
+            container.style.flexWrap = "wrap";
+
+            // Previous button
+            let prevBtn = document.createElement("button");
+            prevBtn.textContent = "Previous";
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTablePage(currentPage);
+                }
+            };
+            container.appendChild(prevBtn);
+
+
+            // Show limited page numbers with ellipsis
+            let maxVisible = 5; // how many numbers to show around current page
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+            // Adjust if near the end
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+
+            // Always show first page
+            if (startPage > 1) {
+                container.appendChild(createPageButton(1));
+                if (startPage > 2) {
+                    container.appendChild(createEllipsis());
+                }
+            }
+
+            // Show current range
+            for (let i = startPage; i <= endPage; i++) {
+                container.appendChild(createPageButton(i));
+            }
+
+            // Always show last page
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    container.appendChild(createEllipsis());
+                }
+                container.appendChild(createPageButton(totalPages));
+            }
+
+            // Next button
+            let nextBtn = document.createElement("button");
+            nextBtn.textContent = "Next";
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTablePage(currentPage);
+                }
+            };
+            container.appendChild(nextBtn);
+
+            paginationDiv.appendChild(container);
+
+            // Helper: add page button
+            function createPageButton(page) {
+                let btn = document.createElement("button");
+                btn.textContent = page;
+                btn.onclick = () => {
+                    currentPage = page;
+                    renderTablePage(currentPage);
+                };
+                if (page === currentPage) {
+                    btn.classList.add("active-page");
+                }
+                return btn;
+            }
+
+            // Helper: add ellipsis
+            function createEllipsis() {
+                let span = document.createElement("span");
+                span.textContent = "...";
+                span.style.padding = "0 5px";
+                return span;
+            }
+        }
+
+
+
         async function fetchDetails() {
             document.getElementById("error").textContent = "";
             document.getElementById("touristList").innerHTML = "";
+            allTourists = [];
             let regNumber = document.getElementById("registrationNumber").value.trim();
 
             if (!regNumber) {
@@ -318,17 +446,10 @@
                             tourists = data.groupMembers.map(member => ({ name: member.memberName, age: calculateAge(member.memberDOB), sex: member.memberSex, nationality: getNationality(data.groupCountry) }));
                         }
 
-                        tourists.forEach(tourist => {
-                            let row = `<tr>
-                                <td><input type="checkbox" value="${tourist.name}"></td>
-                                <td>${tourist.name}</td>
-                                <td>${tourist.age}</td>
-                                <td>${tourist.sex}</td>
-                                <td>${tourist.nationality}</td>
-                            </tr>`;
-                            touristListDiv.innerHTML += row;
-                        });
+                        allTourists = tourists;
                     });
+
+                    renderTablePage(1);
                     document.getElementById("touristDetails").style.display = "block";
                 } else {
                     document.getElementById("error").textContent = "Registration number not found.";
@@ -389,7 +510,7 @@
 
                 alert("Attendance recorded successfully!");
                 document.getElementById("touristDetails").style.display = "none"; 
-                document.getElementById("registrationNumber").value = ""; 
+                document.getElementById("registrationNumber").value = "REG-"; 
                 document.getElementById("touristList").innerHTML = "";  
             } catch (error) {
                 console.error("Error submitting attendance: ", error);
@@ -397,10 +518,17 @@
             }
         }
 
-
+        // Enable Select All functionality
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("selectAll").addEventListener("change", function() {
+                const checkboxes = document.querySelectorAll("#touristList input[type='checkbox']");
+                checkboxes.forEach(cb => cb.checked = this.checked);
+            });
+        });
 
         window.fetchDetails = fetchDetails;
         window.submitAttendance = submitAttendance;
+        window.enforcePrefix = enforcePrefix;
     </script>
 </body>
 </html>
