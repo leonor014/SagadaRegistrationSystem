@@ -6,13 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tourist Registration</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/sagada.css">
+    <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="data:,">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
     <script type="module" src="js/registration.js"></script>
-    <!-- <script type="module" src="js/admin-auth.js"></script> -->
 
     <style>
         /* Main Banner Styles */
@@ -52,10 +51,10 @@
 
     <!-- Navigation Section -->
     <nav>
-        <a href="sagada.html#home">Home</a>
-        <a href="sagada.html#about">About</a>
-        <a href="sagada.html#contact">Contact</a>
-        <a href="register.html">Register</a>
+        <a href="index.html#home">Home</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="./user/register/index.html">Register</a>
     </nav>
 
    
@@ -67,19 +66,19 @@
         <!-- Grouped Buttons Section -->
         <div class="button-group">
             <div class="button" onclick="toggleDetails(details1)">
-                <a href="registration_per_site.html" class="button">Tourist Site Check-In</a>
+                <a href="user/registration-per-site/index.html" class="button">Tourist Site Check-In</a>
                 <img src="images/per_site_registration.png" alt="Tourist Site Check-in">
             </div>
             <div class="button" onclick="toggleDetails(details2)">
-                <a href="analytics.html" class="button">Analytics</a>
+                <a href="user/analytics/index.html" class="button">Analytics</a>
                 <img src="images/analytics.png" alt="Analytics">
             </div>
             <div class="button" onclick="toggleDetails(details3)">
-                <a href="reviews.html" class="button">Reviews</a>
+                <a href="user/reviews/index.html" class="button">Reviews</a>
                 <img src="images/reviews.png" alt="Reviews">
             </div>
             <div class="button" onclick="toggleDetails(details4)">
-                <a href="tourist-spots.html" class="button">Tourist Spots</a>
+                <a href="user/tourist-spots/index.html" class="button">Tourist Spots</a>
                 <img src="images/tourist_spot.png" alt="Tourist Spot">
             </div>
         </div>
@@ -97,7 +96,7 @@
     </section>
 
     <!-- Tourist Guidelines -->
-    <link rel="stylesheet" href="css/guidelines.css">
+    <link rel="stylesheet" href="user/tourist-guidelines/style.css">
     <section class="dropdown" id="tourist-guidelines">
         <div class="dropdown-header" onclick="toggleDropdown('guidelines-content')">
             Things to Remember (Tourist Guidelines)
