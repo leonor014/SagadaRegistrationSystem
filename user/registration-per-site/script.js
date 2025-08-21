@@ -1,3 +1,5 @@
+let selectedTourists = new Set();
+
 document.addEventListener("DOMContentLoaded", function () {
     const db = firebase.firestore();
     const siteSelect = document.getElementById("siteSelect");
@@ -15,4 +17,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.querySelector("button").addEventListener("click", submitAttendance);
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("selectAll").addEventListener("change", function () {
+        if (this.checked) {
+            allTourists.forEach(t => selectedTourists.add(t.name));
+        } else {
+            selectedTourists.clear();
+        }
+        renderTablePage(currentPage); // refresh checkboxes
+    });
 });

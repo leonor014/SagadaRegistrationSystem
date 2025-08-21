@@ -308,8 +308,9 @@
             touristListDiv.innerHTML = "";
 
             allTourists.slice(start, end).forEach(tourist => {
+                let isChecked = selectedTourists.has(tourist.name);
                 let row = `<tr>
-                    <td><input type="checkbox" value="${tourist.name}"></td>
+                    <td><input type="checkbox" value="${tourist.name}" ${isChecked ? "checked" : ""}></td>
                     <td>${tourist.name}</td>
                     <td>${tourist.age}</td>
                     <td>${tourist.sex}</td>
@@ -319,22 +320,33 @@
             });
 
             renderPagination();
+
+            // Re-bind change events
+            document.querySelectorAll("#touristList input[type='checkbox']").forEach(cb => {
+                cb.addEventListener("change", function () {
+                    if (this.checked) {
+                        selectedTourists.add(this.value);
+                    } else {
+                        selectedTourists.delete(this.value);
+                    }
+                    // Sync Select All checkbox
+                    document.getElementById("selectAll").checked = (selectedTourists.size === allTourists.length);
+                });
+            });
         }
+
+        // Keep the master Select All checkbox in sync
+        document.getElementById("selectAll").checked = (selectedTourists.size === allTourists.length);
 
         function renderPagination() {
             const paginationDiv = document.getElementById("pagination");
             paginationDiv.innerHTML = "";
             let totalPages = Math.ceil(allTourists.length / rowsPerPage);
 
-            // Create main container with flex display
             let container = document.createElement("div");
-            container.style.display = "flex";
-            container.style.gap = "6px";
-            container.style.justifyContent = "center";
-            container.style.alignItems = "center";
-            container.style.flexWrap = "wrap";
+            container.className = "pagination-container";
 
-            // Previous button
+            // Previous
             let prevBtn = document.createElement("button");
             prevBtn.textContent = "Previous";
             prevBtn.disabled = currentPage === 1;
@@ -346,39 +358,30 @@
             };
             container.appendChild(prevBtn);
 
-
-            // Show limited page numbers with ellipsis
-            let maxVisible = 5; // how many numbers to show around current page
+            // Page numbers + ellipsis
+            let maxVisible = 5;
             let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
             let endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
-            // Adjust if near the end
             if (endPage - startPage + 1 < maxVisible) {
                 startPage = Math.max(1, endPage - maxVisible + 1);
             }
 
-            // Always show first page
             if (startPage > 1) {
                 container.appendChild(createPageButton(1));
-                if (startPage > 2) {
-                    container.appendChild(createEllipsis());
-                }
+                if (startPage > 2) container.appendChild(createEllipsis());
             }
 
-            // Show current range
             for (let i = startPage; i <= endPage; i++) {
                 container.appendChild(createPageButton(i));
             }
 
-            // Always show last page
             if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    container.appendChild(createEllipsis());
-                }
+                if (endPage < totalPages - 1) container.appendChild(createEllipsis());
                 container.appendChild(createPageButton(totalPages));
             }
 
-            // Next button
+            // Next
             let nextBtn = document.createElement("button");
             nextBtn.textContent = "Next";
             nextBtn.disabled = currentPage === totalPages;
@@ -392,7 +395,6 @@
 
             paginationDiv.appendChild(container);
 
-            // Helper: add page button
             function createPageButton(page) {
                 let btn = document.createElement("button");
                 btn.textContent = page;
@@ -400,23 +402,18 @@
                     currentPage = page;
                     renderTablePage(currentPage);
                 };
-                if (page === currentPage) {
-                    btn.classList.add("active-page");
-                }
+                if (page === currentPage) btn.classList.add("active-page");
                 return btn;
             }
 
-            // Helper: add ellipsis
             function createEllipsis() {
                 let span = document.createElement("span");
                 span.textContent = "...";
-                span.style.padding = "0 5px";
                 return span;
             }
-        }
+        
 
-
-
+        
         async function fetchDetails() {
             document.getElementById("error").textContent = "";
             document.getElementById("touristList").innerHTML = "";
