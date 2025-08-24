@@ -35,18 +35,21 @@ nav a:hover {
 .button-group {
     display: flex;
     justify-content: center; /* Centers buttons horizontally */
+    align-items: center;     /* ✅ Centers vertically when stacked */
     gap: 1rem; /* Space between buttons */
     padding: 2%;
     background-color: white;
-    flex-wrap: nowrap; /* Keep them in one line, no wrapping */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
 .button-group .button {
     background-color: #4a82eb;
     color: white;
     border: none;
-    width: 200px;   /* Square size */
-    height: 200px;
+    flex: 1 1 180px;   /* Responsive width: grows/shrinks with screen */
+    max-width: 200px;
+    min-width: 120px;
+    height: 180px;
     cursor: pointer;
     border-radius: 10px;
     font-size: 1rem;
@@ -59,21 +62,42 @@ nav a:hover {
     justify-content: center;
 }
 
-
-
 .button-group .button:hover {
     background-color: #3a6bb2; /* Darker blue on hover */
 }
 
 .button-group .button img {
-    width: 50px; /* Adjust image size */
-    height: 50px; /* Adjust image size */
+    width: 40px; /* Adjust image size */
+    height: 40px; /* Adjust image size */
     margin-bottom: 8px; /* Space between image and text */
 }
 .button-group .button span {
     text-align: center;   /* force text to center */
     display: block;
     width: 100%;          /* ensures even short words are aligned */
+}
+
+/* ✅ Responsive Layout */
+@media (max-width: 768px) {
+    .button-group {
+        justify-content: space-around; /* Even spacing on tablets */
+    }
+    .button-group .button {
+        flex: 1 1 45%;  /* Two buttons per row */
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .button-group {
+        flex-direction: column; /* ✅ Stack vertically on phones */
+        align-items: center;    /* Center buttons horizontally */
+    }
+    .button-group .button {
+        flex: 1 1 100%; /* One per row */
+        max-width: 90%; /* Slight margin on sides */
+        height: 140px;
+    }
 }
 
 /* Details Section */
