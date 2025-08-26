@@ -1,531 +1,515 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tourist Site Registration</title>
-    <link rel="stylesheet" href="./style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tourist Site Registration</title>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <!-- Navigation Section -->
-    <nav>
-        <a href="/SagadaRegistrationSystem/index.html#home">Home</a>
-        <a href="/SagadaRegistrationSystem/index.html#about">About</a>
-        <a href="/SagadaRegistrationSystem/index.html#contact">Contact</a>
-        <a href="/user/registration-per-site/index.html">Register</a>
-    </nav>
-    
-    <div class="container">
-        <h2>Tourist Site Registration</h2>
-        <label for="registrationNumber">Enter Registration Number:</label>
-        <input type="text" id="registrationNumber" value="REG-" oninput="enforcePrefix(this)">
-        <button onclick="fetchDetails()">Fetch Details</button>
+  <!-- Navigation Section -->
+  <nav>
+    <a href="/SagadaRegistrationSystem/index.html#home">Home</a>
+    <a href="/SagadaRegistrationSystem/index.html#about">About</a>
+    <a href="/SagadaRegistrationSystem/index.html#contact">Contact</a>
+    <a href="/user/register/index.html">Register</a>
+  </nav>
+  
+  <div class="container">
+    <h2>Tourist Site Registration</h2>
+    <label for="registrationNumber">Enter Registration Number:</label>
+    <input type="text" id="registrationNumber" value="REG-">
+    <button id="fetchDetailsBtn">Fetch Details</button>
 
-        <p id="error" class="error"></p>
+    <p id="error" class="error"></p>
 
-        <div id="touristDetails" class="tourist-details" style="display:none;">
-            <h3>Tourist Details</h3>
-            <p><strong>Registered Tourists:</strong></p>
+    <div id="touristDetails" class="tourist-details" style="display:none;">
+      <h3>Tourist Details</h3>
+      <p><strong>Registered Tourists:</strong></p>
 
-            <table id="touristTable" border="1">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="selectAll"></th>
-                        <th>Tourist Name</th>
-                        <th>Age</th>
-                        <th>Sex</th>
-                        <th>Nationality</th>
-                    </tr>
-                </thead>
-                <tbody id="touristList"></tbody>
-            </table>
-            <div id="pagination" style="text-align:center; margin-top:10px;"></div>
+      <table id="touristTable" border="1">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll"></th>
+            <th>Tourist Name</th>
+            <th>Age</th>
+            <th>Sex</th>
+            <th>Nationality</th>
+          </tr>
+        </thead>
+        <tbody id="touristList"></tbody>
+      </table>
+      <div id="pagination" style="text-align:center; margin-top:10px;"></div>
 
-            <label for="siteSelect">Select Tourist Site:</label>
-            <select id="siteSelect">
-                <option value="Paytokan Walk">Paytokan Walk</option>
-                <option value="Hanging Coffins">Hanging Coffins</option>
-                <option value="Langsayan">Langsayan</option>
-                <option value="Marlboro">Marlboro</option>
-                <option value="Marlboro to Blue Soil">Marlboro to Blue Soil</option>
-                <option value="Blue Soil">Blue Soil</option>
-                <option value="Ampacao">Ampacao</option>
-                <option value="Nabas-ang to Ampacao">Nabas-ang to Ampacao</option>
-                <option value="Bomod-ok Falls">Bomod-ok Falls</option>
-                <option value="Bokong Falls">Bokong Falls</option>
-                <option value="Pongas Falls">Pongas Falls</option>
-                <option value="Sumaguing Cave">Sumaguing Cave</option>
-                <option value="Lumiang Cave">Lumiang Cave</option>
-                <option value="Balangagan Cave">Balangagan Cave</option>
-                <option value="Sumaguing Entrance - Sight Seeing">Sumaguing Entrance - Sight Seeing</option>
-                <option value="Lumiang Entrance - Sight Seeing">Lumiang Entrance - Sight Seeing</option>
-            </select>
-            <button onclick="submitAttendance()">Submit Attendance</button>
-        </div>
+      <label for="siteSelect">Select Tourist Site:</label>
+      <select id="siteSelect">
+        <option value="Paytokan Walk">Paytokan Walk</option>
+        <option value="Hanging Coffins">Hanging Coffins</option>
+        <option value="Langsayan">Langsayan</option>
+        <option value="Marlboro">Marlboro</option>
+        <option value="Marlboro to Blue Soil">Marlboro to Blue Soil</option>
+        <option value="Blue Soil">Blue Soil</option>
+        <option value="Ampacao">Ampacao</option>
+        <option value="Nabas-ang to Ampacao">Nabas-ang to Ampacao</option>
+        <option value="Bomod-ok Falls">Bomod-ok Falls</option>
+        <option value="Bokong Falls">Bokong Falls</option>
+        <option value="Pongas Falls">Pongas Falls</option>
+        <option value="Sumaguing Cave">Sumaguing Cave</option>
+        <option value="Lumiang Cave">Lumiang Cave</option>
+        <option value="Balangagan Cave">Balangagan Cave</option>
+        <option value="Sumaguing Entrance - Sight Seeing">Sumaguing Entrance - Sight Seeing</option>
+        <option value="Lumiang Entrance - Sight Seeing">Lumiang Entrance - Sight Seeing</option>
+      </select>
+      <button id="submitAttendanceBtn">Submit Attendance</button>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2023 Tourist Dashboard. All rights reserved.</p>
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2023 Tourist Dashboard. All rights reserved.</p>
+  </footer>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCt1EginvMZvYdlrseVPBiyvfto4bvED5Y",
-            authDomain: "sagadatouristregister.firebaseapp.com",
-            projectId: "sagadatouristregister",
-            storageBucket: "sagadatouristregister.firebasestorage.app",
-            messagingSenderId: "875774905793",
-            appId: "1:875774905793:web:d4fe2ea42fedba8d473340",
-            measurementId: "G-2VF5GCQGZ1"
-        };
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCt1EginvMZvYdlrseVPBiyvfto4bvED5Y",
+      authDomain: "sagadatouristregister.firebaseapp.com",
+      projectId: "sagadatouristregister",
+      storageBucket: "sagadatouristregister.firebasestorage.app",
+      messagingSenderId: "875774905793",
+      appId: "1:875774905793:web:d4fe2ea42fedba8d473340",
+      measurementId: "G-2VF5GCQGZ1"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        let allTourists = [];
-        let currentPage = 1;
-        const rowsPerPage = 10;
+    let allTourists = [];
+    let selectedTourists = new Set();
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let totalPages = 0;
 
-        function calculateAge(dob) {
-            let birthDate = new Date(dob);
-            let today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            let monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            return age;
-        }
+    function calculateAge(dob) {
+      let birthDate = new Date(dob);
+      let today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      let monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    }
 
-        function getNationality(country) {
-            const nationalityMap = {
-                "Afghanistan": "Afghan", 
-                "Albania": "Albanian", 
-                "Algeria": "Algerian", 
-                "Andorra": "Andorran", 
-                "Angola": "Angolan",
-                "Antigua and Barbuda": "Antiguan, Barbudan", 
-                "Argentina": "Argentine, Argentinian", 
-                "Armenia": "Armenian",
-                "Australia": "Australian", 
-                "Austria": "Austrian", 
-                "Azerbaijan": "Azerbaijani", 
-                "Bahamas": "Bahamian",
-                "Bahrain": "Bahraini", 
-                "Bangladesh": "Bangladeshi", 
-                "Barbados": "Barbadian", 
-                "Belarus": "Belarusian",
-                "Belgium": "Belgian", 
-                "Belize": "Belizean", 
-                "Benin": "Beninese", 
-                "Bolivia": "Bolivian",
-                "Bosnia and Herzegovina": "Bosnian, Herzegovinian", 
-                "Botswana": "Motswana", 
-                "Brazil": "Brazilian",
-                "Brunei": "Bruneian", 
-                "Bulgaria": "Bulgarian", 
-                "Burkina Faso": "Burkinabé", 
-                "Burma": "Burmese",
-                "Burundi": "Burundian", 
-                "Cabo Verde": "Cabo Verdean", 
-                "Cambodia": "Cambodian", 
-                "Cameroon": "Cameroonian",
-                "Canada": "Canadian", 
-                "Central African Republic": "Central African", 
-                "Chad": "Chadian", 
-                "Chile": "Chilean",
-                "China": "Chinese", 
-                "Colombia": "Colombian", 
-                "Comoros": "Comorian", 
-                "Congo, Democratic Republic of the": "Congolese",
-                "Congo, Republic of the": "Congolese", 
-                "Costa Rica": "Costa Rican", 
-                "Côte d'Ivoire": "Ivorian",
-                "Croatia": "Croatian", 
-                "Cuba": "Cuban", 
-                "Cyprus": "Cypriot", 
-                "Czech Republic": "Czech",
-                "Denmark": "Danish", 
-                "Djibouti": "Djiboutian", 
-                "Dominica": "Dominican", 
-                "Dominican Republic": "Dominican",
-                "Ecuador": "Ecuadorian", 
-                "Egypt": "Egyptian", 
-                "El Salvador": "Salvadoran", 
-                "Equatorial Guinea": "Equatorial Guinean",
-                "Eritrea": "Eritrean", 
-                "Estonia": "Estonian", 
-                "Eswatini": "Swazi", 
-                "Ethiopia": "Ethiopian", 
-                "Fiji": "Fijian",
-                "Finland": "Finnish", 
-                "France": "French", 
-                "Gabon": "Gabonese", 
-                "Gambia": "Gambian", 
-                "Georgia": "Georgian",
-                "Germany": "German", 
-                "Ghana": "Ghanaian", 
-                "Greece": "Greek", 
-                "Grenada": "Grenadian", 
-                "Guatemala": "Guatemalan",
-                "Guinea": "Guinean", 
-                "Guinea-Bissau": "Bissau-Guinean", 
-                "Guyana": "Guyanese", 
-                "Haiti": "Haitian",
-                "Honduras": "Honduran", 
-                "Hungary": "Hungarian", 
-                "Iceland": "Icelander", 
-                "India": "Indian",
-                "Indonesia": "Indonesian", 
-                "Iran": "Iranian", 
-                "Iraq": "Iraqi", 
-                "Ireland": "Irish", 
-                "Israel": "Israeli",
-                "Italy": "Italian", 
-                "Jamaica": "Jamaican", 
-                "Japan": "Japanese", 
-                "Jordan": "Jordanian", 
-                "Kazakhstan": "Kazakhstani",
-                "Kenya": "Kenyan", 
-                "Kiribati": "I-Kiribati", 
-                "Korea, North": "North Korean", 
-                "Korea, South": "South Korean",
-                "Kosovo": "Kosovar", 
-                "Kuwait": "Kuwaiti", 
-                "Kyrgyzstan": "Kyrgyz", 
-                "Laos": "Lao", 
-                "Latvia": "Latvian",
-                "Lebanon": "Lebanese", 
-                "Lesotho": "Basotho", 
-                "Liberia": "Liberian", 
-                "Libya": "Libyan", 
-                "Liechtenstein": "Liechtensteiner",
-                "Lithuania": "Lithuanian", 
-                "Luxembourg": "Luxembourger", 
-                "Madagascar": "Malagasy", 
-                "Malawi": "Malawian",
-                "Malaysia": "Malaysian", 
-                "Maldives": "Maldivian", 
-                "Mali": "Malian", 
-                "Malta": "Maltese", 
-                "Marshall Islands": "Marshallese",
-                "Mauritania": "Mauritanian", 
-                "Mauritius": "Mauritian", 
-                "Mexico": "Mexican", 
-                "Micronesia": "Micronesian",
-                "Moldova": "Moldovan", 
-                "Monaco": "Monegasque", 
-                "Mongolia": "Mongolian", 
-                "Montenegro": "Montenegrin",
-                "Morocco": "Moroccan", 
-                "Mozambique": "Mozambican", 
-                "Myanmar": "Burmese", 
-                "Namibia": "Namibian",
-                "Nauru": "Nauruan", 
-                "Nepal": "Nepali", 
-                "Netherlands": "Dutch", 
-                "New Zealand": "New Zealander",
-                "Nicaragua": "Nicaraguan", 
-                "Niger": "Nigerien", 
-                "Nigeria": "Nigerian", 
-                "North Macedonia": "Macedonian",
-                "Norway": "Norwegian", 
-                "Oman": "Omani", 
-                "Pakistan": "Pakistani", 
-                "Palau": "Palauan", 
-                "Panama": "Panamanian",
-                "Papua New Guinea": "Papua New Guinean", 
-                "Paraguay": "Paraguayan", 
-                "Peru": "Peruvian", 
-                "Philippines": "Filipino",
-                "Poland": "Polish", 
-                "Portugal": "Portuguese", 
-                "Qatar": "Qatari", 
-                "Romania": "Romanian", 
-                "Russia": "Russian",
-                "Rwanda": "Rwandan", 
-                "Saint Kitts and Nevis": "Kittitian", 
-                "Saint Lucia": "Saint Lucian",
-                "Saint Vincent and the Grenadines": "Vincentian", 
-                "Samoa": "Samoan", 
-                "San Marino": "Sammarinese",
-                "Saudi Arabia": "Saudi", 
-                "Senegal": "Senegalese", 
-                "Serbia": "Serbian", 
-                "Seychelles": "Seychellois",
-                "Sierra Leone": "Sierra Leonean", 
-                "Singapore": "Singaporean", 
-                "Slovakia": "Slovak", 
-                "Slovenia": "Slovenian",
-                "South Africa": "South African", 
-                "Spain": "Spanish", 
-                "Sri Lanka": "Sri Lankan", 
-                "Sudan": "Sudanese",
-                "Suriname": "Surinamese", 
-                "Sweden": "Swedish", 
-                "Switzerland": "Swiss", 
-                "Syria": "Syrian", 
-                "Tajikistan": "Tajik",
-                "Tanzania": "Tanzanian", 
-                "Thailand": "Thai", 
-                "Togo": "Togolese", 
-                "Tonga": "Tongan", 
-                "Tunisia": "Tunisian",
-                "Turkey": "Turkish", 
-                "Turkmenistan": "Turkmen", 
-                "Uganda": "Ugandan", 
-                "Ukraine": "Ukrainian",
-                "United Arab Emirates": "Emirati", 
-                "United Kingdom": "British", 
-                "United States": "American",
-                "Uruguay": "Uruguayan", 
-                "Uzbekistan": "Uzbek", 
-                "Vanuatu": "Ni-Vanuatu", 
-                "Venezuela": "Venezuelan",
-                "Vietnam": "Vietnamese", 
-                "Yemen": "Yemeni", 
-                "Zambia": "Zambian", 
-                "Zimbabwe": "Zimbabwean"
-            };
-            return nationalityMap[country] || "Unknown";
-        }
+    function getNationality(country) {
+      const nationalityMap = {
+        "Afghanistan": "Afghan", 
+        "Albania": "Albanian", 
+        "Algeria": "Algerian", 
+        "Andorra": "Andorran", 
+        "Angola": "Angolan",
+        "Antigua and Barbuda": "Antiguan, Barbudan", 
+        "Argentina": "Argentine, Argentinian", 
+        "Armenia": "Armenian",
+        "Australia": "Australian", 
+        "Austria": "Austrian", 
+        "Azerbaijan": "Azerbaijani", 
+        "Bahamas": "Bahamian",
+        "Bahrain": "Bahraini", 
+        "Bangladesh": "Bangladeshi", 
+        "Barbados": "Barbadian", 
+        "Belarus": "Belarusian",
+        "Belgium": "Belgian", 
+        "Belize": "Belizean", 
+        "Benin": "Beninese", 
+        "Bolivia": "Bolivian",
+        "Bosnia and Herzegovina": "Bosnian, Herzegovinian", 
+        "Botswana": "Motswana", 
+        "Brazil": "Brazilian",
+        "Brunei": "Bruneian", 
+        "Bulgaria": "Bulgarian", 
+        "Burkina Faso": "Burkinabé", 
+        "Burma": "Burmese",
+        "Burundi": "Burundian", 
+        "Cabo Verde": "Cabo Verdean", 
+        "Cambodia": "Cambodian", 
+        "Cameroon": "Cameroonian",
+        "Canada": "Canadian", 
+        "Central African Republic": "Central African", 
+        "Chad": "Chadian", 
+        "Chile": "Chilean",
+        "China": "Chinese", 
+        "Colombia": "Colombian", 
+        "Comoros": "Comorian", 
+        "Congo, Democratic Republic of the": "Congolese",
+        "Congo, Republic of the": "Congolese", 
+        "Costa Rica": "Costa Rican", 
+        "Côte d'Ivoire": "Ivorian",
+        "Croatia": "Croatian", 
+        "Cuba": "Cuban", 
+        "Cyprus": "Cypriot", 
+        "Czech Republic": "Czech",
+        "Denmark": "Danish", 
+        "Djibouti": "Djiboutian", 
+        "Dominica": "Dominican", 
+        "Dominican Republic": "Dominian",
+        "Ecuador": "Ecuadorian", 
+        "Egypt": "Egyptian", 
+        "El Salvador": "Salvadoran", 
+        "Equatorial Guinea": "Equatorial Guinean",
+        "Eritrea": "Eritrean", 
+        "Estonia": "Estonian", 
+        "Eswatini": "Swazi", 
+        "Ethiopia": "Ethiopian", 
+        "Fiji": "Fijian",
+        "Finland": "Finnish", 
+        "France": "French", 
+        "Gabon": "Gabonese", 
+        "Gambia": "Gambian", 
+        "Georgia": "Georgian",
+        "Germany": "German", 
+        "Ghana": "Ghanaian", 
+        "Greece": "Greek", 
+        "Grenada": "Grenadian", 
+        "Guatemala": "Guatemalan",
+        "Guinea": "Guinean", 
+        "Guinea-Bissau": "Bissau-Guinean", 
+        "Guyana": "Guyanese", 
+        "Haiti": "Haitian",
+        "Honduras": "Honduran", 
+        "Hungary": "Hungarian", 
+        "Iceland": "Icelander", 
+        "India": "Indian",
+        "Indonesia": "Indonesian", 
+        "Iran": "Iranian", 
+        "Iraq": "Iraqi", 
+        "Ireland": "Irish", 
+        "Israel": "Israeli",
+        "Italy": "Italian", 
+        "Jamaica": "Jamaican", 
+        "Japan": "Japanese", 
+        "Jordan": "Jordanian", 
+        "Kazakhstan": "Kazakhstani",
+        "Kenya": "Kenyan", 
+        "Kiribati": "I-Kiribati", 
+        "Korea, North": "North Korean", 
+        "Korea, South": "South Korean",
+        "Kosovo": "Kosovar", 
+        "Kuwait": "Kuwaiti", 
+        "Kyrgyzstan": "Kyrgyz", 
+        "Laos": "Lao", 
+        "Latvia": "Latvian",
+        "Lebanon": "Lebanese", 
+        "Lesotho": "Basotho", 
+        "Liberia": "Liberian", 
+        "Libya": "Libyan", 
+        "Liechtenstein": "Liechtensteiner",
+        "Lithuania": "Lithuanian", 
+        "Luxembourg": "Luxembourger", 
+        "Madagascar": "Malagasy", 
+        "Malawi": "Malawian",
+        "Malaysia": "Malaysian", 
+        "Maldives": "Maldivian", 
+        "Mali": "Malian", 
+        "Malta": "Maltese", 
+        "Marshall Islands": "Marshallese",
+        "Mauritania": "Mauritanian", 
+        "Mauritius": "Mauritian", 
+        "Mexico": "Mexican", 
+        "Micronesia": "Micronesian",
+        "Moldova": "Moldovan", 
+        "Monaco": "Monegasque", 
+        "Mongolia": "Mongolian", 
+        "Montenegro": "Montenegrin",
+        "Morocco": "Moroccan", 
+        "Mozambique": "Mozambican", 
+        "Myanmar": "Burmese", 
+        "Namibia": "Namibian",
+        "Nauru": "Nauruan", 
+        "Nepal": "Nepali", 
+        "Netherlands": "Dutch", 
+        "New Zealand": "New Zealander",
+        "Nicaragua": "Nicaraguan", 
+        "Niger": "Nigerien", 
+        "Nigeria": "Nigerian", 
+        "North Macedonia": "Macedonian",
+        "Norway": "Norwegian", 
+        "Oman": "Omani", 
+        "Pakistan": "Pakistani", 
+        "Palau": "Palauan", 
+        "Panama": "Panamanian",
+        "Papua New Guinea": "Papua New Guinean", 
+        "Paraguay": "Paraguayan", 
+        "Peru": "Peruvian", 
+        "Philippines": "Filipino",
+        "Poland": "Polish", 
+        "Portugal": "Portuguese", 
+        "Qatar": "Qatari", 
+        "Romania": "Romanian", 
+        "Russia": "Russian",
+        "Rwanda": "Rwandan", 
+        "Saint Kitts and Nevis": "Kittitian", 
+        "Saint Lucia": "Saint Lucian",
+        "Saint Vincent and the Grenadines": "Vincentian", 
+        "Samoa": "Samoan", 
+        "San Marino": "Sammarinese",
+        "Saudi Arabia": "Saudi", 
+        "Senegal": "Senegalese", 
+        "Serbia": "Serbian", 
+        "Seychelles": "Seychellois",
+        "Sierra Leone": "Sierra Leonean", 
+        "Singapore": "Singaporean", 
+        "Slovakia": "Slovak", 
+        "Slovenia": "Slovenian",
+        "South Africa": "South African", 
+        "Spain": "Spanish", 
+        "Sri Lanka": "Sri Lankan", 
+        "Sudan": "Sudanese",
+        "Suriname": "Surinamese", 
+        "Sweden": "Swedish", 
+        "Switzerland": "Swiss", 
+        "Syria": "Syrian", 
+        "Tajikistan": "Tajik",
+        "Tanzania": "Tanzanian", 
+        "Thailand": "Thai", 
+        "Togo": "Togolese", 
+        "Tonga": "Tongan", 
+        "Tunisia": "Tunisian",
+        "Turkey": "Turkish", 
+        "Turkmenistan": "Turkmen", 
+        "Uganda": "Ugandan", 
+        "Ukraine": "Ukrainian",
+        "United Arab Emirates": "Emirati", 
+        "United Kingdom": "British", 
+        "United States": "American",
+        "Uruguay": "Uruguayan", 
+        "Uzbekistan": "Uzbek", 
+        "Vanuatu": "Ni-Vanuatu", 
+        "Venezuela": "Venezuelan",
+        "Vietnam": "Vietnamese", 
+        "Yemen": "Yemeni", 
+        "Zambia": "Zambian", 
+        "Zimbabwe": "Zimbabwean"
+      };
+      return nationalityMap[country] || "Unknown";
+    }
 
-        function enforcePrefix(input) {
-            if (!input.value.startsWith("REG-")) {
-                input.value = "REG-";
-            }
-        }
+    // --- Utility Functions ---
+    function enforcePrefix(input) {
+      if (!input.value.startsWith("REG-")) {
+        input.value = "REG-";
+      }
+    }
 
-        function renderTablePage(page) {
-            const start = (page - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const touristListDiv = document.getElementById("touristList");
-            touristListDiv.innerHTML = "";
+    // --- Table Rendering ---
+    function renderTablePage(page) {
+        const tbody = document.getElementById("touristList");
+        tbody.innerHTML = "";
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedData = allTourists.slice(start, end);
 
-            allTourists.slice(start, end).forEach(tourist => {
-                let isChecked = selectedTourists.has(tourist.name);
-                let row = `<tr>
-                    <td><input type="checkbox" value="${tourist.name}" ${isChecked ? "checked" : ""}></td>
-                    <td>${tourist.name}</td>
-                    <td>${tourist.age}</td>
-                    <td>${tourist.sex}</td>
-                    <td>${tourist.nationality}</td>
-                </tr>`;
-                touristListDiv.innerHTML += row;
-            });
+        paginatedData.forEach(tourist => {
+            let isChecked = selectedTourists.has(tourist.name);
+            let row = document.createElement("tr");
+            row.innerHTML = `
+                <td><input type="checkbox" class="touristCheckbox" data-name="${tourist.name}" ${isChecked ? "checked" : ""}></td>
+                <td>${tourist.name}</td>
+                <td>${tourist.age}</td>
+                <td>${tourist.sex}</td>
+                <td>${tourist.nationality}</td>
+            `;
+            tbody.appendChild(row);
 
-            renderPagination();
-
-            // Re-bind change events
-            document.querySelectorAll("#touristList input[type='checkbox']").forEach(cb => {
-                cb.addEventListener("change", function () {
-                    if (this.checked) {
-                        selectedTourists.add(this.value);
-                    } else {
-                        selectedTourists.delete(this.value);
-                    }
-                    // Sync Select All checkbox
-                    document.getElementById("selectAll").checked = (selectedTourists.size === allTourists.length);
-                });
-            });
-        }
-
-        // Keep the master Select All checkbox in sync
-        document.getElementById("selectAll").checked = (selectedTourists.size === allTourists.length);
-
-        function renderPagination() {
-            const paginationDiv = document.getElementById("pagination");
-            paginationDiv.innerHTML = "";
-            let totalPages = Math.ceil(allTourists.length / rowsPerPage);
-
-            let container = document.createElement("div");
-            container.className = "pagination-container";
-
-            // Previous
-            let prevBtn = document.createElement("button");
-            prevBtn.textContent = "Previous";
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderTablePage(currentPage);
-                }
-            };
-            container.appendChild(prevBtn);
-
-            // Page numbers + ellipsis
-            let maxVisible = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-
-            if (endPage - startPage + 1 < maxVisible) {
-                startPage = Math.max(1, endPage - maxVisible + 1);
-            }
-
-            if (startPage > 1) {
-                container.appendChild(createPageButton(1));
-                if (startPage > 2) container.appendChild(createEllipsis());
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                container.appendChild(createPageButton(i));
-            }
-
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) container.appendChild(createEllipsis());
-                container.appendChild(createPageButton(totalPages));
-            }
-
-            // Next
-            let nextBtn = document.createElement("button");
-            nextBtn.textContent = "Next";
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderTablePage(currentPage);
-                }
-            };
-            container.appendChild(nextBtn);
-
-            paginationDiv.appendChild(container);
-
-            function createPageButton(page) {
-                let btn = document.createElement("button");
-                btn.textContent = page;
-                btn.onclick = () => {
-                    currentPage = page;
-                    renderTablePage(currentPage);
-                };
-                if (page === currentPage) btn.classList.add("active-page");
-                return btn;
-            }
-
-            function createEllipsis() {
-                let span = document.createElement("span");
-                span.textContent = "...";
-                return span;
-            }
-        
-
-        
-        async function fetchDetails() {
-            document.getElementById("error").textContent = "";
-            document.getElementById("touristList").innerHTML = "";
-            allTourists = [];
-            let regNumber = document.getElementById("registrationNumber").value.trim();
-
-            if (!regNumber) {
-                document.getElementById("error").textContent = "Please enter a registration number.";
-                return;
-            }
-
-            try {
-                const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    let touristListDiv = document.getElementById("touristList");
-                    touristListDiv.innerHTML = "";
-
-                    querySnapshot.forEach(docSnap => {
-                        let data = docSnap.data();
-                        let tourists = [];
-
-                        if (data.fullName) {
-                            tourists.push({ name: data.fullName, age: calculateAge(data.dateOfBirth), sex: data.sex, nationality: getNationality(data.country) });
-                        } else if (data.groupMembers && Array.isArray(data.groupMembers)) {
-                            tourists = data.groupMembers.map(member => ({ name: member.memberName, age: calculateAge(member.memberDOB), sex: member.memberSex, nationality: getNationality(data.groupCountry) }));
-                        }
-
-                        allTourists = tourists;
-                    });
-
-                    renderTablePage(1);
-                    document.getElementById("touristDetails").style.display = "block";
+            // Handle checkbox
+            row.querySelector(".touristCheckbox").addEventListener("change", function() {
+                if (this.checked) {
+                    selectedTourists.add(tourist.name);
                 } else {
-                    document.getElementById("error").textContent = "Registration number not found.";
+                    selectedTourists.delete(tourist.name);
                 }
-            } catch (error) {
-                document.getElementById("error").textContent = "Error fetching data: " + error.message;
-            }
-        }
-
-        async function submitAttendance() {
-            let selectedSite = document.getElementById("siteSelect").value;
-            let checkedTourists = document.querySelectorAll("#touristList input[type='checkbox']:checked");
-            let registrationNumber = document.getElementById("registrationNumber").value.trim();
-
-            if (checkedTourists.length === 0) {
-                alert("Please select at least one tourist.");
-                return;
-            }
-
-            try {
-                let tourists = [];
-        
-                for (let checkbox of checkedTourists) {
-                    let row = checkbox.closest("tr").children;
-                    let name = row[1].textContent;
-                    let age = row[2].textContent;
-                    let sex = row[3].textContent;
-                    let nationality = row[4].textContent;
-
-                    tourists.push({
-                        name: name,
-                        age: parseInt(age),
-                        sex: sex,
-                        nationality: nationality
-                    });
-                }
-
-                if (tourists.length === 1) {
-                    // Individual Tourist Entry
-                    await addDoc(collection(db, "attendance"), {
-                        registrationNumber: registrationNumber,
-                        name: tourists[0].name,
-                        age: tourists[0].age,
-                        sex: tourists[0].sex,
-                        nationality: tourists[0].nationality,
-                        site: selectedSite,
-                        timestamp: new Date()
-                    });
-                } else {
-                    // Group Attendance Entry
-                    await addDoc(collection(db, "attendance"), {
-                        registrationNumber: registrationNumber,
-                        groupMembers: tourists, 
-                        site: selectedSite,
-                        timestamp: new Date()
-                    });
-                }
-
-                alert("Attendance recorded successfully!");
-                document.getElementById("touristDetails").style.display = "none"; 
-                document.getElementById("registrationNumber").value = "REG-"; 
-                document.getElementById("touristList").innerHTML = "";  
-            } catch (error) {
-                console.error("Error submitting attendance: ", error);
-                alert("Error saving attendance. Please try again.");
-            }
-        }
-
-        // Enable Select All functionality
-        document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("selectAll").addEventListener("change", function() {
-                const checkboxes = document.querySelectorAll("#touristList input[type='checkbox']");
-                checkboxes.forEach(cb => cb.checked = this.checked);
+                syncSelectAllCheckbox();
             });
         });
+    
+        totalPages = Math.ceil(allTourists.length / rowsPerPage);
+        renderPagination();
+        syncSelectAllCheckbox();
+    }
 
-        window.fetchDetails = fetchDetails;
-        window.submitAttendance = submitAttendance;
-        window.enforcePrefix = enforcePrefix;
-    </script>
+    function renderPagination() {
+      const paginationContainer = document.getElementById("pagination");
+      paginationContainer.innerHTML = "";
+
+      // prev button
+      let prevBtn = document.createElement("button");
+      prevBtn.innerText = "Prev";
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTablePage(currentPage);
+        }
+      };
+      paginationContainer.appendChild(prevBtn);
+      
+      // page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        let btn = document.createElement("button");
+        btn.textContent = i;
+        btn.classList.add("page-btn");
+        if (i === currentPage) {
+          btn.disabled = true;
+        }
+        btn.addEventListener("click", () => {
+          currentPage = i;
+          renderTablePage(currentPage);
+        });
+        paginationContainer.appendChild(btn);
+      }
+
+      // next button
+      let nextBtn = document.createElement("button");
+      nextBtn.innerText = "Next";
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTablePage(currentPage);
+        }
+      };
+      paginationContainer.appendChild(nextBtn);
+    }
+
+    // Sync Select All Checkbox
+    function syncSelectAllCheckbox() {
+        const selectAllBox = document.getElementById("selectAll");
+        selectAllBox.checked = selectedTourists.size === allTourists.length && allTourists.length > 0;
+    }
+
+    // Handle Select All functionality
+    function handleSelectAll() {
+        const selectAllBox = document.getElementById("selectAll");
+        if (selectAllBox.checked) {
+            // Add all tourists to selected set
+            allTourists.forEach(tourist => selectedTourists.add(tourist.name));
+        } else {
+            // Clear all selections
+            selectedTourists.clear();
+        }
+        renderTablePage(currentPage); // Refresh the current page to show updated checkboxes
+    }
+
+    async function fetchDetails() {
+      document.getElementById("error").textContent = "";
+      document.getElementById("touristList").innerHTML = "";
+      allTourists = [];
+      selectedTourists.clear(); // Clear previous selections
+      let regNumber = document.getElementById("registrationNumber").value.trim();
+
+      if (!regNumber) {
+        document.getElementById("error").textContent = "Please enter a registration number.";
+        return;
+      }
+
+      try {
+        const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          let touristListDiv = document.getElementById("touristList");
+          touristListDiv.innerHTML = "";
+
+          querySnapshot.forEach(docSnap => {
+            let data = docSnap.data();
+            let tourists = [];
+
+            if (data.fullName) {
+              tourists.push({ 
+                name: data.fullName, 
+                age: calculateAge(data.dateOfBirth), 
+                sex: data.sex, 
+                nationality: getNationality(data.country) 
+              });
+            } else if (data.groupMembers && Array.isArray(data.groupMembers)) {
+              tourists = data.groupMembers.map(member => ({ 
+                name: member.memberName, 
+                age: calculateAge(member.memberDOB), 
+                sex: member.memberSex, 
+                nationality: getNationality(data.groupCountry) 
+              }));
+            }
+
+            allTourists = tourists;
+          });
+
+          renderTablePage(1);
+          document.getElementById("touristDetails").style.display = "block";
+        } else {
+          document.getElementById("error").textContent = "Registration number not found.";
+        }
+      } catch (error) {
+        document.getElementById("error").textContent = "Error fetching data: " + error.message;
+      }
+    }
+
+    // --- Firestore Save ---
+    async function submitAttendance() {
+      try {
+        let selectedSite = document.getElementById("siteSelect").value;
+        let registrationNumber = document.getElementById("registrationNumber").value.trim();
+
+        if (selectedTourists.size === 0) {
+          alert("Please select at least one tourist.");
+          return;
+        }
+
+        // Get selected tourists from the allTourists array
+        let tourists = allTourists.filter(t => selectedTourists.has(t.name));
+
+        if (tourists.length === 1) {
+          // Individual Tourist Entry
+          await addDoc(collection(db, "attendance"), {
+            registrationNumber: registrationNumber,
+            name: tourists[0].name,
+            age: tourists[0].age,
+            sex: tourists[0].sex,
+            nationality: tourists[0].nationality,
+            site: selectedSite,
+            timestamp: new Date()
+          });
+        } else {
+          // Group Attendance Entry
+          await addDoc(collection(db, "attendance"), {
+            registrationNumber: registrationNumber,
+            groupMembers: tourists, 
+            site: selectedSite,
+            timestamp: new Date()
+          });
+        }
+
+        alert("Attendance recorded successfully!");
+        document.getElementById("touristDetails").style.display = "none"; 
+        document.getElementById("registrationNumber").value = "REG-"; 
+        document.getElementById("touristList").innerHTML = "";
+        selectedTourists.clear(); // Clear selections after submission
+
+      } catch (error) {
+        console.error("Error submitting attendance: ", error);
+        alert("Error saving attendance. Please try again.");
+      }
+    }
+
+    // --- Event Listeners ---
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("registrationNumber").addEventListener("input", (e) => enforcePrefix(e.target));
+      document.getElementById("fetchDetailsBtn").addEventListener("click", fetchDetails);
+      document.getElementById("submitAttendanceBtn").addEventListener("click", submitAttendance);
+      document.getElementById("selectAll").addEventListener("change", handleSelectAll);
+    });
+  </script>
 </body>
 </html>
