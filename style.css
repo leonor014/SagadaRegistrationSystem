@@ -132,50 +132,6 @@ nav a:hover {
     max-width: 800px;
     margin: 0 auto;
 }
-/* Admin Profile Button */
-.admin-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    background-color: #232D3F;
-    padding: 8px 12px;
-    border-radius: 8px;
-    transition: 0.3s ease-in-out;
-}
-
-.admin-profile:hover {
-    background-color: #2E3A4D;
-}
-
-.admin-profile img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #4CAF50;
-}
-
-.admin-profile span {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-/* Admin Controls */
-#admin-controls {
-    text-align: center;
-    margin: 20px 0;
-}
-
-#admin-edit-section {
-    display: none;
-    margin: 20px 0;
-}
-
-.editable {
-    width: 80%;
-    padding: 5px;
-    margin: 5px 0;
-}
 
 /* Dropdown Login Modal */
 .modal {
