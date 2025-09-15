@@ -1,0 +1,90 @@
+:root {
+    --primary: #2e7d32;
+    --primary-dark: #1b5e20;
+    --primary-light: #4caf50;
+    --secondary: #ff6b35;
+    --accent: #ffd166;
+    --dark: #232D3F;
+    --light: #f8f9fa;
+    --gray: #6c757d;
+    --text: #333333;
+}
+        
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+        
+body {
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    color: var(--text);
+    background-color: var(--light);
+    line-height: 1.6;
+    font-size: 14px; /* Slightly smaller base font */
+}
+
+/* About Section Styles - More Compact */
+.about {
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="%23f8f9fa"/><path d="M0 0L80 80" stroke="%23e9ecef" stroke-width="1.5"/></svg>');
+    background-size: 25px 25px;
+}
+        
+.about h2 {
+    font-size: 2.2rem; /* Reduced from 2.8rem */
+    margin-bottom: 1.2rem;
+    color: var(--primary);
+}
+        
+.about p {
+    font-size: 1rem; /* Reduced from 1.2rem */
+    line-height: 1.7;
+    max-width: 850px;
+    margin: 0 auto 1.5rem;
+}
+
+/* Sticky Navigation Bar */
+nav {
+    background-color: #2e7d32; /* Green color matching SDG theme */
+    padding: 0.5rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays above other content */
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+
+/* Footer - Enhanced */
+footer {
+    background: var(--dark);
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    font-size: 1rem;
+}
+        
+.social-icons {
+    margin: 0.8rem 0;
+}
+        
+.social-icons a {
+    color: white;
+    font-size: 1.3rem; /* Reduced from 1.5rem */
+    margin: 0 8px;
+    transition: all 0.3s ease;
+}
