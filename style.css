@@ -31,8 +31,39 @@
             margin: 0 auto;
             padding: 0 20px;
         }
+
+        /* Home section with background image */
+        #home {
+            height: 100vh;
+            background: linear-gradient(rgba(235, 229, 229, 0.5), rgba(0, 0, 0, 0.7)), url('images/sagada-background.jpeg') no-repeat center center/cover;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        #home h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        #home p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         
-        /* Home Section Styles */
         .home-section {
             min-height: 100vh;
             position: relative;
@@ -65,7 +96,7 @@
             width: 100%;
             height: 100%;
             opacity: 0;
-            transition: opacity 1.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out;
             background-size: cover;
             background-position: center;
         }
@@ -79,7 +110,7 @@
             padding: 1.5rem;
             background-color: rgba(0, 0, 0, 0.6);
             border-radius: 12px;
-            animation: fadeIn 1.5s ease-in-out;
+            animation: fadeIn 0.5s ease-in-out;
         }
         
         .main-banner h2 {
@@ -115,7 +146,7 @@
         
         /* Sticky Navigation Bar */
         nav {
-            background-color: #2e7d32; /* Green color matching SDG theme */
+            background-color: var(--dark); /* Green color matching SDG theme */
             padding: 0.5rem 1rem;
             text-align: center;
             position: sticky;
@@ -157,9 +188,8 @@
             align-items: center;
             gap: 1.5rem; /* Reduced from 2rem */
             padding: 1.5% 4%;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             flex-wrap: wrap;
-            border-radius: 12px;
+            border-radius: 0px;
             margin: 1.5rem auto;
             max-width: 1100px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -170,9 +200,9 @@
             color: var(--dark);
             border: none;
             flex: 1 1 180px; /* Reduced from 200px */
-            max-width: 190px;
-            min-width: 140px;
-            height: 170px; /* Reduced from 200px */
+            max-width: 200px;
+            min-width: 200px;
+            height: 200px; /* Reduced from 200px */
             cursor: pointer;
             border-radius: 12px;
             font-size: 1rem;
@@ -246,73 +276,24 @@
         .details.active {
             display: block;
         }
-        
-        
-        /* Dropdown Login Modal - Enhanced */
-        .modal {
-            display: none;
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            background-color: var(--dark);
-            width: 300px;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            z-index: 1100;
-            animation: slideDown 0.3s ease-out;
-        }
-        
-        .modal input {
-            width: 100%;
-            padding: 12px 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: none;
-            background-color: #232D3F;
-            color: #fff;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        .modal input::placeholder {
-            color: #b0b0b0;
-        }
-        
-        .modal button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(to right, var(--primary), var(--primary-dark));
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-        
-        .modal button:hover {
-            background: linear-gradient(to right, var(--primary-dark), var(--primary));
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Show Modal */
-        .show {
-            display: block;
-        }
-        
-        
-        
+          
         /* Dropdown Styles - Enhanced */
         .dropdown {
+            height: 20vh;
+            background: linear-gradient(rgba(235, 229, 229, 0.5), rgba(0, 0, 0, 0.7)), url('images/pog-o.jpg') no-repeat center center/cover;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
             margin: 2rem auto;
-            max-width: 1200px;
+            max-width: 1000px;
         }
         
         .dropdown-header {
-            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            background: var(--dark);
             color: white;
             padding: 15px 20px;
             cursor: pointer;
@@ -327,7 +308,7 @@
         }
         
         .dropdown-header:hover {
-            background: linear-gradient(to right, var(--primary-dark), var(--primary));
+            background: var(--primary-light);
         }
         
         .dropdown-header::after {
