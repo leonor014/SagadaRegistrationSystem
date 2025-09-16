@@ -221,15 +221,10 @@ nav a {
 
 .button-group {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.5% 4%;
-    flex-wrap: wrap;
-    border-radius: 0px;
-    margin: 1.5rem auto;
-    max-width: 1100px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    justify-content: center; /* Centers buttons horizontally */
+    gap: 1rem; /* Space between buttons */
+    padding: 2%;
+    flex-wrap: nowrap; /* Keep them in one line, no wrapping */
 }
 
 /* Buttons now scale dynamically */
@@ -237,26 +232,40 @@ nav a {
     background: linear-gradient(145deg, #0e7adf, #e6e6e6);
     color: var(--dark);
     border: none;
-    flex: 1 1 calc(25% - 1rem); /* 4 buttons per row on desktops */
-    aspect-ratio: 1 / 1; /* Keeps it square without fixed height */
-    min-width: 150px; /* Allows shrinking on smaller screens */
+    width: 180px; /* Prevents text from shrinking too much */
+    height: 140px; /* Uniform height for desktop/tablet */
     cursor: pointer;
     border-radius: 12px;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     text-align: center;
-    transition: all 0.4s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.1),
-                -4px -4px 12px rgba(20, 20, 20, 0.8);
     position: relative;
     overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Hover effects remain intact */
+/* ======= ICONS INSIDE BUTTONS ======= */
+.button-group .button i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: var(--primary);
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* ======= HOVER EFFECT ======= */
+.button-group .button:hover {
+    transform: translateY(-5px);
+    background: linear-gradient(145deg, #e6e6e6, #0e7adf);
+    color: var(--primary);
+    box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover effects remain intact 
 .button-group .button:before {
     content: '';
     position: absolute;
@@ -267,7 +276,7 @@ nav a {
     background: linear-gradient(45deg, var(--primary-light), transparent);
     opacity: 0;
     transition: opacity 0.3s ease;
-}
+} 
 
 .button-group .button:hover {
     transform: translateY(-5px);
@@ -297,8 +306,34 @@ nav a {
     display: block;
     width: 100%;
     z-index: 1;
+} */
+       
+.button-container {
+    display: flex;
+    flex-wrap: wrap;       /* Allow buttons to wrap on smaller screens */
+    justify-content: center;
+    gap: 10px;             /* Space between buttons */
+    margin: 1rem 0;
 }
-        
+
+.button-container button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 8px;
+    background: #2e7d32;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    flex: 1 1 200px;       /* Buttons shrink/grow, min width 200px */
+    max-width: 250px;      /* Prevent buttons from getting too big */
+    text-align: center;
+}
+
+.button-container button:hover {
+    background: #1b5e20;
+}
+
 /* Details Section - More Compact */
 .details {
     display: none;
@@ -396,16 +431,18 @@ footer {
         font-size: 1rem;
     }
             
-    .button-group {
+   /* .button-group {
         gap: 1rem;
-    }
+    } */
             
     .button-group .button {
-        flex: 1 1 160px;
+        flex: 1 1 calc(50% - 1rem);
+        min-width: 200px;
         height: 150px;
+      
     }
 }
-        
+
 @media (max-width: 768px) {
     .main-banner {
         height: 45vh;
@@ -427,10 +464,17 @@ footer {
         font-size: 0.85rem;
     }
             
-    .button-group .button {
-        flex: 1 1 40%;
-        height: 140px;
+    .button-group {
+        justify-content: space-around; /* Even spacing on tablets */
     }
+    .button-group .button {
+        flex: 1 1 45%;  /* Two buttons per row */
+        height: 150px;
+    }
+
+    .banner-content h1 { font-size: 2.2rem; }
+    .banner-content h2 { font-size: 3.2rem; }
+
 }
         
 @media (max-width: 576px) {
@@ -449,12 +493,19 @@ footer {
     .button-group {
         flex-direction: column;
         gap: 1rem;
+        align-items: center;
     }
-            
+
     .button-group .button {
         flex: 1 1 100%;
-        max-width: 85%;
-        height: 130px;
+        max-width: 90%;
+        height: auto; /* Adjusts height for text */
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .button-group .button i {
+        font-size: 1.8rem;
     }
             
     .section-title {
@@ -479,40 +530,23 @@ footer {
         width: 100%;
         justify-content: space-around;
     }
-}
-
-@media (max-width: 992px) {
-    .button-group .button {
-        flex: 1 1 calc(33.333% - 1rem); /* 3 per row on medium screens */
-    }
-}
-
-@media (max-width: 768px) {
-    .button-group .button {
-        flex: 1 1 calc(50% - 1rem); /* 2 per row on tablets */
-    }
-}
-
-@media (max-width: 576px) {
-    .button-group {
-        flex-direction: column; /* Stack vertically on mobile */
-        gap: 1rem;
-    }
-    .button-group .button {
-        flex: 1 1 100%; /* Full width on small screens */
-        max-width: 100%;
-    }
-}
-
-@media (max-width: 768px) {
-    .banner-content h1 { font-size: 2.2rem; }
-    .banner-content h2 { font-size: 3.2rem; }
-}
-
-@media (max-width: 576px) {
     .banner-content h1 { font-size: 1.8rem; }
     .banner-content h2 { font-size: 2.5rem; }
+
 }
+
+
+@media (max-width: 480px) {
+    .button-group .button {
+        font-size: 0.95rem;
+        padding: 0.8rem;
+    }
+
+    .button-group .button i {
+        font-size: 1.5rem;
+    }
+}
+
 
 /* Animations */
 @keyframes fadeInUp {
