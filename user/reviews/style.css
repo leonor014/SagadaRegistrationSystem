@@ -1,3 +1,22 @@
+:root {
+    --primary: #2e7d32;
+    --primary-dark: #1b5e20;
+    --primary-light: #4caf50;
+    --secondary: #ff6b35;
+    --accent: #ffd166;
+    --dark: #232D3F;
+    --light: #f8f9fa;
+    --gray: #6c757d;
+    --text: #333333;
+}
+        
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+        
+
 body {
     font-family: Arial, sans-serif;
     background-color: #3b86f5;
@@ -112,9 +131,10 @@ input[type="file"] {
 .delete-btn:hover {
     background-color: #c82333;
 }
+
 /* Sticky Navigation Bar */
 nav {
-    background-color: #2e7d32; /* Green color matching SDG theme */
+    background-color: var(--dark); /* Green color matching SDG theme */
     padding: 0.5rem 1rem;
     text-align: center;
     position: sticky;
@@ -129,6 +149,8 @@ nav a {
     font-weight: bold;
     font-size: 1rem;
 }
+
+
 #displayRatingStars {
     font-size: 24px;
     color: gold; /* Color for filled stars */
@@ -205,12 +227,24 @@ nav a {
 }
 /* Footer */
 footer {
-    background-color: #2e7d32; /* Green color matching SDG theme */
+    background: var(--dark);
     color: white;
     text-align: center;
-    padding: 1rem;
-    font-size: 0.9rem;
+    padding: 2rem;
+    font-size: 1rem;
 }
+        
+.social-icons {
+    margin: 0.8rem 0;
+}
+        
+.social-icons a {
+    color: white;
+    font-size: 1.3rem; /* Reduced from 1.5rem */
+    margin: 0 8px;
+    transition: all 0.3s ease;
+}
+
 html {
     scroll-behavior: smooth;
 }

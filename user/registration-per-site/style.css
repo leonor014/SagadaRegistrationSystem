@@ -1,4 +1,23 @@
 /* General Styles */
+:root {
+    --primary: #2e7d32;
+    --primary-dark: #1b5e20;
+    --primary-light: #4caf50;
+    --secondary: #ff6b35;
+    --accent: #ffd166;
+    --dark: #232D3F;
+    --light: #f8f9fa;
+    --gray: #6c757d;
+    --text: #333333;
+}
+        
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+        
+
 html {
     scroll-behavior: smooth;
 }
@@ -15,14 +34,22 @@ body {
 
 /* Navigation Bar */
 nav {
-    background-color: #2e7d32;
+    background-color: var(--dark); /* Green color matching SDG theme */
     padding: 0.5rem 1rem;
     text-align: center;
     position: sticky;
     top: 0;
-    z-index: 1000;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    z-index: 1000; /* Ensure it stays above other content */
 }
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
 
 nav ul {
       margin: 0;

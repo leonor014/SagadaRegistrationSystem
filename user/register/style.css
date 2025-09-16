@@ -1,264 +1,285 @@
 /* General Styles */
-        body { 
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #3b86f5;
-            min-height: 100vh;
-            position: relative;
-            padding-bottom: 60px; /* Space for footer */
-            box-sizing: border-box;
-        }
-
-        /* Sticky Navigation Bar */
-        nav {
-            background-color: #2e7d32;
-            padding: 0.5rem 1rem;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 1rem;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-
-        /* Form Container */
-        .container {
-            width: 90%;
-            max-width: 500px;
-            background: #fff;
-            padding: 20px;
-            margin: 20px auto;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-
-        /* Heading */
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-top: 0;
-        }
-
-        /* Form Labels */
-        label {
-            display: block;
-            margin-top: 16px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        /* Input Fields & Select */
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 6px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px; /* Better for mobile zoom */
-            transition: border 0.3s;
-            box-sizing: border-box;
-        }
-
-        input:focus, select:focus {
-            border-color: #007BFF;
-            outline: none;
-        }
-
-        /* Button Styles */
-        button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 14px; /* Larger for mobile touch */
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-            width: 100%;
-            margin-top: 20px;
-            transition: background 0.3s ease-in-out;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Dropdown Menu */
-        .dropdown {
-            position: relative;
-            display: block;
-            width: 100%;
-            margin-top: 15px;
-        }
-
-        .dropdown-btn {
-            width: 100%;
-            background-color: #007bff;
-            color: white;
-            padding: 14px;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            text-align: left;
-            transition: background-color 0.3s;
-        }
-
-        .dropdown-btn:hover {
-            background-color: #0056b3;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            width: 100%;
-            background-color: white;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            z-index: 10;
-        }
-
-        .dropdown-content a {
-            color: black;
-            padding: 12px;
-            text-decoration: none;
-            display: block;
-            transition: background-color 0.3s;
-        }
-
-        .dropdown-content a:hover {
-            background-color: #f1f1f1;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-
-        /* Error Messages */
-        .error {
-            border: 2px solid red;
-        }
-
-        .error-message {
-            color: red;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            line-height: 20px;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        /* Footer - Enhanced */
-        footer {
-            background: var(--dark);
-            color: white;
-            text-align: center;
-            padding: 2rem;
-            font-size: 1rem;
-        }
+:root {
+    --primary: #2e7d32;
+    --primary-dark: #1b5e20;
+    --primary-light: #4caf50;
+    --secondary: #ff6b35;
+    --accent: #ffd166;
+    --dark: #232D3F;
+    --light: #f8f9fa;
+    --gray: #6c757d;
+    --text: #333333;
+}
         
-        .social-icons {
-            margin: 0.8rem 0;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body { 
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #3b86f5;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 60px; /* Space for footer */
+    box-sizing: border-box;
+}
+
+
+/* Sticky Navigation Bar */
+nav {
+    background-color: var(--dark); /* Green color matching SDG theme */
+    padding: 0.5rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays above other content */
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+
+/* Form Container */
+.container {
+    width: 90%;
+    max-width: 500px;
+    background: #fff;
+    padding: 20px;
+    margin: 20px auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Heading */
+h1 {
+    text-align: center;
+    color: #333;
+    margin-top: 0;
+}
+
+/* Form Labels */
+label {
+    display: block;
+    margin-top: 16px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Input Fields & Select */
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px; /* Better for mobile zoom */
+    transition: border 0.3s;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+/* Button Styles */
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 14px; /* Larger for mobile touch */
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 20px;
+    transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.dropdown-btn {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 14px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: left;
+    transition: background-color 0.3s;
+}
+
+.dropdown-btn:hover {
+    background-color: #0056b3;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    width: 100%;
+    background-color: white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    z-index: 10;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Error Messages */
+.error {
+    border: 2px solid red;
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 20px;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Footer - Enhanced */
+footer {
+    background: var(--dark);
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    font-size: 1rem;
+}
         
-        .social-icons a {
-            color: white;
-            font-size: 1.3rem; /* Reduced from 1.5rem */
-            margin: 0 8px;
-            transition: all 0.3s ease;
-        }
+.social-icons {
+    margin: 0.8rem 0;
+}
+        
+.social-icons a {
+    color: white;
+    font-size: 1.3rem; /* Reduced from 1.5rem */
+    margin: 0 8px;
+    transition: all 0.3s ease;
+}
 
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            .container {
-                width: 95%;
-                padding: 15px;
-                margin: 15px auto;
-            }
+/* Responsive Design */
+@media (max-width: 600px) {
+    .container {
+        width: 95%;
+        padding: 15px;
+        margin: 15px auto;
+    }
             
-            nav a {
-                display: block;
-                margin: 8px 0;
-            }
+    nav a {
+        display: block;
+        margin: 8px 0;
+    }
             
-            input, select {
-                padding: 14px; /* Larger for mobile */
-            }
+    input, select {
+        padding: 14px; /* Larger for mobile */
+    }
             
-            .modal-content {
-                margin: 15% auto;
-                padding: 15px;
-                width: 95%;
-            }
+    .modal-content {
+        margin: 15% auto;
+        padding: 15px;
+        width: 95%;
+    }
             
-            button {
-                padding: 16px; /* Larger tap target */
-            }
-        }
+    button {
+        padding: 16px; /* Larger tap target */
+    }
+}
 
-        /* Utilities */
-        .hidden {
-            display: none;
-        }
+/* Utilities */
+.hidden {
+    display: none;
+}
 
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-        }
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
 
-        button[disabled] {
-            pointer-events: none;
-            opacity: 0.6;
-        }
+button[disabled] {
+    pointer-events: none;
+    opacity: 0.6;
+}
 
-        button[disabled]:hover {
-            background-color: inherit;
-            cursor: not-allowed;
-        }
+button[disabled]:hover {
+    background-color: inherit;
+    cursor: not-allowed;
+}
