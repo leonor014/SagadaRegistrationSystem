@@ -38,50 +38,67 @@ document.addEventListener("DOMContentLoaded", async () => {
     collection(db, "reviews"),
     orderBy("createdAt", "desc")
   );
+  
+  const showMoreBtn = document.getElementById("showMoreBtn");
+  const showLessBtn = document.getElementById("showLessBtn");
+  let allReviews = [];
+  let showAll = false; // control if all reviews should be shown
+
   onSnapshot(reviewsQuery, (querySnapshot) => {
-    reviewList.innerHTML = "<h3>Reviews</h3>";
+    allReviews = [];
     querySnapshot.forEach((doc) => {
-      const review = doc.data();
-      displayReview(doc.id, review);
+      allReviews.push({ id: doc.id, data: doc.data() });
     });
+    displayReviews();
   });
 
-  // ✅ Display reviews with CRUD buttons
+  function displayReviews() {
+    reviewList.innerHTML = "<h3>Reviews</h3>";
+  
+    // Show only 3 if showAll is false, otherwise show all
+    const reviewsToShow = showAll ? allReviews : allReviews.slice(0, 3);
+
+    reviewsToShow.forEach((reviewObj) => {
+      displayReview(reviewObj.id, reviewObj.data);
+    });
+
+    // Show button only if there are more than 3 reviews and showAll is false
+    if (allReviews.length > 3) {
+      showMoreBtn.style.display = showAll ? "none" : "inline-block";
+      showLessBtn.style.display = showAll ? "inline-block" : "none";
+    } else {
+      showMoreBtn.style.display = "none";
+      showLessBtn.style.display = "none";
+    }
+  }
+
+  showMoreBtn.addEventListener("click", () => {
+    showAll = true; // show all reviews when clicked
+    displayReviews();
+  });
+
+  showLessBtn.addEventListener("click", () => {
+    showAll = false;
+    displayReviews();
+  });
+
+
+  // Base HTML content
   function displayReview(id, review) {
     const reviewDiv = document.createElement("div");
     reviewDiv.classList.add("review");
     reviewDiv.setAttribute("data-id", id);
 
-    // Base HTML content
     reviewDiv.innerHTML = `
-      ${
-        review.imageBase64
-          ? `<img src="${review.imageBase64}" alt="Attached Image" style="max-width: 100%; display: block; margin-bottom: 10px; border-radius: 5px;">`
-          : ""
-      }
-      <p class="date"><strong>Date:</strong> ${
-        review.createdAt?.toDate
-          ? review.createdAt.toDate().toLocaleString()
-          : review.createdAt
-      }</p>
-      <p class="rating"><strong>Rating:</strong> ${getStars(review.rating)}</p>
-      <p class="comment"><strong>Comment:</strong> ${review.comment}</p>
-  `;
+        ${review.imageBase64 ? `<img src="${review.imageBase64}" alt="Review Image">` : ""}
+        <p class="date"><strong>Date:</strong> ${review.createdAt?.toDate ? review.createdAt.toDate().toLocaleString() : review.createdAt}</p>
+        <p class="rating"><strong>Rating:</strong> ${getStars(review.rating)}</p>
+        <p class="comment"><strong>Comment:</strong> ${review.comment}</p>
+    `;
 
-      /*<button class="edit-btn">Edit</button>
-      <button class="save-btn" style="display: none;">Save</button>
-      <button class="delete-btn">Delete</button>*/
-
-    // Attach event listeners
-    /* reviewDiv.querySelector(".edit-btn").onclick = () =>
-      editReview(id, reviewDiv);
-    reviewDiv.querySelector(".save-btn").onclick = () =>
-      saveReview(id, reviewDiv);
-    reviewDiv.querySelector(".delete-btn").onclick = () => deleteReview(id); */
-
-    // Append only once
     reviewList.appendChild(reviewDiv);
-  }
+}
+
 
   // ✅ Convert rating number to stars
   function getStars(rating) {

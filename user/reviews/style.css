@@ -27,114 +27,167 @@ body {
     margin: 0;
     padding: 20px;
 }
-.review-container {
-    max-width: 400px;
-    margin: auto;
-    border: 1px solid #ccc;
-    border-radius: 10px;
+/* Card Container */
+.review-form-card {
+    background: white;
+    border-radius: 12px;
     padding: 20px;
-    background-color: #c9ebe9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 600px;
+    transition: transform 0.3s ease;
 }
-.review-container h2 {
+.review-form-card:hover {
+    transform: translateY(-3px);
+}
+.review-form-card h2 {
     text-align: center;
-    font-size: 24px;
+    margin-bottom: 15px;
+    color: var(--primary-dark);
+}
+/* Grid Layout for Larger Screens */
+.review-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Labels & Inputs */
+.review-form-card label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
     color: #333;
 }
-textarea {
+
+.review-form-card textarea,
+.review-form-card input[type="file"] {
     width: 100%;
-    height: 80px;
-    border: 1px solid #0c0c0c;
-    border-radius: 5px;
     padding: 10px;
-    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
     margin-bottom: 15px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
+
+.review-form-card textarea:focus,
+.review-form-card input[type="file"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 5px rgba(46, 125, 50, 0.5);
+    outline: none;
+}
+
+
 input[type="file"] {
     margin-bottom: 15px;
 }
-.rating {
-    margin-bottom: 15px;
-    /* text-align: center; */
-}
-.rating label {
-    font-size: 30px;
-    color: #ccc;
+/* Stars */
+.stars {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    font-size: 24px;
     cursor: pointer;
 }
-.rating input {
+.stars input {
     display: none;
 }
-.rating input:checked ~ label,
-.rating label:hover,
-.rating label:hover ~ label {
+.stars label {
+    color: lightgray;
+    margin: 0 2px;
+    transition: color 0.3s;
+}
+.stars input:checked ~ label,
+.stars label:hover,
+.stars label:hover ~ label {
     color: gold;
 }
+/* Submit Button */
 .submit-btn {
     display: block;
     width: 100%;
-    padding: 10px;
+    padding: 14px;
     border: none;
-    border-radius: 5px;
-    background-color: #007BFF;
+    border-radius: 8px;
+    background-color: var(--primary);
     color: white;
     font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
 }
 .submit-btn:hover {
-    background-color: #0056b3;
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
 }
+
+/* Review List Container */
 .review-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
     margin-top: 20px;
 }
+
+/* Individual Review Card */
 .review {
-    background-color: #bacff0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    /* Added style below */
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
+.review:hover {
+    transform: translateY(-3px);
+}
+/* Review Text */
 .review p {
     margin: 5px 0;
+    font-size: 14px;
+    color: #333;
 }
+/* Review Image */
 .review img {
-    max-width: 100%;
+    width: 100%;
     height: auto;
     margin-top: 10px;
-    border-radius: 5px;
+    border-radius: 8px;
+    object-fit: cover;
 }
-.edit-btn, .save-btn, .delete-btn {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+/* Review Title & Date */
+.review .date {
     font-size: 12px;
+    color: #777;
+    margin-bottom: 5px;
 }
-.edit-btn {
-    background-color: #7c5af7;
+/* Star Rating Styling */
+.review .rating {
+    font-size: 16px;
+    color: gold;
+}
+
+
+/* Show More & Show Less Buttons */
+#showMoreBtn, #showLessBtn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: var(--primary);
     color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
 }
-.edit-btn:hover {
-    background-color: #43129e;
+
+#showMoreBtn:hover, #showLessBtn:hover {
+    background-color: var(--primary-dark);
 }
-.save-btn {
-    background-color: #ffc107;
-    color: black;
-}
-.save-btn:hover {
-    background-color: #e0a800;
-}
-.delete-btn {
-    background-color: #dc3545;
-    color: white;
-}
-.delete-btn:hover {
-    background-color: #c82333;
-}
+
 
 /* Sticky Navigation Bar */
 nav {
@@ -155,80 +208,13 @@ nav a {
 }
 
 
-#displayRatingStars {
-    font-size: 24px;
-    color: gold; /* Color for filled stars */
+/* Responsive: Stack on Small Screens */
+@media (max-width: 768px) {
+    .review-form-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
-#displayRatingStars::after {
-    color: lightgray; /* Color for empty stars */
-}
-.stars {
-    display: flex;
-    align-items: center;
-    font-size: 24px;
-    color: gold;
-}
-.stars span {
-    color: lightgray;
-    margin-left: 5px;
-}
-.review-summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-}
-.review-breakdown {
-    display: flex;
-    flex-direction: column;
-    font-size: 14px;
-}
-.review-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-}
-.review-item .bar {
-    width: 100px;
-    height: 10px;
-    background: lightgray;
-    margin-left: 10px;
-    border-radius: 5px;
-    position: relative;
-}
-.review-item .bar .fill {
-    height: 100%;
-    background: gold;
-    border-radius: 5px;
-}
-#reviewDisplay {
-    margin-top: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-.stars {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: center;
-    font-size: 24px;
-    cursor: pointer;
-}
-.stars input {
-    display: none;
-}
-.stars label {
-    color: gray;
-}
-.stars input:checked ~ label,
-.stars label:hover,
-.stars label:hover ~ label {
-    color: gold;
-}
 /* Footer */
 footer {
     background: var(--dark);

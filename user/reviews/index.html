@@ -17,38 +17,48 @@
         <a href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
     </nav>
 
-    <!-- Review Section -->
-    <div class="review-container">
-        <h2>Destination Review</h2>
+<!-- Review Form Card -->
+<div class="review-form-card">
+  <h2>Leave a Review</h2>
+  <form id="reviewForm" class="review-form-grid">
+    <!-- Left Column -->
+    <div class="left-column">
+      <label for="comment"><i class="fa fa-comment"></i> Comment:</label>
+      <textarea id="comment" name="comment" placeholder="Write your review..." required></textarea>
 
-        <!-- Review Form -->
-        <form id="reviewForm">
-            <label for="comment">Comment:</label>
-            <textarea id="comment" name="comment" required></textarea>
+      <div class="rating-container">
+        <label><i class="fa fa-star"></i> Rating:</label>
+        <div class="stars">
+          <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+          <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+          <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+          <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+          <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+        </div>
+      </div>
+    </div>
 
-            <!-- ⭐ Star Rating System -->
-            <div class="rating-container">
-                <label>Rating:</label>
-                <div class="stars">
-                    <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
-                    <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
-                    <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
-                    <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-                    <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
-                </div>
-            </div>
+    <!-- Right Column -->
+    <div class="right-column">
+      <label for="imageUpload"><i class="fa fa-image"></i> Upload Image:</label>
+      <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
+      <button type="submit" class="submit-btn">Submit Review</button>
+    </div>
+  </form>
+</div>
 
-            <!-- Image Upload -->
-            <label for="imageUpload">Upload Image:</label>
-            <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
-
-            <button type="submit">Submit Review</button>
-        </form>
+<!-- Font Awesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
         <!-- Review Display Section -->
         <div class="review-list" id="reviewList">
             <h3>Reviews</h3>
         </div>
+        <div style="margin-top: 10px;">
+            <button id="showMoreBtn" style="display:none;">Show More</button>
+            <button id="showLessBtn" style="display:none;">Show Less</button>
+        </div>
+
     </div>
 
     <!-- Footer -->
