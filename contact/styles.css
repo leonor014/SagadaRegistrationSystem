@@ -20,14 +20,14 @@ body {
     font-family: 'Poppins', sans-serif;
     text-align: center;
     color: var(--text);
-    background-color: var(--light);
+    background-image: url(/images/b9.jpg);
     line-height: 1.6;
     font-size: 14px; /* Slightly smaller base font */
 }
 
 /* Contact Section Styles - Enhanced */
 #contact {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    /* background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); */
     color: white;
     padding: 4rem 2rem;
     clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 100%);
