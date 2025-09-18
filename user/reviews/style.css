@@ -8,6 +8,9 @@
     --light: #f8f9fa;
     --gray: #6c757d;
     --text: #333333;
+    --blue: #1e90ff;
+    --white: #ffffff;
+    --blue: #6495ed;
 }
         
 * {
@@ -19,7 +22,8 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #3b86f5;
+    background-color: #c4e1f1;
+    /* background-image: url('/images/b5.jpg'); */
     margin: 0;
     padding: 20px;
 }
@@ -29,7 +33,7 @@ body {
     border: 1px solid #ccc;
     border-radius: 10px;
     padding: 20px;
-    background-color: #f9f9f9;
+    background-color: #c9ebe9;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 .review-container h2 {
@@ -40,7 +44,7 @@ body {
 textarea {
     width: 100%;
     height: 80px;
-    border: 1px solid #ccc;
+    border: 1px solid #0c0c0c;
     border-radius: 5px;
     padding: 10px;
     font-size: 14px;
@@ -84,7 +88,7 @@ input[type="file"] {
     margin-top: 20px;
 }
 .review {
-    background-color: #fff;
+    background-color: #bacff0;
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 10px;
