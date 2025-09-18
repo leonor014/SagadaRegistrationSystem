@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     reviewList.innerHTML = "<h3>Reviews</h3>";
   
     // Show only 3 if showAll is false, otherwise show all
-    const reviewsToShow = showAll ? allReviews : allReviews.slice(0, 3);
+    const reviewsToShow = showAll ? allReviews : allReviews.slice(0, 4);
 
     reviewsToShow.forEach((reviewObj) => {
       displayReview(reviewObj.id, reviewObj.data);
