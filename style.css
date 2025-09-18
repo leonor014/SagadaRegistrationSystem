@@ -35,7 +35,7 @@ body {
 /* Home section with background image */
 #home {
     height: 100vh;
-    background: linear-gradient(rgba(235, 229, 229, 0.5), rgba(0, 0, 0, 0.7)), url('images/sagada-background.jpeg') no-repeat center center/cover;
+    background: linear-gradient(rgba(235, 229, 229, 0.5), rgba(0, 0, 0, 0.7)), url('images/back.jpg') no-repeat center center/cover;
     color: white;
     display: flex;
     flex-direction: column;
