@@ -82,6 +82,7 @@ body {
 input[type="file"] {
     margin-bottom: 15px;
 }
+
 /* Stars */
 .stars {
     display: flex;
@@ -103,6 +104,30 @@ input[type="file"] {
 .stars label:hover ~ label {
     color: gold;
 }
+.rating-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.rating-container label {
+    margin: 0;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px; /* small gap between icon and text */
+}
+
+.stars {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    font-size: 24px;
+    cursor: pointer;
+    gap: 5px; /* spacing between stars */
+}
+
 /* Submit Button */
 .submit-btn {
     display: block;
