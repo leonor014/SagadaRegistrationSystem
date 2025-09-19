@@ -20,7 +20,7 @@ body {
     font-family: 'Poppins', sans-serif;
     text-align: center;
     color: var(--text);
-    background: url('/images/b7.jpg');
+    background-image: url('SagadaRegistrationSystem/images/b7.jpg');
     line-height: 1.6;
     font-size: 14px; /* Slightly smaller base font */
 }
