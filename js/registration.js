@@ -763,14 +763,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
     });
 
-  // Convert file to Base64
-  function convertToBase64(file, callback) {
-    const reader = new FileReader();
-    reader.onloadend = function () {
-      callback(reader.result);
-    };
-    reader.readAsDataURL(file);
-  }
+  
 
   function sendEmailConfirmation(data) {
     let formattedGroupMembers = "";
@@ -904,11 +897,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <p><strong>Email:</strong> ${data.email}</p>
         `
     }
-    ${
-      data.photo
-        ? `<img src="${data.photo}" alt="Uploaded Photo" width="150" />`
-        : ""
-    }
+    
     <br/><br/>
     <button id="closeModalBtn">Close</button>
   `;
