@@ -760,28 +760,7 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.email = document.getElementById("email").value;
       }
 
-      // Handle photo upload
-      const photoFile = isGroup
-        ? document.getElementById("groupPhoto").files[0]
-        : document.getElementById("uploadPhoto").files[0];
-
-      const finalizeSubmission = (base64Photo) => {
-        formData.photo = base64Photo || null;
-
-        // Submit to Firestore (your implementation here)
-        submitToFirestore(formData, registrationNumber, submitButton);
-
-        // Reset UI
-        document.getElementById("individualForm").style.display = "none";
-        document.getElementById("groupForm").style.display = "none";
-        document.getElementById("registrationForm").reset();
-      };
-
-      if (photoFile) {
-        convertToBase64(photoFile, finalizeSubmission);
-      } else {
-        finalizeSubmission(null);
-      }
+      
     });
 
   // Convert file to Base64
