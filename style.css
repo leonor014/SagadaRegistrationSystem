@@ -222,8 +222,8 @@ nav a {
 .button-group {
     display: flex;
     justify-content: center; /* Centers buttons horizontally */
-    gap: 1rem; /* Space between buttons */
-    padding: 2%;
+    gap: 0.5rem; /* Space between buttons */
+    padding: 1%;
     flex-wrap: nowrap; /* Keep them in one line, no wrapping */
 }
 
