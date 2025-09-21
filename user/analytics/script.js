@@ -1,14 +1,13 @@
-// script.js - Updated to separate data sources for general analytics and tourist spots
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"; 
 import {
   getFirestore,
   collection,
   onSnapshot,
   query,
-  orderBy,
-  where
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+  orderBy
+} from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
+// --- Firebase Init ---
 const firebaseConfig = {
   apiKey: "AIzaSyCt1EginvMZvYdlrseVPBiyvfto4bvED5Y",
   authDomain: "sagadatouristregister.firebaseapp.com",
@@ -18,163 +17,311 @@ const firebaseConfig = {
   appId: "1:875774905793:web:d4fe2ea42fedba8d473340",
   measurementId: "G-2VF5GCQGZ1"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- DOM Elements ---
 const siteDropdown = document.getElementById("site-dropdown");
 const monthInput = document.getElementById("month-filter");
 const applyBtn = document.getElementById("apply-filters");
 const kpiSection = document.getElementById("kpi-section");
 const chartsArea = document.getElementById("charts-area");
-const sidebarItems = document.querySelectorAll(".sidebar ul li");
+const reportType = document.getElementById("report-type");
+const analyticsTitle = document.getElementById("analytics-title");
+const dateFilterLabel = document.getElementById("date-filter-label");
+const filterType = document.getElementById("filter-type");
+const siteSelectorContainer = document.getElementById("site-selector-container");
 
-// Add filter type selector for Monthly / Yearly
-const filterType = document.createElement("select");
-filterType.id = "filter-type";
-filterType.innerHTML = `
-  <option value="month">Monthly</option>
-  <option value="year">Yearly</option>
-`;
-document.querySelector(".filters-left").insertBefore(filterType, monthInput);
-
+// --- Data holders ---
 let registrations = [];
 let attendance = [];
 let sites = [];
 let charts = {};
-let currentView = "general"; // "general" or "tourist"
+let currentReportType = "general";
 
-// ------------------ Helpers ------------------
-function getDateFromDoc(doc) {
-  const d = doc.timestamp || doc.dateOfRegistration || doc.createdAt || doc.date;
-  if (!d) return null;
-  if (typeof d.toDate === "function") return d.toDate();
-  const date = new Date(d);
-  return isNaN(date) ? null : date;
+// --- Helpers ---
+function getDateFromField(doc, field) {
+  if (!doc || !field) return null;
+  
+  const value = doc[field];
+  if (!value) return null;
+  
+  // If it's a Firestore Timestamp
+  if (typeof value.toDate === "function") return value.toDate();
+  
+  // If it's a string that can be parsed as date
+  if (typeof value === "string") {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  
+  // If it's already a Date object
+  if (value instanceof Date) return value;
+  
+  return null;
 }
 
-function computeAge(dob, visitDate = new Date()) {
-  if (!dob) return null;
-  let birth = dob;
-  if (typeof dob.toDate === "function") birth = dob.toDate();
-  const b = new Date(birth);
-  if (isNaN(b)) return null;
-  let age = visitDate.getFullYear() - b.getFullYear();
-  const m = visitDate.getMonth() - b.getMonth();
-  if (m < 0 || (m === 0 && visitDate.getDate() < b.getDate())) age--;
-  return age;
+function getAgeCategory(ageOrDob) {
+  if (!ageOrDob) return "Unknown";
+  
+  try {
+    let age;
+    
+    // If it's a number (age field), use it directly
+    if (typeof ageOrDob === 'number') {
+      age = ageOrDob;
+    } 
+    // If it's a string that can be parsed as a number
+    else if (typeof ageOrDob === 'string' && !isNaN(ageOrDob)) {
+      age = parseInt(ageOrDob);
+    }
+    // If it's a date string, calculate age from date of birth
+    else if (typeof ageOrDob === 'string' || ageOrDob instanceof Date) {
+      const birthDate = new Date(ageOrDob);
+      if (isNaN(birthDate.getTime())) return "Unknown";
+      age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    }
+    // If it's already an age value in some other format
+    else {
+      age = Number(ageOrDob);
+      if (isNaN(age)) return "Unknown";
+    }
+    
+    // Updated age categories based on your requirements
+    if (age <= 12) return "Children";
+    if (age <= 19) return "Teenager";
+    if (age <= 39) return "Young Adult";
+    if (age <= 59) return "Middle Aged Adult";
+    return "Senior";
+  } catch (e) {
+    console.error("Error calculating age category:", e);
+    return "Unknown";
+  }
 }
 
-function topNFromMap(map, n = 10) {
-  return Array.from(map.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, n);
+
+// Add this function for debugging
+function logDataStructure(docs, sampleSize = 2) {
+  console.log("=== DATA STRUCTURE ANALYSIS ===");
+  console.log(`Total documents: ${docs.length}`);
+  
+  // Log sample documents
+  for (let i = 0; i < Math.min(sampleSize, docs.length); i++) {
+    console.log(`Document ${i}:`, docs[i]);
+    
+    if (docs[i].registrationType === "group" && Array.isArray(docs[i].groupMembers)) {
+      console.log(`Group members in document ${i}:`, docs[i].groupMembers);
+    }
+  }
+  console.log("=== END ANALYSIS ===");
 }
 
-// Expand group + individual docs into uniform records
-function expandDocs(docs, isRegistration = true) {
+// Update the attendance listener to include debugging
+onSnapshot(query(collection(db,"attendance"),orderBy("timestamp","desc")),snap=>{
+  attendance=snap.docs.map(d=>({id:d.id,...d.data()}));
+  console.log("Raw attendance data:", attendance);
+  logDataStructure(attendance); // Debug the structure
+  recomputeAndRender();
+});
+
+// --- Expand Docs ---
+function expandRegistrationDocs(docs) {
   const expanded = [];
   docs.forEach(doc => {
-    if (doc.registrationType === "group" && Array.isArray(doc.groupMembers)) {
-      doc.groupMembers.forEach(m => {
+    const data = doc.data ? doc.data() : doc;
+    const baseDate = data.dateOfRegistration || new Date();
+    const groupCountry = data.country || data.groupCountry || "Unknown";
+    const groupRegion = data.region || data.groupRegion || "Unknown";
+    
+    if (data.registrationType === "group" && Array.isArray(data.groupMembers)) {
+      data.groupMembers.forEach(m => {
         expanded.push({
-          site: isRegistration ? (doc.site || doc.groupName || "Unknown Site") : doc.site,
-          nationality: isRegistration ? (doc.groupCountry || "Unknown") : (doc.country || "Unknown"),
-          region: isRegistration ? (doc.groupRegion || "Unknown") : (doc.region || "Unknown"),
-          sex: m.memberSex || "Unknown",
-          dateOfBirth: m.memberDOB || null,
-          timestamp: doc.dateOfRegistration || null,
-          type: doc.registrationType || "individual",
-          source: isRegistration ? "registration" : "attendance"
+          site: "All Sites",
+          nationality: m.nationality || m.memberNationality || groupCountry || "Unknown",
+          region: m.region || m.memberRegion || groupRegion || "Unknown",
+          sex: m.sex || m.memberSex || "Unknown",
+          dateOfBirth: m.age || m.dateOfBirth || m.memberDOB || null,
+          dateOfRegistration: baseDate
         });
       });
     } else {
       expanded.push({
-        site: isRegistration ? (doc.site || "Unknown Site") : doc.site,
-        nationality: isRegistration ? (doc.country || "Unknown") : (doc.country || "Unknown"),
-        region: isRegistration ? (doc.region || "Unknown") : (doc.region || "Unknown"),
-        sex: doc.sex || "Unknown",
-        dateOfBirth: doc.dateOfBirth || null,
-        timestamp: doc.dateOfRegistration || null,
-        type: doc.registrationType || "individual",
-        source: isRegistration ? "registration" : "attendance"
+        site: "All Sites",
+        nationality: data.nationality || data.country || "Unknown",
+        region: data.region || "Unknown",
+        sex: data.sex || "Unknown",
+        dateOfBirth: data.dateOfBirth || null,
+        dateOfRegistration: baseDate
       });
     }
   });
   return expanded;
 }
 
-// Filter by month or year
-function filterByPeriod(docs, value, type) {
+function expandAttendanceDocs(docs) {
+  const expanded = [];
+  console.log("=== EXPANDING ATTENDANCE DOCS ===");
+  
+  docs.forEach((doc, index) => {
+    const data = doc.data ? doc.data() : doc;
+    console.log(`Document ${index}:`, data);
+    
+    const site = data.site || "Unknown Site";
+    const ts = getDateFromField(data, "timestamp");
+    const groupCountry = data.country || data.groupCountry || "Unknown";
+    const groupRegion = data.region || data.groupRegion || "Unknown";
+
+    console.log(`Site: ${site}, Timestamp: ${ts}, Group Country: ${groupCountry}, Group Region: ${groupRegion}`);
+
+    if (data.registrationType === "group" && Array.isArray(data.groupMembers)) {
+      console.log(`Found group with ${data.groupMembers.length} members`);
+      
+      data.groupMembers.forEach((m, memberIndex) => {
+        const nationality = m.nationality || m.memberNationality || groupCountry || "Unknown";
+        const region = m.region || m.memberRegion || groupRegion || "Unknown";
+        const sex = m.sex || m.memberSex || "Unknown";
+        const dob = m.age || m.dateOfBirth || m.memberDOB || null;
+        
+        console.log(`Member ${memberIndex}:`, {
+          nationality,
+          region,
+          sex,
+          dob,
+          hasNationality: !!m.nationality,
+          hasMemberNationality: !!m.memberNationality,
+          hasRegion: !!m.region,
+          hasMemberRegion: !!m.memberRegion,
+          hasSex: !!m.sex,
+          hasMemberSex: !!m.memberSex,
+          hasAge: !!m.age,
+          hasDOB: !!m.dateOfBirth,
+          hasMemberDOB: !!m.memberDOB
+        });
+
+        expanded.push({
+          site: site,
+          timestamp: ts,
+          nationality: nationality,
+          region: region,
+          sex: sex,
+          dateOfBirth: dob
+        });
+      });
+    } else {
+      console.log("Single registration or no group members");
+      expanded.push({
+        site: site,
+        timestamp: ts,
+        nationality: data.nationality || data.country || "Unknown",
+        region: data.region || "Unknown",
+        sex: data.sex || "Unknown",
+        dateOfBirth: data.dateOfBirth || null
+      });
+    }
+  });
+  
+  console.log("=== EXPANDED DATA ===", expanded);
+  return expanded;
+}
+
+
+// --- Filter ---
+function filterByPeriod(docs, value, type, field) {
   if (!value) return docs;
   return docs.filter(doc => {
-    const dt = getDateFromDoc(doc);
+    const dt = getDateFromField(doc, field);
     if (!dt) return false;
     if (type === "month") {
       const [y, m] = value.split("-");
       return dt.getFullYear() === +y && dt.getMonth() === +m - 1;
     }
-    if (type === "year") {
-      return dt.getFullYear() === +value;
-    }
+    if (type === "year") return dt.getFullYear() === +value;
     return true;
   });
 }
 
-// ------------------ UI Rendering ------------------
-function populateSiteDropdown(docs) {
-  const siteSet = new Set();
-  
-  // Add sites from documents
-  docs.forEach(d => {
-    if (d.site && d.site !== "Unknown Site") {
-      siteSet.add(d.site);
-    }
-  });
-
-  // Add sites from the sites collection
-  sites.forEach(site => {
-    if (site.name) siteSet.add(site.name);
-  });
-  
+// --- Populate Site Dropdown ---
+function populateSiteDropdown() {
   siteDropdown.innerHTML = `<option value="__all">All Sites</option>`;
-  [...siteSet].sort().forEach(site => {
+  
+  // Predefined sites list
+  const predefinedSites = [
+    "Lumiang Cave", "Balangagan Cave", "Sumaguing Cave", "Bomod-ok Falls", 
+    "Bokong Falls", "Pongas Falls", "Ubwa Blue Lagoon", 
+    "Ticangan to Ubwa River Tracing, Bouldering and Swimming", "Ampacao", 
+    "Nabas-ang to Ampacao", "Langsayan", "Marlboro", "Marlboro to Blue Soil", 
+    "Blue Soil", "Paytokan Walk", "Hanging Coffins", "Lumiang Cave Entrance", 
+    "Sumaguing Cave Entrance", "Dokiw Hanging Coffins", "Kapay-aw Rice Terraces"
+  ];
+  
+  // Add predefined sites
+  predefinedSites.forEach(site => {
     const opt = document.createElement("option");
     opt.value = site;
     opt.textContent = site;
     siteDropdown.appendChild(opt);
   });
+  
+  // Add sites from Firestore (if any)
+  sites.sort((a, b) => a.name.localeCompare(b.name)).forEach(site => {
+    // Avoid duplicates
+    if (!predefinedSites.includes(site.name)) {
+      const opt = document.createElement("option");
+      opt.value = site.name;
+      opt.textContent = site.name;
+      siteDropdown.appendChild(opt);
+    }
+  });
 }
 
-function renderKPIs(docs) {
-  const total = docs.length;
+// --- KPI Cards ---
+function renderKPIs(docs, site = "__all") {
+  let data = site === "__all" ? docs : docs.filter(d => d.site === site);
+  const total = data.length;
+  
+  if (total === 0) {
+    kpiSection.innerHTML = `
+      <div class="kpi-card"><h2>0</h2><p>Total visits</p></div>
+      <div class="kpi-card"><h2>No data</h2><p>Gender counts</p></div>
+      <div class="kpi-card"><h2>No data</h2><p>Top Non-Filipino</p></div>
+      <div class="kpi-card"><h2>No data</h2><p>Top Regions</p></div>
+    `;
+    return;
+  }
+
   const genderMap = new Map();
   const natMap = new Map();
   const regionMap = new Map();
 
-  docs.forEach(d => {
-    genderMap.set(d.sex, (genderMap.get(d.sex) || 0) + 1);
+  data.forEach(d => {
+    const gender = d.sex && d.sex !== "Unknown" ? d.sex : "Unknown";
+    genderMap.set(gender, (genderMap.get(gender) || 0) + 1);
+    
     const nat = (d.nationality || "Unknown").toLowerCase();
     if (!["philippines", "filipino", "ph"].includes(nat)) {
       natMap.set(d.nationality, (natMap.get(d.nationality) || 0) + 1);
     }
-    regionMap.set(d.region, (regionMap.get(d.region) || 0) + 1);
+    
+    const region = d.region && d.region !== "Unknown" ? d.region : "Unknown";
+    regionMap.set(region, (regionMap.get(region) || 0) + 1);
   });
 
+  const topN = (map, n = 5) => [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, n);
+  
   kpiSection.innerHTML = `
-    <div class="kpi-card"><h2>${total}</h2><p>Total ${currentView === "general" ? "Registrations" : "Visits"}</p></div>
-    <div class="kpi-card"><h2>${[...genderMap].map(([g,v])=>`${g}:${v}`).join(", ")}</h2><p>Gender counts</p></div>
-    <div class="kpi-card"><h2>${topNFromMap(natMap,10).map(x=>x[0]).join(", ")||"No Data"}</h2><p>Top 10 Non-Filipino</p></div>
-    <div class="kpi-card"><h2>${topNFromMap(regionMap,10).map(x=>x[0]).join(", ")||"No Data"}</h2><p>Top 10 Regions</p></div>
+    <div class="kpi-card"><h2>${total}</h2><p>Total visits</p></div>
+    <div class="kpi-card"><h2>${[...genderMap].map(([g, v]) => `${g}: ${v}`).join(", ") || "No data"}</h2><p>Gender counts</p></div>
+    <div class="kpi-card"><h2>${topN(natMap).map(x => x[0]).join(", ") || "No data"}</h2><p>Top Non-Filipino</p></div>
+    <div class="kpi-card"><h2>${topN(regionMap).map(x => x[0]).join(", ") || "No data"}</h2><p>Top Regions</p></div>
   `;
 }
 
+// --- Charts ---
 function clearCharts() {
   Object.values(charts).forEach(c => c.destroy && c.destroy());
   charts = {};
   chartsArea.innerHTML = "";
 }
-
 function createChartCanvas(id, title) {
   const div = document.createElement("div");
   div.className = "chart-wrapper";
@@ -182,268 +329,261 @@ function createChartCanvas(id, title) {
   chartsArea.appendChild(div);
   return div.querySelector("canvas");
 }
-
 function drawBarChart(id, title, labels, values) {
   const ctx = createChartCanvas(id, title).getContext("2d");
-  charts[id] = new Chart(ctx, {
-    type: "bar",
-    data: { 
-      labels, 
-      datasets: [{ 
-        label: title, 
-        data: values, 
-        backgroundColor: 'rgba(54, 162, 235, 0.7)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1
-      }] 
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
+  charts[id] = new Chart(ctx, { type: "bar", data: { labels, datasets: [{ label: title, data: values }] }});
 }
-
 function drawPieChart(id, title, labels, values) {
   const ctx = createChartCanvas(id, title).getContext("2d");
-  charts[id] = new Chart(ctx, {
-    type: "pie",
-    data: { 
-      labels, 
-      datasets: [{ 
-        data: values, 
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.7)',
-          'rgba(54, 162, 235, 0.7)',
-          'rgba(255, 206, 86, 0.7)',
-          'rgba(75, 192, 192, 0.7)',
-          'rgba(153, 102, 255, 0.7)',
-          'rgba(255, 159, 64, 0.7)'
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)'
-        ],
-        borderWidth: 1
-      }] 
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom'
-        }
-      }
-    }
-  });
+  charts[id] = new Chart(ctx, { type: "pie", data: { labels, datasets: [{ data: values }] }});
 }
 
+// --- Site Summary Table ---
+function renderSiteSummary(docs) {
+  const siteMap = new Map();
+  docs.forEach(d => {
+    if (!siteMap.has(d.site))
+      siteMap.set(d.site, { 
+        total: 0, 
+        age: {Children: 0, Teenager: 0, "Young Adult": 0, "Middle Aged Adult": 0, Senior: 0}, 
+        sex: {Male: 0, Female: 0, Unknown: 0}, 
+        countries: {}, 
+        regions: {} 
+      });
 
-// Render charts for general analytics (using only registration data)
-function renderGeneralAnalytics(docs, site="__all") {
+    const s = siteMap.get(d.site);
+    s.total++;
+    s.age[d.ageCategory] = (s.age[d.ageCategory]||0)+1;
+    s.sex[d.sex] = (s.sex[d.sex]||0)+1;
+    s.countries[d.nationality] = (s.countries[d.nationality]||0)+1;
+    s.regions[d.region] = (s.regions[d.region]||0)+1;
+  });
+
+  const container = document.createElement("div");
+  container.className = "site-summary";
+  container.innerHTML = `
+  <h3>Site-wise Visitor Summary</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Site</th>
+        <th>Total</th>
+        <th>Children</th>
+        <th>Teenager</th>
+        <th>Young Adult</th>
+        <th>Middle Aged</th>
+        <th>Senior</th>
+        <th>Male</th>
+        <th>Female</th>
+        <th>Unknown</th>
+        <th>Top Countries</th>
+        <th>Top Regions</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${[...siteMap.keys()].map(site => {
+        const s = siteMap.get(site);
+        const topC = Object.entries(s.countries).sort((a,b) => b[1] - a[1]).slice(0,3).map(c => c[0] + "(" + c[1] + ")").join(", ");
+        const topR = Object.entries(s.regions).sort((a,b) => b[1] - a[1]).slice(0,3).map(r => r[0] + "(" + r[1] + ")").join(", ");
+        return `
+          <tr>
+            <td>${site}</td>
+            <td>${s.total}</td>
+            <td>${s.age.Children}</td>
+            <td>${s.age.Teenager}</td>
+            <td>${s.age["Young Adult"]}</td>
+            <td>${s.age["Middle Aged Adult"]}</td>
+            <td>${s.age.Senior}</td>
+            <td>${s.sex.Male}</td>
+            <td>${s.sex.Female}</td>
+            <td>${s.sex.Unknown}</td>
+            <td>${topC || "N/A"}</td>
+            <td>${topR || "N/A"}</td>
+          </tr>`;
+      }).join("")}
+    </tbody>
+  </table>
+`;
+  chartsArea.appendChild(container);
+}
+
+// --- Analytics Rendering ---
+function renderGeneralAnalytics(docs) {
   clearCharts();
-  let data = site==="__all"? docs : docs.filter(d=>d.site===site);
+  const dayMap = new Map();
+  docs.forEach(d => {
+    const dt = getDateFromField(d,"dateOfRegistration");
+    if (!dt) return;
+    const day = dt.getDate();
+    dayMap.set(day,(dayMap.get(day)||0)+1);
+  });
+  const days = [...dayMap.keys()].sort((a,b)=>a-b);
+  drawBarChart("visits-day","Visits by Day",days.map(d=>"Day "+d),days.map(d=>dayMap.get(d)));
 
-  // Check if we have data
-  if (data.length === 0) {
-    chartsArea.innerHTML = `<div class="no-data">No registration data available for the selected filters</div>`;
+  const genderMap = new Map();
+  docs.forEach(d=>genderMap.set(d.sex,(genderMap.get(d.sex)||0)+1));
+  drawPieChart("gender","Gender",[...genderMap.keys()],[...genderMap.values()]);
+}
+
+function renderTouristSpotAnalytics(selectedSite, docs) {
+  console.log(`Rendering analytics for ${selectedSite} with ${docs.length} documents`);
+  
+  if (docs.length === 0) {
+    console.log("No documents found for the selected site and period");
+    // Display a message to the user
+    chartsArea.innerHTML = `<div class="no-data-message">No data available for ${selectedSite} in the selected period</div>`;
     return;
   }
 
-  // visits by day
-  const dayMap = new Map();
-  data.forEach(d=>{
-    const dt = getDateFromDoc(d);
+  clearCharts();
+
+  // Filter data by selected site if not "All Sites"
+  let siteData = selectedSite === "__all" 
+    ? docs 
+    : docs.filter(d => d.site === selectedSite);
+
+  // Add age category to each document for easier processing
+  siteData = siteData.map(d => ({
+    ...d,
+    ageCategory: getAgeCategory(d.dateOfBirth)
+  }));
+
+  // === 1. Total visits per month ===
+  const monthlyVisits = new Map();
+  siteData.forEach(d => {
+    const dt = getDateFromField(d, "timestamp");
     if (!dt) return;
-    const day = dt.getDate();
-    dayMap.set(day, (dayMap.get(day)||0)+1);
+    const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
+    monthlyVisits.set(key, (monthlyVisits.get(key) || 0) + 1);
   });
-  const dayKeys = [...dayMap.keys()].sort((a,b)=>a-b);
-  drawBarChart("visits-day","Registrations by Day", dayKeys.map(k=>"Day "+k), dayKeys.map(k=>dayMap.get(k)));
-
-  // Fill in missing days with 0
-  const daysInMonth = new Date(data[0].timestamp?.getFullYear(), data[0].timestamp?.getMonth() + 1, 0).getDate();
-  const dayLabels = Array.from({length: daysInMonth}, (_, i) => i + 1);
-  const dayValues = dayLabels.map(day => dayMap.get(day) || 0);
   
-  drawBarChart("registrations-day", "Registrations by Day", dayLabels.map(k => "Day " + k), dayValues);
-
-
-  // age distribution
-  const ageBuckets = {"0-12":0,"13-19":0,"20-39":0,"40-59":0,"60+":0,"Unknown":0};
-  data.forEach(d=>{
-    const dt = getDateFromDoc(d) || new Date();
-    const age = computeAge(d.dateOfBirth, dt);
-    if (age==null) ageBuckets["Unknown"]++;
-    else if (age<=12) ageBuckets["0-12"]++;
-    else if (age<=19) ageBuckets["13-19"]++;
-    else if (age<=39) ageBuckets["20-39"]++;
-    else if (age<=59) ageBuckets["40-59"]++;
-    else ageBuckets["60+"]++;
+  const sortedMonths = [...monthlyVisits.entries()].sort((a, b) => {
+    const [ay, am] = a[0].split("-").map(Number);
+    const [by, bm] = b[0].split("-").map(Number);
+    return ay - by || am - bm;
   });
-  drawBarChart("age-dist","Age Distribution", Object.keys(ageBuckets), Object.values(ageBuckets));
+  
+  drawBarChart("monthlyVisits", `Monthly Visits - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
+               sortedMonths.map(x => x[0]), sortedMonths.map(x => x[1]));
 
-  // gender
-  const genderMap = new Map();
-  data.forEach(d=> genderMap.set(d.sex,(genderMap.get(d.sex)||0)+1));
-  drawPieChart("gender","Gender", [...genderMap.keys()], [...genderMap.values()]);
+  // === 2. Age Categories ===
+  const ageCounts = { 
+    Children: 0, 
+    Teenager: 0, 
+    "Young Adult": 0, 
+    "Middle Aged Adult": 0, 
+    Senior: 0, 
+    Unknown: 0 
+  };
+  siteData.forEach(d => {
+    ageCounts[d.ageCategory] = (ageCounts[d.ageCategory] || 0) + 1;
+  });
+  
+  drawBarChart("ageCategories", `Age Distribution - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
+               Object.keys(ageCounts), Object.values(ageCounts));
 
-  // top regions
-  const regionMap = new Map();
-  data.forEach(d=> regionMap.set(d.region,(regionMap.get(d.region)||0)+1));
-  const topRegions = topNFromMap(regionMap,10);
-  drawBarChart("regions","Top 10 Regions", topRegions.map(x=>x[0]), topRegions.map(x=>x[1]));
+  // === 3. Gender Distribution ===
+  const genderCounts = new Map();
+  siteData.forEach(d => genderCounts.set(d.sex, (genderCounts.get(d.sex) || 0) + 1));
+  
+  drawPieChart("genderDist", `Gender Distribution - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
+               [...genderCounts.keys()], [...genderCounts.values()]);
 
-  // top non-Filipino
-  const natMap = new Map();
-  data.forEach(d=>{
-    const nat=(d.nationality||"Unknown").toLowerCase();
-    if(!["philippines","filipino","ph"].includes(nat)){
-      natMap.set(d.nationality,(natMap.get(d.nationality)||0)+1);
+  // === 4. Regions in the Philippines ===
+  const regionCounts = new Map();
+  siteData.forEach(d => {
+    const region = d.region || "Unknown";
+    regionCounts.set(region, (regionCounts.get(region) || 0) + 1);
+  });
+  
+  const topRegions = [...regionCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+  drawBarChart("regions", `Top Regions - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
+               topRegions.map(r => r[0]), topRegions.map(r => r[1]));
+
+  // === 5. Top 10 Non-Filipino Nationalities ===
+  const natCounts = new Map();
+  siteData.forEach(d => {
+    const nat = (d.nationality || "Unknown").toLowerCase();
+    if (!["philippines", "filipino", "ph"].includes(nat)) {
+      natCounts.set(d.nationality, (natCounts.get(d.nationality) || 0) + 1);
     }
   });
-  const topNats = topNFromMap(natMap,10);
-  drawBarChart("nats","Top 10 Non-Filipino", topNats.map(x=>x[0]), topNats.map(x=>x[1]));
-}
-
-// Render charts for tourist spots (using only attendance data)
-function renderTouristSpots(docs, site="__all") {
-  clearCharts();
-  let data = site==="__all"? docs : docs.filter(d=>d.site===site);
-
-  // Check if we have data
-  if (data.length === 0) {
-    chartsArea.innerHTML = `<div class="no-data">No attendance data available for the selected site</div>`;
-    return;
-  }
-
-  // visits by day for selected site
-  const dayMap = new Map();
-  data.forEach(d=>{
-    const dt = getDateFromDoc(d);
-    if (!dt) return;
-    const day = dt.getDate();
-    dayMap.set(day, (dayMap.get(day)||0)+1);
-  });
-  const dayKeys = [...dayMap.keys()].sort((a,b)=>a-b);
-  drawBarChart("visits-day","Visits by Day", dayKeys.map(k=>"Day "+k), dayKeys.map(k=>dayMap.get(k)));
-
-  // Fill in missing days with 0
-  const daysInMonth = new Date(data[0].timestamp?.getFullYear(), data[0].timestamp?.getMonth() + 1, 0).getDate();
-  const dayLabels = Array.from({length: daysInMonth}, (_, i) => i + 1);
-  const dayValues = dayLabels.map(day => dayMap.get(day) || 0);
   
-  drawBarChart("visits-day", "Visits by Day", dayLabels.map(k => "Day " + k), dayValues);
-
-  // Age distribution for tourist spots
-  const ageBuckets = {"0-12":0, "13-19":0, "20-39":0, "40-59":0, "60+":0, "Unknown":0};
-  data.forEach(d => {
-    const dt = getDateFromDoc(d) || new Date();
-    const age = computeAge(d.dateOfBirth, dt);
-    if (age == null) ageBuckets["Unknown"]++;
-    else if (age <= 12) ageBuckets["0-12"]++;
-    else if (age <= 19) ageBuckets["13-19"]++;
-    else if (age <= 39) ageBuckets["20-39"]++;
-    else if (age <= 59) ageBuckets["40-59"]++;
-    else ageBuckets["60+"]++;
-  });
-  drawBarChart("age-dist", "Age Distribution", Object.keys(ageBuckets), Object.values(ageBuckets));
-
-  // visitor type (individual vs group)
-  const typeMap = new Map();
-  data.forEach(d=> typeMap.set(d.type,(typeMap.get(d.type)||0)+1));
-  drawPieChart("visitor-type","Visitor Type", [...typeMap.keys()], [...typeMap.values()]);
-
-  // gender distribution for selected site
-  const genderMap = new Map();
-  data.forEach(d=> genderMap.set(d.sex,(genderMap.get(d.sex)||0)+1));
-  drawPieChart("gender","Gender", [...genderMap.keys()], [...genderMap.values()]);
-
-  // nationality distribution for selected site
-  const natMap = new Map();
-  data.forEach(d=> natMap.set(d.nationality,(natMap.get(d.nationality)||0)+1));
-  const topNats = topNFromMap(natMap,10);
-  drawBarChart("nats","Top 10 Nationalities", topNats.map(x=>x[0]), topNats.map(x=>x[1]));
+  const topNats = [...natCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+  drawBarChart("nonFilipino", `Top 10 Non-Filipino Visitors - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
+               topNats.map(n => n[0]), topNats.map(n => n[1]));
 }
 
-// ------------------ Main Logic ------------------
+
+// --- Main Render ---
 function recomputeAndRender() {
-  let expanded = [];
   let value = monthInput.value;
   const type = filterType.value;
-  
-  if (type==="year" && value.includes("-")) value = value.split("-")[0];
-  
-  if (currentView === "general") {
-    // Use only registration data for general analytics
-    expanded = expandDocs(registrations, true);
-    const filtered = filterByPeriod(expanded, value, type);
-    populateSiteDropdown(filtered);
+  if (type === "year" && value.includes("-")) value = value.split("-")[0];
+  const site = siteDropdown.value || "__all";
+
+  console.log(`Recomputing with: type=${currentReportType}, site=${site}, period=${value}, filterType=${type}`);
+
+  if (currentReportType === "general") {
+    const expanded = expandRegistrationDocs(registrations);
+    console.log("General analytics expanded data:", expanded);
+    
+    const filtered = filterByPeriod(expanded, value, type, "dateOfRegistration");
+    console.log("General analytics filtered data:", filtered);
+    
     renderKPIs(filtered);
-    renderGeneralAnalytics(filtered, siteDropdown.value || "__all");
+    renderGeneralAnalytics(filtered);
   } else {
-    // Use only attendance data for tourist spots
-    expanded = expandDocs(attendance, false);
-    const filtered = filterByPeriod(expanded, value, type);
-    populateSiteDropdown(filtered);
-    renderKPIs(filtered);
-    renderTouristSpots(filtered, siteDropdown.value || "__all");
+    const expanded = expandAttendanceDocs(attendance);
+    console.log("Tourist spot expanded data:", expanded);
+    
+    const filtered = filterByPeriod(expanded, value, type, "timestamp");
+    console.log("Tourist spot filtered data:", filtered);
+    
+    const siteData = site === "__all" ? filtered : filtered.filter(d => d.site === site);
+    console.log(`Site data for ${site}:`, siteData);
+    
+    renderKPIs(siteData, site);
+    renderTouristSpotAnalytics(site, siteData);
   }
 }
 
-// ------------------ Firestore Listeners ------------------
-const regsQuery = query(collection(db,"registrations"),orderBy("dateOfRegistration","desc"));
-const attsQuery = query(collection(db,"attendance"),orderBy("dateOfRegistration","desc"));
-const sitesQuery = collection(db, "sites");
-
-onSnapshot(regsQuery, snap=>{
-  registrations = snap.docs.map(d=>({id:d.id,...d.data()}));
-  if (currentView === "general") recomputeAndRender();
+// --- Firestore Listeners ---
+onSnapshot(query(collection(db,"site"),orderBy("name","asc")),snap=>{
+  sites=snap.docs.map(d=>({id:d.id,...d.data()}));
+  populateSiteDropdown();
 });
-onSnapshot(attsQuery, snap=>{
-  attendance = snap.docs.map(d=>({id:d.id,...d.data()}));
-  if (currentView === "tourist") recomputeAndRender();
+onSnapshot(query(collection(db,"registrations"),orderBy("dateOfRegistration","desc")),snap=>{
+  registrations=snap.docs.map(d=>({id:d.id,...d.data()}));
+  recomputeAndRender();
 });
-onSnapshot(sitesQuery, snap=>{
-  sites = snap.docs.map(d=>({id:d.id,...d.data()}));
-});
-
-// ------------------ UI Events ------------------
-applyBtn.addEventListener("click", ()=> recomputeAndRender());
-siteDropdown.addEventListener("change", ()=> recomputeAndRender());
-
-// Sidebar navigation
-sidebarItems.forEach((item, index) => {
-  item.addEventListener("click", () => {
-    // Update active state
-    sidebarItems.forEach(i => i.classList.remove("active"));
-    item.classList.add("active");
-    
-    // Update current view
-    if (index === 0) {
-      currentView = "general";
-      document.querySelector(".analytics-card h3").textContent = "General Analytics";
-    } else {
-      currentView = "tourist";
-      document.querySelector(".analytics-card h3").textContent = "Tourist Spot Analytics";
-    }
-    
-    recomputeAndRender();
-  });
+onSnapshot(query(collection(db,"attendance"),orderBy("timestamp","desc")),snap=>{
+  attendance=snap.docs.map(d=>({id:d.id,...d.data()}));
+  // console.log("Raw attendance data:", attendance); // Comment out
+  // logDataStructure(attendance); // Comment out
+  recomputeAndRender();
 });
 
-// set default month
+// --- UI Events ---
+applyBtn.addEventListener("click",recomputeAndRender);
+siteDropdown.addEventListener("change",recomputeAndRender);
+reportType.addEventListener("change",()=>{
+  currentReportType=reportType.value;
+  analyticsTitle.textContent=currentReportType==="general"?"General Analytics":"Tourist Spot Analytics";
+  siteSelectorContainer.style.display=currentReportType==="general"?"none":"flex";
+  recomputeAndRender();
+});
+filterType.addEventListener("change",()=>{
+  dateFilterLabel.textContent=filterType.value==="month"?"Month":"Year";
+  monthInput.type=filterType.value==="month"?"month":"number";
+  if (filterType.value==="year") {
+    monthInput.min="2020"; monthInput.max="2030"; monthInput.value=new Date().getFullYear();
+  }
+  recomputeAndRender();
+});
+
+// --- Default Month ---
 (function(){
-  const now = new Date();
-  monthInput.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+  const now=new Date();
+  monthInput.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
 })();

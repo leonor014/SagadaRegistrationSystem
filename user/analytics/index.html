@@ -20,26 +20,39 @@
   <header>
     <h1>Tourism Analytics Dashboard</h1>
     <p>Insights into tourist visits and trends</p>
-    <div id="connection-status" style="display: none; background: #4caf50; color: white; padding: 5px 10px; border-radius: 4px; margin-top: 5px;">
-      Online
-    </div>
   </header>
 
   <div class="dashboard">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar-section">
-      <h3>Reports</h3>
-      <ul>
-        <li>General Analytics</li>
-        <li>Tourist Spot</li>
-      </ul>
-    </aside>
+    <!-- Report type selector and site dropdown -->
+    <div class="report-selector">
+      <div class="selector-group">
+        <label for="report-type">Report Type:</label>
+        <select id="report-type">
+          <option value="general">General Analytics</option>
+          <option value="tourist-spot">Tourist Spot</option>
+        </select>
+      </div>
+      
+      <div class="selector-group" id="site-selector-container">
+        <label for="site-dropdown">Tourist Site:</label>
+        <select id="site-dropdown">
+          <option value="__all">All Sites</option>
+        </select>
+      </div>
+  </div>
 
-    <!-- Main content: Left: charts + top-left filters -->
+
+  <!-- Main content: Left: charts + top-left filters -->
     <main class="main-content">
       <section class="top-controls">
         <div class="filters-left">
-          <label for="month-filter">Month</label>
+          <label for="filter-type">View By:</label>
+          <select id="filter-type">
+            <option value="month">Monthly</option>
+            <option value="year">Yearly</option>
+          </select>
+          
+          <label for="month-filter" id="date-filter-label">Month</label>
           <input type="month" id="month-filter" />
           <button id="apply-filters">Apply</button>
         </div>
@@ -53,22 +66,15 @@
 
         <aside class="analytics-area" id="analytics-area">
           <div class="analytics-card">
-            <h3>General Analytics</h3>
+            <h3 id="analytics-title">General Analytics</h3>
             <div id="kpi-section" class="kpi-section">
               <!-- KPI cards -->
             </div>
           </div>
 
           <div class="analytics-card">
-            <h3>Tourist Spot</h3>
-            <select id="site-dropdown">
-              <option value="__all">All Sites</option>
-            </select>
-          </div>
-
-          <div class="analytics-card">
             <h3>Filters</h3>
-            <p style="font-size:0.9rem;margin:0.25rem 0;">Pick month (top-left) and select site.</p>
+            <p style="font-size:0.9rem;margin:0.25rem 0;">Pick date range and select site.</p>
           </div>
         </aside>
       </div>
@@ -78,5 +84,6 @@
   <footer>
     <p>&copy; 2025 Tourist Dashboard. All rights reserved.</p>
   </footer>
+  
 </body>
 </html>

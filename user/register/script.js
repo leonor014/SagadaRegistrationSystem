@@ -4,11 +4,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     registrationForm.addEventListener("submit", async function (event) {
         event.preventDefault();
-        
+       
         const fullName = document.getElementById("fullName").value;
         const email = document.getElementById("email").value;
         const phone = document.getElementById("phone").value;
-        
+       
         try {
             await db.collection("registrations").add({ fullName, email, phone });
             alert("Registration successful!");
@@ -18,3 +18,4 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
