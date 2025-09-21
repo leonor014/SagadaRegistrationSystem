@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
   { name: "Luxembourg", code: "LU", dial: "+352" },
   { name: "Madagascar", code: "MG", dial: "+261" },
   { name: "Malawi", code: "MW", dial: "+265" },
-  { name = "Malaysia", code: "MY", dial: "+60" },
+  { name: "Malaysia", code: "MY", dial: "+60" },
   { name: "Maldives", code: "MV", dial: "+960" },
   { name: "Mali", code: "ML", dial: "+223" },
   { name: "Malta", code: "MT", dial: "+356" },
