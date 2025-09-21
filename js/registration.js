@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
   { name: "Papua New Guinea", code: "PG", dial: "+675" },
   { name: "Paraguay", code: "PY", dial: "+595" },
   { name: "Peru", code: "PE", dial: "+51" },
+  { name: "Philippines", code: "PH", dial: "+63" },
   { name: "Poland", code: "PL", dial: "+48" },
   { name: "Portugal", code: "PT", dial: "+351" },
   { name: "Qatar", code: "QA", dial: "+974" },
