@@ -24,6 +24,29 @@ body {
     font-size: 14px; /* Slightly smaller base font */
 }
 
+/* Sticky Navigation Bar */
+nav {
+    background-color: var(--dark); /* Green color matching SDG theme */
+    padding: 0.5rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays above other content */
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+
+nav a:hover {
+    text-decoration: underline;
+}
+
 /* Contact Section Styles - Enhanced */
 #contact {
     color: white;
@@ -78,28 +101,7 @@ body {
     line-height: 1.6;
 }
 
-/* Sticky Navigation Bar */
-nav {
-    background-color: var(--dark); /* Green color matching SDG theme */
-    padding: 0.5rem 1rem;
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 1000; /* Ensure it stays above other content */
-}
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin: 0 1rem;
-    font-weight: bold;
-    font-size: 1rem;
-}
-
-
-nav a:hover {
-    text-decoration: underline;
-}
 
 /* Footer - Enhanced */
 footer {

@@ -9,20 +9,32 @@
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background: var(--muted);
+  background-color: #c4e1f1;
   color: #222;
 }
 
+/* Sticky Navigation Bar */
 nav {
-  background: var(--primary);
-  text-align: center;
-  padding: 0.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+    background-color: var(--dark); /* Green color matching SDG theme */
+    padding: 0.5rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays above other content */
 }
 
-nav a { color: #fff; margin: 0 1rem; text-decoration:none; font-weight:600; }
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+
+nav a:hover {
+    text-decoration: underline;
+}
 
 header {
   background: var(--accent);
@@ -176,6 +188,26 @@ header {
   grid-column: 1 / -1;
   color: #666;
   font-style: italic;
+}
+
+/* Footer - Enhanced */
+footer {
+    background: var(--dark);
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    font-size: 1rem;
+}
+        
+.social-icons {
+    margin: 0.8rem 0;
+}
+        
+.social-icons a {
+    color: white;
+    font-size: 1.3rem; /* Reduced from 1.5rem */
+    margin: 0 8px;
+    transition: all 0.3s ease;
 }
 
 /* responsive */
