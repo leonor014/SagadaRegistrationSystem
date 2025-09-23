@@ -19,8 +19,7 @@
 body {
     font-family: 'Poppins', sans-serif;
     text-align: center;
-    color: var(--text);
-    background-image: url('SagadaRegistrationSystem/images/b7.jpg');
+    color: var(--light);
     line-height: 1.6;
     font-size: 14px; /* Slightly smaller base font */
 }
@@ -29,14 +28,13 @@ body {
 .about {
     padding: 2.5rem 1.5rem;
     text-align: center;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="%23f8f9fa"/><path d="M0 0L80 80" stroke="%23e9ecef" stroke-width="1.5"/></svg>');
-    background-size: 25px 25px;
+    background-image: url('../images/church.jpg');
 }
         
 .about h2 {
     font-size: 2.2rem; /* Reduced from 2.8rem */
     margin-bottom: 1.2rem;
-    color: var(--primary);
+    color: var(--light);
 }
         
 .about p {
