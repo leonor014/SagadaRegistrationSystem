@@ -164,65 +164,43 @@ function expandAttendanceDocs(docs) {
   
   docs.forEach((doc, index) => {
     const data = doc.data ? doc.data() : doc;
-    console.log(`Document ${index}:`, data);
-    
     const site = data.site || "Unknown Site";
     const ts = getDateFromField(data, "timestamp");
     const groupCountry = data.country || data.groupCountry || "Unknown";
     const groupRegion = data.region || data.groupRegion || "Unknown";
 
-    console.log(`Site: ${site}, Timestamp: ${ts}, Group Country: ${groupCountry}, Group Region: ${groupRegion}`);
-
     if (data.registrationType === "group" && Array.isArray(data.groupMembers)) {
       console.log(`Found group with ${data.groupMembers.length} members`);
       
       data.groupMembers.forEach((m, memberIndex) => {
-        const nationality = m.nationality || m.memberNationality || groupCountry || "Unknown";
-        const region = m.region || m.memberRegion || groupRegion || "Unknown";
-        const sex = m.sex || m.memberSex || "Unknown";
-        const dob = m.age || m.dateOfBirth || m.memberDOB || null;
-        
-        console.log(`Member ${memberIndex}:`, {
-          nationality,
-          region,
-          sex,
-          dob,
-          hasNationality: !!m.nationality,
-          hasMemberNationality: !!m.memberNationality,
-          hasRegion: !!m.region,
-          hasMemberRegion: !!m.memberRegion,
-          hasSex: !!m.sex,
-          hasMemberSex: !!m.memberSex,
-          hasAge: !!m.age,
-          hasDOB: !!m.dateOfBirth,
-          hasMemberDOB: !!m.memberDOB
-        });
-
         expanded.push({
           site: site,
           timestamp: ts,
-          nationality: nationality,
-          region: region,
-          sex: sex,
-          dateOfBirth: dob
+          nationality: m.nationality || m.memberNationality || groupCountry || "Unknown",
+          region: m.region || m.memberRegion || groupRegion || "Unknown",
+          sex: m.sex || m.memberSex || "Unknown",
+          // store consistently as dateOfBirth so age works
+          dateOfBirth: m.dateOfBirth || m.memberDOB || null,
+          age: m.age || null
         });
       });
     } else {
-      console.log("Single registration or no group members");
       expanded.push({
         site: site,
         timestamp: ts,
         nationality: data.nationality || data.country || "Unknown",
         region: data.region || "Unknown",
         sex: data.sex || "Unknown",
-        dateOfBirth: data.dateOfBirth || null
+        dateOfBirth: data.dateOfBirth || null,
+        age: data.age || null
       });
     }
   });
-  
+
   console.log("=== EXPANDED DATA ===", expanded);
   return expanded;
 }
+
 
 
 // --- Filter ---
