@@ -62,7 +62,9 @@ function getDateFromField(doc, field) {
 }
 
 function getAgeCategory(ageOrDob) {
-  if (!ageOrDob) return "Unknown";
+  if (ageOrDob === null || ageOrDob === undefined || ageOrDob === "") {
+    return "Unknown";
+  }
   
   try {
     let age;
@@ -181,7 +183,7 @@ function expandAttendanceDocs(docs) {
           sex: m.sex || m.memberSex || "Unknown",
           // store consistently as dateOfBirth so age works
           dateOfBirth: m.dateOfBirth || m.memberDOB || null,
-          age: m.age || null
+          age: m.age !== undefined && m.age !== null ? Number(m.age) : null
         });
       });
     } else {
@@ -192,7 +194,7 @@ function expandAttendanceDocs(docs) {
         region: data.region || "Unknown",
         sex: data.sex || "Unknown",
         dateOfBirth: data.dateOfBirth || null,
-        age: data.age || null
+        age: data.age !== undefined && data.age !== null ? Number(data.age) : null
       });
     }
   });
