@@ -470,7 +470,7 @@
         // Get selected tourists from the allTourists array
         let tourists = allTourists.filter(t => selectedTourists.has(t.name));
 
-        if (tourists.length === 1) {
+        /* if (tourists.length === 1) {
           // Individual Tourist Entry
           await addDoc(collection(db, "attendance"), {
             registrationNumber: registrationNumber,
@@ -486,6 +486,19 @@
           await addDoc(collection(db, "attendance"), {
             registrationNumber: registrationNumber,
             groupMembers: tourists, 
+            site: selectedSite,
+            timestamp: new Date()
+          });
+        } */
+
+        // Add one attendance record per tourist (individual or group)
+        for (const t of tourists) {
+          await addDoc(collection(db, "attendance"), {
+            registrationNumber: registrationNumber,
+            name: t.name,
+            age: t.age,
+            sex: t.sex,
+            nationality: t.nationality,
             site: selectedSite,
             timestamp: new Date()
           });

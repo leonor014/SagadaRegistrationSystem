@@ -423,7 +423,7 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   // Add age category to each document for easier processing
   siteData = siteData.map(d => ({
     ...d,
-    ageCategory: getAgeCategory(d.dateOfBirth)
+    ageCategory: getAgeCategory(d.age ?? d.dateOfBirth)
   }));
 
   // === 1. Total visits per month ===
