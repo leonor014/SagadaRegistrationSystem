@@ -296,26 +296,108 @@ function renderKPIs(docs, site = "__all") {
   `;
 }
 
-// --- Charts ---
+// --- Clear charts before rendering new ones ---
 function clearCharts() {
-  Object.values(charts).forEach(c => c.destroy && c.destroy());
+  for (let chartId in charts) {
+    if (charts[chartId]) charts[chartId].destroy();
+  }
   charts = {};
-  chartsArea.innerHTML = "";
 }
-function createChartCanvas(id, title) {
-  const div = document.createElement("div");
-  div.className = "chart-wrapper";
-  div.innerHTML = `<h3>${title}</h3><canvas id="${id}"></canvas>`;
-  chartsArea.appendChild(div);
-  return div.querySelector("canvas");
+
+// --- Create chart container if not present ---
+function createChartCanvas(canvasId, title) {
+  const analyticsSection = document.getElementById("analytics-section");
+  if (!analyticsSection) {
+    console.error("Missing #analytics-section in HTML");
+    return null;
+  }
+
+  let container = document.getElementById(canvasId + "-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = canvasId + "-container";
+    container.classList.add("chart-container");
+
+    const titleEl = document.createElement("h3");
+    titleEl.innerText = title;
+    container.appendChild(titleEl);
+
+    const canvas = document.createElement("canvas");
+    canvas.id = canvasId;
+    container.appendChild(canvas);
+
+    analyticsSection.appendChild(container);
+  }
+
+  return document.getElementById(canvasId);
 }
-function drawBarChart(id, title, labels, values) {
-  const ctx = createChartCanvas(id, title).getContext("2d");
-  charts[id] = new Chart(ctx, { type: "bar", data: { labels, datasets: [{ label: title, data: values }] }});
+
+// --- Bar Chart Function (Custom Colors Supported) ---
+function drawBarChart(canvasId, title, labels, data, useDifferentColors = false, customColors = []) {
+  const ctx = createChartCanvas(canvasId, title)?.getContext("2d");
+  if (!ctx) return;
+
+  let colors;
+  if (customColors.length > 0) {
+    colors = customColors;
+  } else if (useDifferentColors) {
+    colors = labels.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`);
+  } else {
+    colors = "rgba(75, 192, 192, 0.6)";
+  }
+
+  charts[canvasId] = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: title,
+        data: data,
+        backgroundColor: colors
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "top" },
+        title: { display: true, text: title }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
 }
-function drawPieChart(id, title, labels, values) {
-  const ctx = createChartCanvas(id, title).getContext("2d");
-  charts[id] = new Chart(ctx, { type: "pie", data: { labels, datasets: [{ data: values }] }});
+
+// --- Pie Chart Function (Custom Colors Supported) ---
+function drawPieChart(canvasId, title, labels, data, customColors = []) {
+  const ctx = createChartCanvas(canvasId, title)?.getContext("2d");
+  if (!ctx) return;
+
+  const colors = customColors.length > 0
+    ? customColors
+    : labels.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`);
+
+  charts[canvasId] = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: title,
+        data: data,
+        backgroundColor: colors
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "top" },
+        title: { display: true, text: title }
+      }
+    }
+  });
 }
 
 // --- Site Summary Table ---
@@ -387,23 +469,44 @@ function renderSiteSummary(docs) {
   chartsArea.appendChild(container);
 }
 
-// --- Analytics Rendering ---
 function renderGeneralAnalytics(docs) {
   clearCharts();
+
+  // Visits by Day
   const dayMap = new Map();
   docs.forEach(d => {
-    const dt = getDateFromField(d,"dateOfRegistration");
+    const dt = getDateFromField(d, "dateOfRegistration");
     if (!dt) return;
     const day = dt.getDate();
-    dayMap.set(day,(dayMap.get(day)||0)+1);
+    dayMap.set(day, (dayMap.get(day) || 0) + 1);
   });
-  const days = [...dayMap.keys()].sort((a,b)=>a-b);
-  drawBarChart("visits-day","Visits by Day",days.map(d=>"Day "+d),days.map(d=>dayMap.get(d)));
+  const days = [...dayMap.keys()].sort((a, b) => a - b);
+  drawBarChart("visits-day", "Visits by Day", days.map(d => "Day " + d), days.map(d => dayMap.get(d)), true);
 
+  // Gender Chart
   const genderMap = new Map();
-  docs.forEach(d=>genderMap.set(d.sex,(genderMap.get(d.sex)||0)+1));
-  drawPieChart("gender","Gender",[...genderMap.keys()],[...genderMap.values()]);
+  docs.forEach(d => genderMap.set(d.sex, (genderMap.get(d.sex) || 0) + 1));
+  drawPieChart("gender", "Gender", [...genderMap.keys()], [...genderMap.values()]);
+
+  // Region Chart
+  const regionMap = new Map();
+  docs.forEach(d => regionMap.set(d.region || "Unknown", (regionMap.get(d.region || "Unknown") || 0) + 1));
+  const regions = [...regionMap.entries()].sort((a, b) => b[1] - a[1]);
+  drawBarChart("region-chart", "Visits by Region", regions.map(r => r[0]), regions.map(r => r[1]), true);
+
+  // Top 10 Regions
+  const top10Regions = regions.slice(0, 10);
+  drawBarChart("region-summary", "Top 10 Regions", top10Regions.map(r => r[0]), top10Regions.map(r => r[1]), true);
+
+  // Nationality Chart
+  const nationalityMap = new Map();
+  docs.forEach(d => nationalityMap.set(d.nationality || "Unknown", (nationalityMap.get(d.nationality || "Unknown") || 0) + 1));
+  const nonFilipino = [...nationalityMap.entries()].filter(([nat]) => nat.toLowerCase() !== "filipino").sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  drawBarChart("nationality-chart", "Nationalities", [...nationalityMap.keys()], [...nationalityMap.values()], true);
+  drawBarChart("non-filipino-summary", "Top 10 Non-Filipino Nationalities", nonFilipino.map(n => n[0]), nonFilipino.map(n => n[1]), true);
 }
+
 
 function renderTouristSpotAnalytics(selectedSite, docs) {
   console.log(`Rendering analytics for ${selectedSite} with ${docs.length} documents`);
