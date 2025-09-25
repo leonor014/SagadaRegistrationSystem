@@ -118,6 +118,28 @@ function logDataStructure(docs, sampleSize = 2) {
   console.log("=== END ANALYSIS ===");
 }
 
+// Add this function to handle report type switching
+function switchReportType() {
+  currentReportType = reportType.value;
+  
+  // Hide all report sections first
+  document.querySelectorAll('.report-section').forEach(section => {
+    section.style.display = 'none';
+  });
+  
+  // Show the active report section
+  const activeSection = document.getElementById(`${currentReportType}-analytics`);
+  if (activeSection) {
+    activeSection.style.display = 'block';
+  }
+  
+  // Update analytics title
+  analyticsTitle.textContent = currentReportType === "general" ? "General Analytics" : "Tourist Spot Analytics";
+  siteSelectorContainer.style.display = currentReportType === "general" ? "none" : "flex";
+  
+  recomputeAndRender();
+}
+
 // Update the attendance listener to include debugging
 onSnapshot(query(collection(db,"attendance"),orderBy("timestamp","desc")),snap=>{
   attendance=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -205,17 +227,23 @@ function expandAttendanceDocs(docs) {
 
 
 
-// --- Filter ---
+// --- Enhanced Filter Function ---
 function filterByPeriod(docs, value, type, field) {
   if (!value) return docs;
+  
   return docs.filter(doc => {
     const dt = getDateFromField(doc, field);
     if (!dt) return false;
+    
     if (type === "month") {
       const [y, m] = value.split("-");
       return dt.getFullYear() === +y && dt.getMonth() === +m - 1;
     }
-    if (type === "year") return dt.getFullYear() === +value;
+    
+    if (type === "year") {
+      return dt.getFullYear() === +value;
+    }
+    
     return true;
   });
 }
@@ -256,11 +284,20 @@ function populateSiteDropdown() {
 
 // --- KPI Cards ---
 function renderKPIs(docs, site = "__all") {
+  // Determine which KPI section to use based on current report type
+  const kpiSectionId = currentReportType === "general" ? "kpi-section" : "kpi-section-tourist";
+  const kpiSectionElement = document.getElementById(kpiSectionId);
+  
+  if (!kpiSectionElement) {
+    console.error(`Missing #${kpiSectionId} in HTML`);
+    return;
+  }
+
   let data = site === "__all" ? docs : docs.filter(d => d.site === site);
   const total = data.length;
   
   if (total === 0) {
-    kpiSection.innerHTML = `
+    kpiSectionElement.innerHTML = `
       <div class="kpi-card"><h2>0</h2><p>Total visits</p></div>
       <div class="kpi-card"><h2>No data</h2><p>Gender counts</p></div>
       <div class="kpi-card"><h2>No data</h2><p>Top Non-Filipino</p></div>
@@ -288,7 +325,7 @@ function renderKPIs(docs, site = "__all") {
 
   const topN = (map, n = 5) => [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, n);
   
-  kpiSection.innerHTML = `
+  kpiSectionElement.innerHTML = `
     <div class="kpi-card"><h2>${total}</h2><p>Total visits</p></div>
     <div class="kpi-card"><h2>${[...genderMap].map(([g, v]) => `${g}: ${v}`).join(", ") || "No data"}</h2><p>Gender counts</p></div>
     <div class="kpi-card"><h2>${topN(natMap).map(x => x[0]).join(", ") || "No data"}</h2><p>Top Non-Filipino</p></div>
@@ -306,9 +343,12 @@ function clearCharts() {
 
 // --- Create chart container if not present ---
 function createChartCanvas(canvasId, title) {
-  const analyticsSection = document.getElementById("analytics-section");
-  if (!analyticsSection) {
-    console.error("Missing #analytics-section in HTML");
+  // Determine which charts area to use based on current report type
+  const chartsAreaId = currentReportType === "general" ? "general-charts-area" : "tourist-charts-area";
+  const chartsArea = document.getElementById(chartsAreaId);
+  
+  if (!chartsArea) {
+    console.error(`Missing #${chartsAreaId} in HTML`);
     return null;
   }
 
@@ -326,24 +366,43 @@ function createChartCanvas(canvasId, title) {
     canvas.id = canvasId;
     container.appendChild(canvas);
 
-    analyticsSection.appendChild(container);
+    chartsArea.appendChild(container);
   }
 
   return document.getElementById(canvasId);
 }
 
-// --- Bar Chart Function (Custom Colors Supported) ---
-function drawBarChart(canvasId, title, labels, data, useDifferentColors = false, customColors = []) {
+// Enhanced Creative color schemes
+const creativeColors = {
+  primary: ['#2e7d32', '#4caf50', '#81c784', '#a5d6a7', '#c8e6c9'],
+  vibrant: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD', '#FF6B9D', '#A3DE83'],
+  earth: ['#8B4513', '#A0522D', '#CD853F', '#DEB887', '#F5DEB3', '#D2B48C', '#BC8F8F', '#D2691E'],
+  ocean: ['#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE', '#1E40AF', '#3730A3'],
+  pastel: ['#FFD1DC', '#C4F0FF', '#D1FFBD', '#FFE4B5', '#E6CCFF', '#B5F4FF', '#FFCCCC', '#CCFFCC'],
+  jewel: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD', '#FF6B9D', '#A3DE83']
+};
+
+// --- Enhanced Bar Chart Function (Always Different Colors) ---
+function drawBarChart(canvasId, title, labels, data, useDifferentColors = true, customColors = []) {
   const ctx = createChartCanvas(canvasId, title)?.getContext("2d");
   if (!ctx) return;
 
-  let colors;
+  let backgroundColor;
+  let borderColor;
+  
   if (customColors.length > 0) {
-    colors = customColors;
+    backgroundColor = customColors;
+    borderColor = customColors.map(color => darkenColor(color, 20));
   } else if (useDifferentColors) {
-    colors = labels.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`);
+    // Use creative color scheme - assign different colors to each bar
+    const colorScheme = creativeColors.vibrant;
+    backgroundColor = labels.map((_, i) => colorScheme[i % colorScheme.length]);
+    borderColor = backgroundColor.map(color => darkenColor(color, 20));
   } else {
-    colors = "rgba(75, 192, 192, 0.6)";
+    // Single gradient color for all bars (fallback)
+    const gradientColor = createGradient(ctx, '#2e7d32', '#4caf50');
+    backgroundColor = gradientColor;
+    borderColor = darkenColor('#2e7d32', 20);
   }
 
   charts[canvasId] = new Chart(ctx, {
@@ -353,31 +412,98 @@ function drawBarChart(canvasId, title, labels, data, useDifferentColors = false,
       datasets: [{
         label: title,
         data: data,
-        backgroundColor: colors
+        backgroundColor: backgroundColor,
+        borderColor: borderColor,
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: "top" },
-        title: { display: true, text: title }
+        legend: { 
+          display: false, // Hide legend for bar charts since each bar is different
+          position: "top",
+          labels: {
+            usePointStyle: true,
+            padding: 20,
+            font: {
+              size: 12,
+              family: "'Arial', sans-serif"
+            }
+          }
+        },
+        title: { 
+          display: true, 
+          text: title,
+          font: {
+            size: 16,
+            weight: 'bold'
+          },
+          padding: 20
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleFont: {
+            size: 14
+          },
+          bodyFont: {
+            size: 12
+          },
+          padding: 12,
+          cornerRadius: 8
+        }
       },
       scales: {
-        y: { beginAtZero: true }
+        y: { 
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.1)'
+          },
+          ticks: {
+            font: {
+              size: 11
+            }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: {
+              size: 11
+            }
+          }
+        }
+      },
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
       }
     }
   });
 }
 
-// --- Pie Chart Function (Custom Colors Supported) ---
+// --- Enhanced Pie Chart Function (Different Colors for Each Slice) ---
 function drawPieChart(canvasId, title, labels, data, customColors = []) {
-  const ctx = createChartCanvas(canvasId, title)?.getContext("2d");
+  const ctx = createChartCanvas(canvasId, title, 'pie')?.getContext("2d");
   if (!ctx) return;
 
-  const colors = customColors.length > 0
-    ? customColors
-    : labels.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`);
+  // Use custom colors if provided, otherwise generate different colors for each slice
+  let colors;
+  if (customColors.length > 0) {
+    colors = customColors;
+  } else {
+    // Use different colors from the vibrant scheme for each slice
+    colors = labels.map((_, i) => {
+      const colorSchemes = [creativeColors.vibrant, creativeColors.earth, creativeColors.ocean];
+      const scheme = colorSchemes[i % colorSchemes.length];
+      return scheme[i % scheme.length];
+    });
+  }
 
   charts[canvasId] = new Chart(ctx, {
     type: "pie",
@@ -386,18 +512,77 @@ function drawPieChart(canvasId, title, labels, data, customColors = []) {
       datasets: [{
         label: title,
         data: data,
-        backgroundColor: colors
+        backgroundColor: colors,
+        borderColor: colors.map(color => darkenColor(color, 30)),
+        borderWidth: 3,
+        hoverOffset: 15
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: "top" },
-        title: { display: true, text: title }
+        legend: { 
+          position: "right",
+          labels: {
+            usePointStyle: true,
+            padding: 20,
+            font: {
+              size: 12,
+              family: "'Arial', sans-serif"
+            }
+          }
+        },
+        title: { 
+          display: true, 
+          text: title,
+          font: {
+            size: 16,
+            weight: 'bold'
+          },
+          padding: 20
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          }
+        }
+      },
+      animation: {
+        animateScale: true,
+        animateRotate: true,
+        duration: 1000,
+        easing: 'easeOutQuart'
       }
     }
   });
+}
+
+// Helper function to create gradients
+function createGradient(ctx, color1, color2) {
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, color1);
+  gradient.addColorStop(1, color2);
+  return gradient;
+}
+
+// Helper function to darken colors
+function darkenColor(color, percent) {
+  const num = parseInt(color.replace("#", ""), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) - amt;
+  const G = (num >> 8 & 0x00FF) - amt;
+  const B = (num & 0x0000FF) - amt;
+  return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
 }
 
 // --- Site Summary Table ---
@@ -472,58 +657,113 @@ function renderSiteSummary(docs) {
 function renderGeneralAnalytics(docs) {
   clearCharts();
 
-  // Visits by Day
-  const dayMap = new Map();
-  docs.forEach(d => {
-    const dt = getDateFromField(d, "dateOfRegistration");
-    if (!dt) return;
-    const day = dt.getDate();
-    dayMap.set(day, (dayMap.get(day) || 0) + 1);
-  });
-  const days = [...dayMap.keys()].sort((a, b) => a - b);
-  drawBarChart("visits-day", "Visits by Day", days.map(d => "Day " + d), days.map(d => dayMap.get(d)), true);
+  const type = filterType.value;
+  const periodValue = monthInput.value;
+  const isYearly = type === "year";
+  
+  // Visits by Day/Month based on filter type
+  if (isYearly) {
+    // Yearly view: Show monthly totals from Jan to Dec
+    const monthMap = new Map();
+    // Initialize all months
+    for (let i = 0; i < 12; i++) {
+      monthMap.set(i, 0);
+    }
+    
+    docs.forEach(d => {
+      const dt = getDateFromField(d, "dateOfRegistration");
+      if (!dt) return;
+      const month = dt.getMonth();
+      monthMap.set(month, (monthMap.get(month) || 0) + 1);
+    });
+    
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const months = [...monthMap.keys()].sort((a, b) => a - b);
+    drawBarChart("visits-month", `Monthly Visits - ${periodValue}`, 
+                 months.map(m => monthNames[m]), months.map(m => monthMap.get(m)), true);
+  } else {
+    // Monthly view: Show daily totals
+    const dayMap = new Map();
+    docs.forEach(d => {
+      const dt = getDateFromField(d, "dateOfRegistration");
+      if (!dt) return;
+      const day = dt.getDate();
+      dayMap.set(day, (dayMap.get(day) || 0) + 1);
+    });
+    const days = [...dayMap.keys()].sort((a, b) => a - b);
+    drawBarChart("visits-day", `Daily Visits - ${periodValue}`, 
+                 days.map(d => "Day " + d), days.map(d => dayMap.get(d)), true);
+  }
 
-  // Gender Chart
+  // Gender Chart (always shows totals for selected period)
   const genderMap = new Map();
   docs.forEach(d => genderMap.set(d.sex, (genderMap.get(d.sex) || 0) + 1));
-  drawPieChart("gender", "Gender", [...genderMap.keys()], [...genderMap.values()]);
+  drawPieChart("gender", `Gender Distribution - ${isYearly ? periodValue : periodValue.split('-')[0]}`, 
+               [...genderMap.keys()], [...genderMap.values()]);
 
-  // Region Chart
+  // Region Chart (always shows totals for selected period)
   const regionMap = new Map();
   docs.forEach(d => regionMap.set(d.region || "Unknown", (regionMap.get(d.region || "Unknown") || 0) + 1));
   const regions = [...regionMap.entries()].sort((a, b) => b[1] - a[1]);
-  drawBarChart("region-chart", "Visits by Region", regions.map(r => r[0]), regions.map(r => r[1]), true);
+  
+  if (isYearly) {
+    // Show top regions for the year
+    const topRegions = regions.slice(0, 10);
+    drawBarChart("region-chart", `Top Regions - ${periodValue}`, 
+                 topRegions.map(r => r[0]), topRegions.map(r => r[1]), true);
+  } else {
+    // Show all regions for the month
+    drawBarChart("region-chart", `Visits by Region - ${periodValue}`, 
+                 regions.map(r => r[0]), regions.map(r => r[1]), true);
+  }
 
-  // Top 10 Regions
-  const top10Regions = regions.slice(0, 10);
-  drawBarChart("region-summary", "Top 10 Regions", top10Regions.map(r => r[0]), top10Regions.map(r => r[1]), true);
-
-  // Nationality Chart
+  // Nationality Chart (always shows totals for selected period)
   const nationalityMap = new Map();
   docs.forEach(d => nationalityMap.set(d.nationality || "Unknown", (nationalityMap.get(d.nationality || "Unknown") || 0) + 1));
-  const nonFilipino = [...nationalityMap.entries()].filter(([nat]) => nat.toLowerCase() !== "filipino").sort((a, b) => b[1] - a[1]).slice(0, 10);
+  
+  if (isYearly) {
+    // Show top nationalities for the year
+    const topNationalities = [...nationalityMap.entries()].slice(0, 10);
+    drawBarChart("nationality-chart", `Top Nationalities - ${periodValue}`, 
+                 topNationalities.map(n => n[0]), topNationalities.map(n => n[1]), true);
+  } else {
+    // Show all nationalities for the month
+    drawBarChart("nationality-chart", `Nationalities - ${periodValue}`, 
+                 [...nationalityMap.keys()], [...nationalityMap.values()], true);
+  }
 
-  drawBarChart("nationality-chart", "Nationalities", [...nationalityMap.keys()], [...nationalityMap.values()], true);
-  drawBarChart("non-filipino-summary", "Top 10 Non-Filipino Nationalities", nonFilipino.map(n => n[0]), nonFilipino.map(n => n[1]), true);
+  // Top 10 Non-Filipino Nationalities (always top 10 regardless of period)
+  const nonFilipino = [...nationalityMap.entries()]
+    .filter(([nat]) => !["philippines", "filipino", "ph"].includes(nat.toLowerCase()))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  drawBarChart("non-filipino-summary", `Top 10 Non-Filipino Nationalities - ${isYearly ? periodValue : periodValue.split('-')[0]}`, 
+               nonFilipino.map(n => n[0]), nonFilipino.map(n => n[1]), true);
 }
-
 
 function renderTouristSpotAnalytics(selectedSite, docs) {
   console.log(`Rendering analytics for ${selectedSite} with ${docs.length} documents`);
   
   if (docs.length === 0) {
     console.log("No documents found for the selected site and period");
-    // Display a message to the user
-    chartsArea.innerHTML = `<div class="no-data-message">No data available for ${selectedSite} in the selected period</div>`;
+    const chartsAreaId = currentReportType === "general" ? "general-charts-area" : "tourist-charts-area";
+    const chartsArea = document.getElementById(chartsAreaId);
+    if (chartsArea) {
+      chartsArea.innerHTML = `<div class="no-data-message">No data available for ${selectedSite === "__all" ? "All Sites" : selectedSite} in the selected period</div>`;
+    }
     return;
   }
 
   clearCharts();
 
+  const type = filterType.value;
+  const periodValue = monthInput.value;
+  const isYearly = type === "year";
+  const siteLabel = selectedSite === "__all" ? "All Sites" : selectedSite;
+
   // Filter data by selected site if not "All Sites"
-  let siteData = selectedSite === "__all" 
-    ? docs 
-    : docs.filter(d => d.site === selectedSite);
+  let siteData = selectedSite === "__all" ? docs : docs.filter(d => d.site === selectedSite);
 
   // Add age category to each document for easier processing
   siteData = siteData.map(d => ({
@@ -531,23 +771,39 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
     ageCategory: getAgeCategory(d.age ?? d.dateOfBirth)
   }));
 
-  // === 1. Total visits per month ===
-  const monthlyVisits = new Map();
-  siteData.forEach(d => {
-    const dt = getDateFromField(d, "timestamp");
-    if (!dt) return;
-    const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
-    monthlyVisits.set(key, (monthlyVisits.get(key) || 0) + 1);
-  });
-  
-  const sortedMonths = [...monthlyVisits.entries()].sort((a, b) => {
-    const [ay, am] = a[0].split("-").map(Number);
-    const [by, bm] = b[0].split("-").map(Number);
-    return ay - by || am - bm;
-  });
-  
-  drawBarChart("monthlyVisits", `Monthly Visits - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
-               sortedMonths.map(x => x[0]), sortedMonths.map(x => x[1]));
+  // === 1. Visits per period ===
+  if (isYearly) {
+    // Yearly view: Show monthly totals from Jan to Dec
+    const monthMap = new Map();
+    // Initialize all months
+    for (let i = 0; i < 12; i++) {
+      monthMap.set(i, 0);
+    }
+    
+    siteData.forEach(d => {
+      const dt = getDateFromField(d, "timestamp");
+      if (!dt) return;
+      const month = dt.getMonth();
+      monthMap.set(month, (monthMap.get(month) || 0) + 1);
+    });
+    
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const months = [...monthMap.keys()].sort((a, b) => a - b);
+    drawBarChart("periodVisits", `Monthly Visits - ${siteLabel} (${periodValue})`, 
+                 months.map(m => monthNames[m]), months.map(m => monthMap.get(m)));
+  } else {
+    // Monthly view: Show daily totals
+    const dayMap = new Map();
+    siteData.forEach(d => {
+      const dt = getDateFromField(d, "timestamp");
+      if (!dt) return;
+      const day = dt.getDate();
+      dayMap.set(day, (dayMap.get(day) || 0) + 1);
+    });
+    const days = [...dayMap.keys()].sort((a, b) => a - b);
+    drawBarChart("periodVisits", `Monthly Visits - ${siteLabel} (${periodValue})`, 
+             months.map(m => monthNames[m]), months.map(m => monthMap.get(m)));
+  }
 
   // === 2. Age Categories ===
   const ageCounts = { 
@@ -562,17 +818,18 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
     ageCounts[d.ageCategory] = (ageCounts[d.ageCategory] || 0) + 1;
   });
   
-  drawBarChart("ageCategories", `Age Distribution - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
-               Object.keys(ageCounts), Object.values(ageCounts));
+  drawBarChart("ageCategories", `Age Distribution - ${siteLabel} (${isYearly ? periodValue : periodValue.split('-')[0]})`, 
+             Object.keys(ageCounts), Object.values(ageCounts));
 
   // === 3. Gender Distribution ===
   const genderCounts = new Map();
   siteData.forEach(d => genderCounts.set(d.sex, (genderCounts.get(d.sex) || 0) + 1));
   
-  drawPieChart("genderDist", `Gender Distribution - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
-               [...genderCounts.keys()], [...genderCounts.values()]);
+  drawPieChart("genderDist", `Gender Distribution - ${siteLabel} (${isYearly ? periodValue : periodValue.split('-')[0]})`, 
+             [...genderCounts.keys()], [...genderCounts.values()]);
 
-  // === 4. Regions in the Philippines ===
+
+  // === 4. Regions ===
   const regionCounts = new Map();
   siteData.forEach(d => {
     const region = d.region || "Unknown";
@@ -580,8 +837,9 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   });
   
   const topRegions = [...regionCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  drawBarChart("regions", `Top Regions - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
-               topRegions.map(r => r[0]), topRegions.map(r => r[1]));
+  drawBarChart("regions", `Top Regions - ${siteLabel} (${isYearly ? periodValue : periodValue.split('-')[0]})`, 
+             topRegions.map(r => r[0]), topRegions.map(r => r[1]));
+
 
   // === 5. Top 10 Non-Filipino Nationalities ===
   const natCounts = new Map();
@@ -593,43 +851,51 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   });
   
   const topNats = [...natCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  drawBarChart("nonFilipino", `Top 10 Non-Filipino Visitors - ${selectedSite === "__all" ? "All Sites" : selectedSite}`, 
-               topNats.map(n => n[0]), topNats.map(n => n[1]));
+  drawBarChart("nonFilipino", `Top 10 Non-Filipino Visitors - ${siteLabel} (${isYearly ? periodValue : periodValue.split('-')[0]})`, 
+             topNats.map(n => n[0]), topNats.map(n => n[1]));
+             
 }
-
 
 // --- Main Render ---
 function recomputeAndRender() {
   let value = monthInput.value;
   const type = filterType.value;
-  if (type === "year" && value.includes("-")) value = value.split("-")[0];
+  
+  // Handle year-only input
+  if (type === "year") {
+    if (value.includes("-")) {
+      value = value.split("-")[0];
+    }
+    // Ensure we have a valid year
+    if (!value || value.length !== 4) {
+      value = new Date().getFullYear().toString();
+    }
+  }
+  
   const site = siteDropdown.value || "__all";
 
   console.log(`Recomputing with: type=${currentReportType}, site=${site}, period=${value}, filterType=${type}`);
 
+  // Clear previous charts
+  clearCharts();
+
   if (currentReportType === "general") {
     const expanded = expandRegistrationDocs(registrations);
-    console.log("General analytics expanded data:", expanded);
-    
     const filtered = filterByPeriod(expanded, value, type, "dateOfRegistration");
-    console.log("General analytics filtered data:", filtered);
-    
     renderKPIs(filtered);
     renderGeneralAnalytics(filtered);
   } else {
     const expanded = expandAttendanceDocs(attendance);
-    console.log("Tourist spot expanded data:", expanded);
-    
     const filtered = filterByPeriod(expanded, value, type, "timestamp");
-    console.log("Tourist spot filtered data:", filtered);
-    
     const siteData = site === "__all" ? filtered : filtered.filter(d => d.site === site);
-    console.log(`Site data for ${site}:`, siteData);
-    
     renderKPIs(siteData, site);
     renderTouristSpotAnalytics(site, siteData);
   }
 }
+
+  
+
+
 
 // --- Firestore Listeners ---
 onSnapshot(query(collection(db,"site"),orderBy("name","asc")),snap=>{
@@ -663,6 +929,14 @@ filterType.addEventListener("change",()=>{
     monthInput.min="2020"; monthInput.max="2030"; monthInput.value=new Date().getFullYear();
   }
   recomputeAndRender();
+});
+
+// Update event listeners
+reportType.addEventListener("change", switchReportType);
+
+// Initialize report type on load
+document.addEventListener('DOMContentLoaded', function() {
+  switchReportType(); // Set initial state
 });
 
 // --- Default Month ---
