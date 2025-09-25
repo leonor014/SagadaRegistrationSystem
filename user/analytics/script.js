@@ -772,6 +772,9 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   }));
 
   // === 1. Visits per period ===
+  let periodLabels = [];
+  let periodData = [];
+  
   if (isYearly) {
     // Yearly view: Show monthly totals from Jan to Dec
     const monthMap = new Map();
@@ -788,9 +791,8 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
     });
     
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const months = [...monthMap.keys()].sort((a, b) => a - b);
-    drawBarChart("periodVisits", `Monthly Visits - ${siteLabel} (${periodValue})`, 
-                 months.map(m => monthNames[m]), months.map(m => monthMap.get(m)));
+    periodLabels = monthNames;
+    periodData = [...monthMap.values()];
   } else {
     // Monthly view: Show daily totals
     const dayMap = new Map();
@@ -800,10 +802,16 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
       const day = dt.getDate();
       dayMap.set(day, (dayMap.get(day) || 0) + 1);
     });
-    const days = [...dayMap.keys()].sort((a, b) => a - b);
-    drawBarChart("periodVisits", `Monthly Visits - ${siteLabel} (${periodValue})`, 
-             months.map(m => monthNames[m]), months.map(m => monthMap.get(m)));
+    
+    // Sort days and create labels
+    const sortedDays = [...dayMap.entries()].sort((a, b) => a[0] - b[0]);
+    periodLabels = sortedDays.map(([day]) => "Day " + day);
+    periodData = sortedDays.map(([, count]) => count);
   }
+  
+  // Draw the period visits chart
+  drawBarChart("periodVisits", `${isYearly ? 'Monthly' : 'Daily'} Visits - ${siteLabel} (${periodValue})`, 
+               periodLabels, periodData);
 
   // === 2. Age Categories ===
   const ageCounts = { 
@@ -819,15 +827,14 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   });
   
   drawBarChart("ageCategories", `Age Distribution - ${siteLabel} (${isYearly ? periodValue : periodValue.split('-')[0]})`, 
-             Object.keys(ageCounts), Object.values(ageCounts));
+               Object.keys(ageCounts), Object.values(ageCounts));
 
   // === 3. Gender Distribution ===
   const genderCounts = new Map();
   siteData.forEach(d => genderCounts.set(d.sex, (genderCounts.get(d.sex) || 0) + 1));
   
   drawPieChart("genderDist", `Gender Distribution - ${siteLabel} (${isYearly ? periodValue : periodValue.split('-')[0]})`, 
-             [...genderCounts.keys()], [...genderCounts.values()]);
-
+               [...genderCounts.keys()], [...genderCounts.values()]);
 
   // === 4. Regions ===
   const regionCounts = new Map();
@@ -838,8 +845,7 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   
   const topRegions = [...regionCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
   drawBarChart("regions", `Top Regions - ${siteLabel} (${isYearly ? periodValue : periodValue.split('-')[0]})`, 
-             topRegions.map(r => r[0]), topRegions.map(r => r[1]));
-
+               topRegions.map(r => r[0]), topRegions.map(r => r[1]));
 
   // === 5. Top 10 Non-Filipino Nationalities ===
   const natCounts = new Map();
@@ -852,14 +858,24 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   
   const topNats = [...natCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
   drawBarChart("nonFilipino", `Top 10 Non-Filipino Visitors - ${siteLabel} (${isYearly ? periodValue : periodValue.split('-')[0]})`, 
-             topNats.map(n => n[0]), topNats.map(n => n[1]));
-             
+               topNats.map(n => n[0]), topNats.map(n => n[1]));
 }
 
 // --- Main Render ---
 function recomputeAndRender() {
   let value = monthInput.value;
   const type = filterType.value;
+  
+  // Handle empty period value
+  if (!value) {
+    const now = new Date();
+    if (type === "year") {
+      value = now.getFullYear().toString();
+    } else {
+      value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    }
+    monthInput.value = value; // Update the input field
+  }
   
   // Handle year-only input
   if (type === "year") {
@@ -891,9 +907,7 @@ function recomputeAndRender() {
     renderKPIs(siteData, site);
     renderTouristSpotAnalytics(site, siteData);
   }
-}
-
-  
+}  
 
 
 
