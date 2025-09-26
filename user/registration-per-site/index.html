@@ -408,122 +408,103 @@
     }
 
     async function fetchDetails() {
-      document.getElementById("error").textContent = "";
-      document.getElementById("touristList").innerHTML = "";
-      allTourists = [];
-      selectedTourists.clear(); // Clear previous selections
-      let regNumber = document.getElementById("registrationNumber").value.trim();
+  document.getElementById("error").textContent = "";
+  document.getElementById("touristList").innerHTML = "";
+  allTourists = [];
+  selectedTourists.clear(); // Clear previous selections
+  let regNumber = document.getElementById("registrationNumber").value.trim();
 
-      if (!regNumber) {
-        document.getElementById("error").textContent = "Please enter a registration number.";
-        return;
-      }
+  if (!regNumber) {
+    document.getElementById("error").textContent = "Please enter a registration number.";
+    return;
+  }
 
-      try {
-        const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
-        const querySnapshot = await getDocs(q);
+  try {
+    const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
+    const querySnapshot = await getDocs(q);
 
-        if (!querySnapshot.empty) {
-          let touristListDiv = document.getElementById("touristList");
-          touristListDiv.innerHTML = "";
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach(docSnap => {
+        let data = docSnap.data();
+        let tourists = [];
 
-          querySnapshot.forEach(docSnap => {
-            let data = docSnap.data();
-            let tourists = [];
-
-            if (data.fullName) {
-              // Individual registration
-              tourists.push({
-                name: data.fullName,
-                age: calculateAge(data.dateOfBirth),
-                sex: data.sex,
-                nationality: getNationality(data.country),
-                region: data.region || "Region not applicable"  // ✅ For individuals
-              });
-            } else if (data.groupMembers && Array.isArray(data.groupMembers)) {
-              // Group registration
-              tourists = data.groupMembers.map(member => ({
-                name: member.memberName,
-                age: calculateAge(member.memberDOB),
-                sex: member.memberSex,
-                nationality: getNationality(data.groupCountry),
-                region: data.groupRegion || "Region not applicable"  // ✅ For groups
-              }));
-            }
-
-            allTourists = tourists;
+        // ✅ Individual registration
+        if (data.fullName) {
+          tourists.push({
+            name: data.fullName,
+            age: calculateAge(data.dateOfBirth),
+            sex: data.sex,
+            nationality: getNationality(data.country),
+            region: data.region || "Region not applicable" // ✅ from individual
           });
-
-          renderTablePage(1);
-          document.getElementById("touristDetails").style.display = "block";
-        } else {
-          document.getElementById("error").textContent = "Registration number not found.";
         }
-      } catch (error) {
-        document.getElementById("error").textContent = "Error fetching data: " + error.message;
-      }
+
+        // ✅ Group registration
+        else if (data.groupMembers && Array.isArray(data.groupMembers)) {
+          tourists = data.groupMembers.map(member => ({
+            name: member.memberName,
+            age: calculateAge(member.memberDOB),
+            sex: member.memberSex,
+            nationality: getNationality(data.groupCountry),
+            region: data.groupRegion || "Region not applicable" // ✅ from group
+          }));
+        }
+
+        // ✅ Push all tourists into main array (don’t overwrite)
+        allTourists.push(...tourists);
+      });
+
+      renderTablePage(1);
+      document.getElementById("touristDetails").style.display = "block";
+    } else {
+      document.getElementById("error").textContent = "Registration number not found.";
     }
+  } catch (error) {
+    document.getElementById("error").textContent = "Error fetching data: " + error.message;
+  }
+}
+
 
     // --- Firestore Save ---
     async function submitAttendance() {
-      try {
-        let selectedSite = document.getElementById("siteSelect").value;
-        let registrationNumber = document.getElementById("registrationNumber").value.trim();
+  try {
+    let selectedSite = document.getElementById("siteSelect").value;
+    let registrationNumber = document.getElementById("registrationNumber").value.trim();
 
-        if (selectedTourists.size === 0) {
-          alert("Please select at least one tourist.");
-          return;
-        }
-
-        // Get selected tourists from the allTourists array
-        let tourists = allTourists.filter(t => selectedTourists.has(t.name));
-
-        /* if (tourists.length === 1) {
-          // Individual Tourist Entry
-          await addDoc(collection(db, "attendance"), {
-            registrationNumber: registrationNumber,
-            name: tourists[0].name,
-            age: tourists[0].age,
-            sex: tourists[0].sex,
-            nationality: tourists[0].nationality,
-            site: selectedSite,
-            timestamp: new Date()
-          });
-        } else {
-          // Group Attendance Entry
-          await addDoc(collection(db, "attendance"), {
-            registrationNumber: registrationNumber,
-            groupMembers: tourists, 
-            site: selectedSite,
-            timestamp: new Date()
-          });
-        } */
-
-        // Add one attendance record per tourist (individual or group)
-        for (const t of tourists) {
-          await addDoc(collection(db, "attendance"), {
-            registrationNumber: registrationNumber,
-            name: t.name,
-            age: t.age,
-            sex: t.sex,
-            nationality: t.nationality,
-            region: t.region, // ✅ Save region here
-            site: selectedSite,
-            timestamp: new Date()
-          });
-        }
-
-        alert("Attendance recorded successfully!");
-        document.getElementById("touristDetails").style.display = "none"; 
-        document.getElementById("registrationNumber").value = "REG-"; 
-        document.getElementById("touristList").innerHTML = "";
-        selectedTourists.clear(); // Clear selections after submission
-
-      } catch (error) {
-        console.error("Error submitting attendance: ", error);
-        alert("Error saving attendance. Please try again.");
-      }
+    if (selectedTourists.size === 0) {
+      alert("Please select at least one tourist.");
+      return;
     }
+
+    // ✅ Get selected tourists from the allTourists array
+    let tourists = allTourists.filter(t => selectedTourists.has(t.name));
+
+    // ✅ Save one attendance record per tourist
+    for (const t of tourists) {
+      await addDoc(collection(db, "attendance"), {
+        registrationNumber: registrationNumber,
+        name: t.name,
+        age: t.age,
+        sex: t.sex,
+        nationality: t.nationality,
+        region: t.region || "Region not applicable", // ✅ always available
+        site: selectedSite,
+        timestamp: new Date()
+      });
+    }
+
+    alert("Attendance recorded successfully!");
+    document.getElementById("touristDetails").style.display = "none";
+    document.getElementById("registrationNumber").value = "REG-";
+    document.getElementById("touristList").innerHTML = "";
+    selectedTourists.clear(); // ✅ Clear after submission
+
+  } catch (error) {
+    console.error("Error submitting attendance: ", error);
+    alert("Error saving attendance. Please try again.");
+  }
+}
+
 
     // --- Event Listeners ---
     document.addEventListener("DOMContentLoaded", () => {
