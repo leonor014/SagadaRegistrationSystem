@@ -18,10 +18,7 @@
                     <img id="userAvatar" src="https://avatar.iran.liara.run/username?username=Leonor+Balintag"
                         alt="User Avatar">
                 </div>
-                <div class="user-info">
-                    <span class="user-name">Leonor</span>
-                    <span class="user-lastname">Balintag</span>
-                </div>
+                <span class="logo_name">Dashboard</span>
             </div>
             <i class="uil uil-bars sidebar-toggle" id="sidebarToggle"></i>
         </div>
@@ -72,11 +69,15 @@
     <!-- Main Dashboard Content -->
     <section class="dashboard-main">
         <div class="top">
-            <div class="dashboard-title">
-                <h1>Tourism Analytics Dashboard</h1>
-                <p>Insights into tourist visits and trends</p>
+            <div class="top-container">
+                <i class="uil uil-bars sidebar-toggle" id="sidebarToggle"></i>
+                <div class="dashboard-title">
+                    <h1>Tourism Analytics Dashboard</h1>
+                    <p>Insights into tourist visits and trends</p>
+                </div>
             </div>
         </div>
+
 
         <div class="dashboard-content">
             <!-- Report type selector and site dropdown -->
@@ -169,32 +170,55 @@
   </footer>
 
   <script>
-    // Sidebar toggle functionality
+    // Enhanced Sidebar toggle functionality
     document.addEventListener("DOMContentLoaded", function () {
         const sidebar = document.querySelector(".sidebar");
+        const sidebarToggle = document.getElementById("sidebarToggle");
         const dashboardMain = document.querySelector(".dashboard-main");
         const footer = document.querySelector("footer");
 
+        // Toggle sidebar function with smooth transitions
+        function toggleSidebar() {
+            sidebar.classList.toggle("close");
+            dashboardMain.classList.toggle("sidebar-collapsed");
+            footer.classList.toggle("sidebar-collapsed");
+            sidebarToggle.classList.toggle("rotated");
+
+            // Store collapsed state
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains("close"));
+        }
+
+        // Responsive behavior
         function handleResize() {
             if (window.innerWidth <= 768) {
-                // Collapse sidebar on mobile
-                sidebar.classList.remove("mobile-open");
-                sidebar.classList.add("collapsed");
+                sidebar.classList.add("close", "mobile");
                 dashboardMain.classList.add("sidebar-collapsed");
                 footer.classList.add("sidebar-collapsed");
             } else {
-                // Expand sidebar on larger screens
-                sidebar.classList.remove("collapsed");
-                dashboardMain.classList.remove("sidebar-collapsed");
-                footer.classList.remove("sidebar-collapsed");
+                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                sidebar.classList.toggle("close", isCollapsed);
+                dashboardMain.classList.toggle("sidebar-collapsed", isCollapsed);
+                footer.classList.toggle("sidebar-collapsed", isCollapsed);
             }
         }
 
-        // Run on page load and on resize
-        handleResize();
-            window.addEventListener("resize", handleResize);
-    });
+        // Toggle on click
+        sidebarToggle.addEventListener("click", toggleSidebar);
 
+        // Auto-close when clicking outside on mobile
+        document.addEventListener("click", function (e) {
+            if (window.innerWidth <= 768 && 
+                sidebar.classList.contains("mobile") && 
+                !sidebar.contains(e.target) && 
+                !sidebarToggle.contains(e.target)) {
+                sidebar.classList.add("close");
+            }
+        });
+
+        // Run on page load + resize
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        });
   </script>
 </body>
 </html>

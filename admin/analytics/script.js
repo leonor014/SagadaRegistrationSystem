@@ -861,11 +861,16 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
                topNats.map(n => n[0]), topNats.map(n => n[1]));
 }
 
-// --- Main Render ---
 function recomputeAndRender() {
   let value = monthInput.value;
   const type = filterType.value;
-  
+
+  // Clear previous charts and "no data available" messages
+  const generalArea = document.getElementById("general-charts-area");
+  const touristArea = document.getElementById("tourist-charts-area");
+  if (generalArea) generalArea.innerHTML = "";
+  if (touristArea) touristArea.innerHTML = "";
+
   // Handle empty period value
   if (!value) {
     const now = new Date();
@@ -876,6 +881,7 @@ function recomputeAndRender() {
     }
     monthInput.value = value; // Update the input field
   }
+
   
   // Handle year-only input
   if (type === "year") {
