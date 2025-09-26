@@ -677,9 +677,13 @@ footer.sidebar-collapsed {
     }
     
     .chart-container {
-        min-width: auto;
         max-width: 100%;
-        height: 350px;
+        width: 100px;
+        height: auto;
+    }
+
+    .chart-container canvas {
+        height: 280px !important;  /* Adjust canvas height if needed */
     }
     
     .report-selector {
@@ -735,8 +739,8 @@ footer.sidebar-collapsed {
     }
     
     .chart-container {
-        min-width: auto;
-        height: 320px;
+        width: 100%;
+        height: auto;
         padding: 15px;
     }
     
