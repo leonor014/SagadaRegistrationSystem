@@ -11,66 +11,70 @@
 </head>
 <body>
   <div id="container">
-    <nav class="sidebar">
-        <div class="sidebar-header">
+    <nav>
             <div class="logo-name">
                 <div class="logo-image">
-                    <img id="userAvatar" src="https://avatar.iran.liara.run/username?username=Leonor+Balintag"
-                        alt="User Avatar">
+                    <img id="userAvatar" src="https://avatar.iran.liara.run/username?username=Sagada+Registration"
+                        alt="Sagada Logo">
                 </div>
-                <span class="logo_name">Dashboard</span>
+                <span class="logo_name" id="userNameDisplay"></span>
             </div>
-            <i class="uil uil-bars sidebar-toggle" id="sidebarToggle"></i>
-        </div>
-        
-        <div class="menu-items">
-            <ul class="nav-links">
-                <li><a href="../dashboard/">
-                        <i class="uil uil-estate"></i>
-                        <span class="link-name">Dashboard</span>
-                    </a></li>
-                <li><a href="../analytics/" class="active">
-                        <i class="uil uil-chart-line"></i>
-                        <span class="link-name">Analytics</span>
-                    </a></li>
-                <li><a href="../reviews/">
-                        <i class="uil uil-comments"></i>
-                        <span class="link-name">Reviews</span>
-                    </a></li>
-                <li><a href="../tourist-spots/">
-                        <i class="uil uil-location-point"></i>
-                        <span class="link-name">Tourist Spots</span>
-                    </a></li>
-                <li><a href="../tourist-guidelines/">
-                        <i class="uil uil-book-open"></i>
-                        <span class="link-name">Tourist Guidelines</span>
-                    </a></li>
-                <li><a href="../faq/">
-                        <i class="uil uil-question-circle"></i>
-                        <span class="link-name">FAQ</span>
-                    </a></li>
-                <li><a href="../admins/">
-                        <i class="uil uil-users-alt"></i>
-                        <span class="link-name">Admins</span>
-                    </a></li>
-            </ul>
-            
-            <ul class="logout-mode">
-                <li>
-                    <a href="#" id="logoutLink">
-                        <i class="uil uil-signout"></i>
-                        <span class="link-name">Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+            <div class="menu-items">
+                <ul class="nav-links">
+                    <li><a href="../dashboard/">
+                            <i class="uil uil-estate"></i>
+                            <span class="link-name">Dashboard</span>
+                        </a></li>
+                    <li><a href="../analytics/">
+                            <i class="uil uil-chart-line"></i>
+                            <span class="link-name">Analytics</span>
+                        </a></li>
+                    <li><a href="../reviews/">
+                            <i class="uil uil-comments"></i>
+                            <span class="link-name">Reviews</span>
+                        </a></li>
+                    <li><a href="../tourist-spots/">
+                            <i class="uil uil-location-point"></i>
+                            <span class="link-name">Tourist Spots</span>
+                        </a></li>
+                    <li><a href="../tourist-guidelines/">
+                            <i class="uil uil-book-open"></i>
+                            <span class="link-name">Tourist Guidelines</span>
+                        </a></li>
+                    <li><a href="../faq/">
+                            <i class="uil uil-question-circle"></i>
+                            <span class="link-name">FAQ</span>
+                        </a></li>
+                    <li><a href="../admins/">
+                            <i class="uil uil-users-alt"></i>
+                            <span class="link-name">Admins</span>
+                        </a></li>
+                </ul>
+                <ul class="logout-mode">
+                    <li>
+                        <div>
+                            <i class="uil uil-signout" id="logoutIcon"></i>
+                            <button class="link-name logout-button" id="logoutBtn">Logout</button>
+                        </div>
+                    </li>
+                    <li class="mode">
+                        <a>
+                            <i class="uil uil-moon"></i>
+                            <span class="link-name">Dark Mode</span>
+                        </a>
+                        <div class="mode-toggle">
+                            <span class="switch"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
     <!-- Main Dashboard Content -->
     <section class="dashboard-main">
         <div class="top">
             <div class="top-container">
-                <i class="uil uil-bars sidebar-toggle" id="sidebarToggle"></i>
+                <i class="uil uil-bars sidebar-toggle" ></i>
                 <div class="dashboard-title">
                     <h1>Tourism Analytics Dashboard</h1>
                     <p>Insights into tourist visits and trends</p>
@@ -170,55 +174,121 @@
   </footer>
 
   <script>
-    // Enhanced Sidebar toggle functionality
-    document.addEventListener("DOMContentLoaded", function () {
-        const sidebar = document.querySelector(".sidebar");
-        const sidebarToggle = document.getElementById("sidebarToggle");
-        const dashboardMain = document.querySelector(".dashboard-main");
-        const footer = document.querySelector("footer");
+    
+    const showSpinner = (element) => {
+        element.innerHTML = '<span class="spinner"></span>';
+    };
 
-        // Toggle sidebar function with smooth transitions
-        function toggleSidebar() {
-            sidebar.classList.toggle("close");
-            dashboardMain.classList.toggle("sidebar-collapsed");
-            footer.classList.toggle("sidebar-collapsed");
-            sidebarToggle.classList.toggle("rotated");
+    const subscribeToDocumentCounts = () => {
+        const collections = [
+            { name: "reviews", el: document.querySelector('[data-type="reviews"]') },
+            {
+                name: "tourist-spots",
+                el: document.querySelector('[data-type="tourist-spots"]'),
+            },
+            {
+                name: "tourist-guidelines",
+                el: document.querySelector('[data-type="tourist-guidelines"]'),
+            },
+                { name: "faqs", el: document.querySelector('[data-type="FAQs"]') },
+            { name: "admins", el: document.querySelector('[data-type="admins"]') },
+        ];
 
-            // Store collapsed state
-                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains("close"));
-        }
+        collections.forEach(({ name, el }) => {
+            if (!el) return;
 
-        // Responsive behavior
-        function handleResize() {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.add("close", "mobile");
-                dashboardMain.classList.add("sidebar-collapsed");
-                footer.classList.add("sidebar-collapsed");
-            } else {
-                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-                sidebar.classList.toggle("close", isCollapsed);
-                dashboardMain.classList.toggle("sidebar-collapsed", isCollapsed);
-                footer.classList.toggle("sidebar-collapsed", isCollapsed);
-            }
-        }
+            showSpinner(el);
 
-        // Toggle on click
-        sidebarToggle.addEventListener("click", toggleSidebar);
+            const colRef = collection(db, name);
 
-        // Auto-close when clicking outside on mobile
-        document.addEventListener("click", function (e) {
-            if (window.innerWidth <= 768 && 
-                sidebar.classList.contains("mobile") && 
-                !sidebar.contains(e.target) && 
-                !sidebarToggle.contains(e.target)) {
-                sidebar.classList.add("close");
-            }
+            onSnapshot(
+                colRef,
+                (snapshot) => {
+                    el.textContent = snapshot.size.toLocaleString();
+                },
+                (error) => {
+                    console.error(`Error listening to ${name} collection:`, error);
+                    el.textContent = "N/A";
+                }
+            );
         });
+    };
 
-        // Run on page load + resize
-        handleResize();
-        window.addEventListener("resize", handleResize);
+    
+
+window.addEventListener("DOMContentLoaded", () => {
+  const body = document.querySelector("body");
+  const modeToggle = body.querySelector(".mode-toggle");
+  const sidebar = body.querySelector("nav");
+  const sidebarToggle = body.querySelector(".sidebar-toggle");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const logoutIcon = document.getElementById("logoutIcon");
+
+  let getMode = localStorage.getItem("mode");
+  if (getMode === "dark") {
+    body.classList.add("dark");
+  }
+
+  let getStatus = localStorage.getItem("status");
+  if (getStatus === "close") {
+    sidebar.classList.add("close");
+  }
+
+  modeToggle?.addEventListener("click", () => {
+    body.classList.toggle("dark");
+    localStorage.setItem(
+      "mode",
+      body.classList.contains("dark") ? "dark" : "light"
+    );
+  });
+
+  sidebarToggle?.addEventListener("click", () => {
+    sidebar.classList.toggle("close");
+    localStorage.setItem(
+      "status",
+      sidebar.classList.contains("close") ? "close" : "open"
+    );
+  });
+
+  const logoutHandler = () => {
+    Swal.fire({
+      icon: "success",
+      title: "Logged Out",
+      text: "You have been signed out.",
+    }).then(async () => {
+      try {
+        await signOut(auth);
+        localStorage.setItem("userValidated", "false");
+        window.location.href = "../../login-register.html";
+      } catch (error) {
+        console.error("Logout error:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Logout Failed",
+          text: "Something went wrong while logging out.",
         });
+      }
+    });
+  };
+
+  if (logoutBtn) logoutBtn.addEventListener("click", logoutHandler);
+  if (logoutIcon) logoutIcon.addEventListener("click", logoutHandler);
+
+  const normalize = (path) => path.replace(/\/+$/, "");
+
+  const currentPath = normalize(window.location.pathname);
+
+  document.querySelectorAll(".nav-links li a").forEach((link) => {
+    const linkPath = normalize(link.pathname);
+    if (linkPath === currentPath) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
+  });
+});
+
+
   </script>
 </body>
 </html>

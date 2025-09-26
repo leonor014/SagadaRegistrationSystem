@@ -1,7 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"; 
+
 import {
+  getAuth,
+  onAuthStateChanged,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";import {
   getFirestore,
+  doc,
+  getDoc,
   collection,
+  getDocs,
   onSnapshot,
   query,
   orderBy
@@ -18,7 +26,40 @@ const firebaseConfig = {
   measurementId: "G-2VF5GCQGZ1"
 };
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "../../login-register.html";
+  } else {
+    document.getElementById("container").style.visibility = "visible";
+    try {
+      const docRef = doc(db, "admins", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const displayName = userData.name || "Name";
+        const nameElement = document.getElementById("userNameDisplay");
+        const userAvatar = document.getElementById("userAvatar");
+        if (nameElement) {
+          nameElement.textContent = displayName;
+        }
+        if (userAvatar) {
+          userAvatar.src = `https://avatar.iran.liara.run/username?username=${encodeURIComponent(
+            displayName
+          )}`;
+        }
+        subscribeToDocumentCounts();
+      } else {
+        console.log("User document not found");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }
+});
 
 // --- DOM Elements ---
 const siteDropdown = document.getElementById("site-dropdown");
