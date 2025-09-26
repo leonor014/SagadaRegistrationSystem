@@ -432,18 +432,22 @@
             let tourists = [];
 
             if (data.fullName) {
-              tourists.push({ 
-                name: data.fullName, 
-                age: calculateAge(data.dateOfBirth), 
-                sex: data.sex, 
-                nationality: getNationality(data.country) 
+              // Individual registration
+              tourists.push({
+                name: data.fullName,
+                age: calculateAge(data.dateOfBirth),
+                sex: data.sex,
+                nationality: getNationality(data.country),
+                region: data.region || "Region not applicable"  // ✅ For individuals
               });
             } else if (data.groupMembers && Array.isArray(data.groupMembers)) {
-              tourists = data.groupMembers.map(member => ({ 
-                name: member.memberName, 
-                age: calculateAge(member.memberDOB), 
-                sex: member.memberSex, 
-                nationality: getNationality(data.groupCountry) 
+              // Group registration
+              tourists = data.groupMembers.map(member => ({
+                name: member.memberName,
+                age: calculateAge(member.memberDOB),
+                sex: member.memberSex,
+                nationality: getNationality(data.groupCountry),
+                region: data.groupRegion || "Region not applicable"  // ✅ For groups
               }));
             }
 
@@ -503,6 +507,7 @@
             age: t.age,
             sex: t.sex,
             nationality: t.nationality,
+            region: t.region, // ✅ Save region here
             site: selectedSite,
             timestamp: new Date()
           });
