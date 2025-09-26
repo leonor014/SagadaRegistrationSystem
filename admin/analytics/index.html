@@ -1,212 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./style.css">
-    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
-    <title>Admin - Analytics</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="module" src="./script.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tourism Analytics Dashboard</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="./script.js"></script>
 </head>
-
 <body>
-    <div id="container">
-        <nav>
+  <div id="container">
+    <nav class="sidebar">
+        <div class="sidebar-header">
             <div class="logo-name">
                 <div class="logo-image">
-                    <img id="userAvatar" src="https://avatar.iran.liara.run/username?username=Sagada+Registration"
-                        alt="Sagada Logo">
+                    <img id="userAvatar" src="https://avatar.iran.liara.run/username?username=Leonor+Balintag"
+                        alt="User Avatar">
                 </div>
-                <span class="logo_name" id="userNameDisplay"></span>
-            </div>
-            <div class="menu-items">
-                <ul class="nav-links">
-                    <li><a href="../dashboard/">
-                            <i class="uil uil-estate"></i>
-                            <span class="link-name">Dashboard</span>
-                        </a></li>
-                    <li><a href="../analytics/">
-                            <i class="uil uil-chart-line"></i>
-                            <span class="link-name">Analytics</span>
-                        </a></li>
-                    <li><a href="../reviews/">
-                            <i class="uil uil-comments"></i>
-                            <span class="link-name">Reviews</span>
-                        </a></li>
-                    <li><a href="../tourist-spots/">
-                            <i class="uil uil-location-point"></i>
-                            <span class="link-name">Tourist Spots</span>
-                        </a></li>
-                    <li><a href="../tourist-guidelines/">
-                            <i class="uil uil-book-open"></i>
-                            <span class="link-name">Tourist Guidelines</span>
-                        </a></li>
-                    <li><a href="../faq/">
-                            <i class="uil uil-question-circle"></i>
-                            <span class="link-name">FAQ</span>
-                        </a></li>
-                    <li><a href="../admins/">
-                            <i class="uil uil-users-alt"></i>
-                            <span class="link-name">Admins</span>
-                        </a></li>
-                </ul>
-                <ul class="logout-mode">
-                    <li>
-                        <div>
-                            <i class="uil uil-signout" id="logoutIcon"></i>
-                            <button class="link-name logout-button" id="logoutBtn">Logout</button>
-                        </div>
-                    </li>
-                    <li class="mode">
-                        <a>
-                            <i class="uil uil-moon"></i>
-                            <span class="link-name">Dark Mode</span>
-                        </a>
-                        <div class="mode-toggle">
-                            <span class="switch"></span>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-        <section class="dashboard">
-            <div class="top">
-                <i class="uil uil-bars sidebar-toggle"></i>
-                <!-- <div class="search-box">
-                <i class="uil uil-search"></i>
-                <input type="text" placeholder="Search here...">
-
-            <img src="https://avatar.iran.liara.run/public/34" alt="Profile Icon"> -->
-            </div>
-            <div class="dash-content">
-                <div class="activity">
-                    <div class="title">
-                        <i class="uil uil-book-open icon-title"></i>
-                        <span class="text">Analytics Management</span>
-                        <button class="add-btn" id="addAnalyticsBtn">
-                            <i class="uil uil-plus"></i>
-                        </button>
-                    </div>
-                    <hr>
-                    <div class="table-container">
-                        <table class="activity-table">
-                            <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th>Title</th>
-                                    <th>Description</th>
-                                    <th>Type</th>
-                                    <th>Data</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="analyticsTableBody">
-                                <tr>
-                                    <td colspan="7" style="text-align: center;">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="user-info">
+                    <span class="user-name">Leonor</span>
+                    <span class="user-lastname">Balintag</span>
                 </div>
             </div>
-        </section>
-    </div>
-    <!-- Edit Analytics Modal -->
-    <div id="editModal" class="modal" style="visibility: hidden;">
-        <div class="modal-content">
-            <button class="close-button" id="editModalClose" aria-label="Close">
-                <i class="uil uil-times"></i>
-            </button>
-            <h2 class="modal-title">Edit Analytics</h2>
-            <form class="editAnalyticsForm" id="editAnalyticsForm">
-                <input type="hidden" id="editAnalyticsId" />
-
-                <div class="form-group">
-                    <label for="editAnalyticsCategory">Category</label>
-                    <input type="text" id="editAnalyticsCategory" required />
-                </div>
-
-                <div class="form-group">
-                    <label for="editAnalyticsTitle">Title</label>
-                    <input type="text" id="editAnalyticsTitle" required />
-                </div>
-
-                <div class="form-group">
-                    <label for="addAnalyticsDescription">Description</label>
-                    <input type="textarea" id="editAnalyticsDescription" required />
-                </div>
-
-                <div class="form-group">
-                    <label for="editAnalyticsType">Type</label>
-                    <input type="text" id="editAnalyticsType" required />
-                </div>
-
-                <div class="form-group">
-                    <label for="editAnalyticsData">Data</label>
-                    <div id="editAnalyticsContainer" class="analytics-container">
-                        <!-- Dynamic inputs will be inserted here -->
-                    </div>
-                    <button type="button" id="editAddAnalyticsBtn" class="add-analytics-btn">+ Add Data</button>
-                </div>
-
-                <!-- <div class="form-group">
-                    <label for="editAnalyticsCreatedAt">Created At</label>
-                    <input type="text" id="editAnalyticsCreatedAt" readonly />
-                </div> -->
-
-                <button type="submit" class="submit-button">Save Changes</button>
-            </form>
+            <i class="uil uil-bars sidebar-toggle" id="sidebarToggle"></i>
         </div>
-    </div>
-
-    <!-- Add Analytics Modal -->
-    <div id="addModal" class="modal" style="visibility: hidden;">
-        <div class="modal-content">
-            <button class="close-button" id="addModalClose" aria-label="Close">
-                <i class="uil uil-times"></i>
-            </button>
-            <h2 class="modal-title">Add Analytics</h2>
-            <form id="addAnalyticsForm" class="editAnalyticsForm">
-
-                <div class="form-group">
-                    <label for="addAnalyticsCategory">Category</label>
-                    <input type="text" id="addAnalyticsCategory" required />
-                </div>
-
-                <div class="form-group">
-                    <label for="addAnalyticsTitle">Title</label>
-                    <input type="text" id="addAnalyticsTitle" required />
-                </div>
-
-                <div class="form-group">
-                    <label for="addAnalyticsDescription">Description</label>
-                    <input type="textarea" id="addAnalyticsDescription" required />
-                </div>
-
-                <div class="form-group">
-                    <label for="addAnalyticsType">Type</label>
-                    <input type="text" id="addAnalyticsType" required />
-                </div>
-
-
-                <div class="form-group">
-                    <label for="addAnalyticsData">Data</label>
-                    <div id="addAnalyticsContainer" class="analytics-container">
-                        <!-- Dynamic inputs will be inserted here -->
-                    </div>
-                    <button type="button" id="addAddAnalyticsBtn" class="add-analytics-btn">+ Add Data</button>
-                </div>
-
-                <button type="submit" class="submit-button">Add Analytics</button>
-            </form>
+        
+        <div class="menu-items">
+            <ul class="nav-links">
+                <li><a href="../dashboard/">
+                        <i class="uil uil-estate"></i>
+                        <span class="link-name">Dashboard</span>
+                    </a></li>
+                <li><a href="../analytics/" class="active">
+                        <i class="uil uil-chart-line"></i>
+                        <span class="link-name">Analytics</span>
+                    </a></li>
+                <li><a href="../reviews/">
+                        <i class="uil uil-comments"></i>
+                        <span class="link-name">Reviews</span>
+                    </a></li>
+                <li><a href="../tourist-spots/">
+                        <i class="uil uil-location-point"></i>
+                        <span class="link-name">Tourist Spots</span>
+                    </a></li>
+                <li><a href="../tourist-guidelines/">
+                        <i class="uil uil-book-open"></i>
+                        <span class="link-name">Tourist Guidelines</span>
+                    </a></li>
+                <li><a href="../faq/">
+                        <i class="uil uil-question-circle"></i>
+                        <span class="link-name">FAQ</span>
+                    </a></li>
+                <li><a href="../admins/">
+                        <i class="uil uil-users-alt"></i>
+                        <span class="link-name">Admins</span>
+                    </a></li>
+            </ul>
+            
+            <ul class="logout-mode">
+                <li>
+                    <a href="#" id="logoutLink">
+                        <i class="uil uil-signout"></i>
+                        <span class="link-name">Logout</span>
+                    </a>
+                </li>
+            </ul>
         </div>
-    </div>
+    </nav>
 
+    <!-- Main Dashboard Content -->
+    <section class="dashboard-main">
+        <div class="top">
+            <div class="dashboard-title">
+                <h1>Tourism Analytics Dashboard</h1>
+                <p>Insights into tourist visits and trends</p>
+            </div>
+        </div>
 
+        <div class="dashboard-content">
+            <!-- Report type selector and site dropdown -->
+            <div class="report-selector">
+                <div class="selector-group">
+                    <label for="report-type">Report Type:</label>
+                    <select id="report-type">
+                        <option value="general">General Analytics</option>
+                        <option value="tourist-spot">Tourist Spot</option>
+                    </select>
+                </div>
+                
+                <div class="selector-group" id="site-selector-container">
+                    <label for="site-dropdown">Tourist Site:</label>
+                    <select id="site-dropdown">
+                        <option value="__all">All Sites</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Main content: Left: charts + top-left filters -->
+            <main class="main-content">
+                <section class="top-controls">
+                    <div class="filters-left">
+                        <label for="filter-type">View By:</label>
+                        <select id="filter-type">
+                            <option value="month">Monthly</option>
+                            <option value="year">Yearly</option>
+                        </select>
+                        
+                        <label for="month-filter" id="date-filter-label">Month</label>
+                        <input type="month" id="month-filter" />
+                        <button id="apply-filters">Apply</button>
+                    </div>
+                </section>
+
+                <!-- Report Sections -->
+                <div id="general-analytics" class="report-section active">
+                    <div class="content-grid">
+                        <section class="charts-container" id="general-charts-area">
+                            <!-- Charts will be inserted here by JavaScript -->
+                        </section>
+                  
+                        <aside class="analytics-sidebar">
+                            <div class="analytics-card">
+                                <h3 id="analytics-title">General Analytics</h3>
+                                <div id="kpi-section" class="kpi-section">
+                                    <!-- KPI cards will be inserted here -->
+                                </div>
+                            </div>
+
+                            <div class="analytics-card">
+                                <h3>Filters</h3>
+                                <p>Current selection: <span id="current-filter-display">All data</span></p>
+                                <p>Date range: <span id="date-range-display">September 2025</span></p>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
+                <div id="tourist-spot-analytics" class="report-section">
+                    <div class="content-grid">
+                        <section class="charts-container" id="tourist-charts-area">
+                            <!-- Charts will be inserted here by JavaScript -->
+                        </section>
+                  
+                        <aside class="analytics-sidebar">
+                            <div class="analytics-card">
+                                <h3>Tourist Spot Analytics</h3>
+                                <div id="kpi-section-tourist" class="kpi-section">
+                                    <!-- KPI cards will be inserted here -->
+                                </div>
+                            </div>
+
+                            <div class="analytics-card">
+                                <h3>Filters</h3>
+                                <p>Current selection: <span id="current-site-display">All Sites</span></p>
+                                <p>Date range: <span id="date-range-display-tourist">September 2025</span></p>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Discover Sagada. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Sidebar toggle functionality
+    document.addEventListener("DOMContentLoaded", function () {
+        const sidebar = document.querySelector(".sidebar");
+        const dashboardMain = document.querySelector(".dashboard-main");
+        const footer = document.querySelector("footer");
+
+        function handleResize() {
+            if (window.innerWidth <= 768) {
+                // Collapse sidebar on mobile
+                sidebar.classList.remove("mobile-open");
+                sidebar.classList.add("collapsed");
+                dashboardMain.classList.add("sidebar-collapsed");
+                footer.classList.add("sidebar-collapsed");
+            } else {
+                // Expand sidebar on larger screens
+                sidebar.classList.remove("collapsed");
+                dashboardMain.classList.remove("sidebar-collapsed");
+                footer.classList.remove("sidebar-collapsed");
+            }
+        }
+
+        // Run on page load and on resize
+        handleResize();
+            window.addEventListener("resize", handleResize);
+    });
+
+  </script>
 </body>
-
 </html>

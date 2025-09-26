@@ -227,7 +227,6 @@ header {
 }
 
 .kpi-card {
-  background: linear-gradient(135deg, #eaf6ef 0%, #d4edda 100%);
   padding: 1rem;
   border-radius: 10px;
   text-align: center;
