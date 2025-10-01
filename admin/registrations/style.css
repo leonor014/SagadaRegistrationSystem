@@ -27,7 +27,6 @@
     --table-header-bg: #f0f2f5;
     --table-row-hover: #f5f5f5;
     --scrollbar-track-color: #f1f1f1;
-    --add-color: #03A9F4;
     --edit-color: #4CAF50;     
     --delete-color: #F44336;
     --action-text-color: #FFF;
@@ -55,14 +54,10 @@ body.dark{
     --box4-color: #3A3B3C;
     --box5-color: #3A3B3C;
     --box6-color: #3A3B3C;
-    --box7-color: #3A3B3C;
-    --box8-color: #3A3B3C;
-    --box9-color: #3A3B3C;
     --title-icon-color: #CCC;
     --table-header-bg: #3a3b3c;
     --table-row-hover: #2c2d2e;
     --scrollbar-track-color: #2c2d2e;
-    --add-color: #a9d1fc;
     --edit-color: #81C784;    
     --delete-color: #EF9A9A;
     --action-text-color: #000; 
@@ -430,7 +425,7 @@ nav.close ~ .dashboard .top{
     height: 1px;
     background-color: var(--border-color);
 }
-.icon-title{
+.dash-content .title i{
     position: relative;
     height: 35px;
     width: 35px;
@@ -447,6 +442,20 @@ nav.close ~ .dashboard .top{
     font-weight: 500;
     color: var(--text-color);
     margin-left: 10px;
+}
+.dash-content .title .search-box{
+    margin-left: auto; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+}
+.dash-content .title .search-box input{
+    padding: 5px 10px; 
+    border: 1px solid var(--border-color); 
+    background-color: var(--panel-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    height: 35px;
 }
 .activity {
   padding: 30px;
@@ -488,7 +497,8 @@ nav.close ~ .dashboard .top{
   font-size: 16px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-color);
-  text-align: center;
+  text-align: start;
+  vertical-align: top;
 }
 .activity-table thead th {
   background: var(--table-header-bg);
@@ -524,27 +534,6 @@ nav.close ~ .dashboard .top{
     transform: scale(1.05);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
-.add-btn {
-    display: flex;
-    margin-left: auto;
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background-color: var(--add-color);
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.add-btn i {
-    font-size: 24px;
-    color: var(--action-text-color);
-}
-.add-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
 /* Modal Background */
 body.modal-open {
   overflow: hidden;
@@ -575,6 +564,11 @@ body.modal-open {
   color: var(--text-color);
   max-height: 90vh;
   overflow-y: auto;
+}
+.editRegistrationForm {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
 }
 .close-button {
   position: absolute;
@@ -627,6 +621,9 @@ body.modal-open {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s;
+  grid-column: span 2;
+  max-width: 350px;
+  justify-self: center;
 }
 .submit-button:hover {
   background-color: var(--submit-btn-color);
@@ -676,65 +673,6 @@ input[readonly] {
 .form-group input[type="file"] {
   font-size: 1rem;
   padding: 0.3rem 0.5rem;
-}
-#editTouristGuidelineImagePreview {
-  display: block;
-  margin: 0 auto 10px auto;
-  max-width: 150px;
-  max-height: 150px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-#addTouristGuidelineImagePreview {
-  display: block;
-  margin: 0 auto 10px auto;
-  max-width: 150px;
-  max-height: 150px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-td ul {
-  padding-left: 1.5em;
-  margin: 0;
-  list-style-position: inside;
-}
-td li {
-  margin-bottom: 0.25em;
-}
-.guidelines-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-}
-.guideline-item {
-  display: flex;
-  gap: 0.5em;
-  align-items: center;
-}
-.guideline-item input {
-  flex-grow: 1;
-}
-.remove-guideline-btn {
-  background-color: #ff4d4f;
-  color: white;
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.remove-guideline-btn i {
-  font-size: 20px;
-  color: white;
-}
-.remove-guideline-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-.add-guideline-btn {
-  margin-top: 10px;
-  color: var(--text-color);
 }
 
 @media (max-width: 1000px) {
@@ -816,7 +754,7 @@ td li {
     .dashboard .top .sidebar-toggle{
         font-size: 22px;
     }
-    .icon-title{
+    .dash-content .title i{
         font-size: 20px;
     }
     .dash-content .title .text{
@@ -846,11 +784,9 @@ td li {
     .table-scroll .activity-table tbody td {
         padding: 8px;
     }
-    .action-btn i{
-        font-size: 20px;
-    }
-    .add-btn i{
-        font-size: 20px;
+    .editRegistrationForm {
+        display: flex;
+        flex-direction: column;
     }
 }
 @media (max-width: 400px) {

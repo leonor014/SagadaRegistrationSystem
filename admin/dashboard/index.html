@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <title>Admin - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="module" src="./script.js"></script>
@@ -28,6 +29,14 @@
                             <i class="uil uil-estate"></i>
                             <span class="link-name">Dashboard</span>
                         </a></li>
+                    <li><a href="../users/">
+                        <i class="uil uil-user"></i>
+                        <span class="link-name">Users</span>
+                    </a></li>
+                    <li><a href="../registrations/">
+                        <i class="uil uil-file-edit-alt"></i>
+                        <span class="link-name">Registrations</span>
+                    </a></li>
                     <li><a href="../analytics/">
                             <i class="uil uil-chart-line"></i>
                             <span class="link-name">Analytics</span>
@@ -88,39 +97,49 @@
                         <span class="text">Dashboard</span>
                     </div>
                     <div class="boxes">
-                        <div class="box box1">
+                        <a href="../users/" class="box box1">
+                            <i class="uil uil-user"></i>
+                            <span class="text">Total Users</span>
+                            <span class="number" data-type="users"><span class="spinner"></span></span>
+                        </a>
+                        <a href="../registrations/" class="box box2">
+                            <i class="uil uil-file-edit-alt"></i>
+                            <span class="text">Total Registrations</span>
+                            <span class="number" data-type="registrations"><span class="spinner"></span></span>
+                        </a>
+                        <a href="../analytics/" class="box box3">
                             <i class="uil uil-chart-line"></i>
                             <span class="text">Total Analytics</span>
-                            <span class="number">5</span>
-                        </div>
-                        <div class="box box2">
+                            <span class="number" data-type="analytics"><span class="spinner"></span></span>
+                        </a>
+                        <a href="../reviews/" class="box box4">
                             <i class="uil uil-comments"></i>
                             <span class="text">Total Reviews</span>
                             <span class="number" data-type="reviews"><span class="spinner"></span></span>
-                        </div>
-                        <div class="box box3">
+                        </a>
+                        <a href="../tourist-spots/" class="box box5">
                             <i class="uil uil-location-point"></i>
                             <span class="text">Total Tourist Spots</span>
                             <span class="number" data-type="tourist-spots"><span class="spinner"></span></span>
-                        </div>
-                        <div class="box box4">
+                        </a>
+                        <a href="../tourist-guidelines/" class="box box6">
                             <i class="uil uil-book-open"></i>
                             <span class="text">Total Tourist Guidelines</span>
                             <span class="number" data-type="tourist-guidelines"><span class="spinner"></span></span>
-                        </div>
-                        <div class="box box5">
+                        </a>
+                        <a href="../faq/" class="box box7">
                             <i class="uil uil-question-circle"></i>
                             <span class="text">Total FAQ</span>
                             <span class="number" data-type="FAQs"><span class="spinner"></span></span>
-                        </div>
-                        <div class="box box6">
+                        </a>
+                        <a href="../admins/" class="box box8">
                             <i class="uil uil-users-alt"></i>
                             <span class="text">Total Admins</span>
                             <span class="number" data-type="admins"><span class="spinner"></span></span>
-                        </div>
+                        </a>
                     </div>
                 </div>
-                <div class="activity">
+                <!-- <div class="activity">
                     <div class="title">
                         <i class="uil uil-clock-three"></i>
                         <span class="text">Recent Activity</span>
@@ -144,7 +163,7 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> -->
             </div>
         </section>
     </div>

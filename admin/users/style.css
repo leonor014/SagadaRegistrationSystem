@@ -488,7 +488,8 @@ nav.close ~ .dashboard .top{
   font-size: 16px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-color);
-  text-align: center;
+  text-align: start;
+  vertical-align: top;
 }
 .activity-table thead th {
   background: var(--table-header-bg);
@@ -576,6 +577,11 @@ body.modal-open {
   max-height: 90vh;
   overflow-y: auto;
 }
+.editUserForm {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
 .close-button {
   position: absolute;
   top: 16px;
@@ -627,6 +633,9 @@ body.modal-open {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s;
+  grid-column: span 2;
+  max-width: 350px;
+  justify-self: center;
 }
 .submit-button:hover {
   background-color: var(--submit-btn-color);
@@ -677,65 +686,7 @@ input[readonly] {
   font-size: 1rem;
   padding: 0.3rem 0.5rem;
 }
-#editTouristGuidelineImagePreview {
-  display: block;
-  margin: 0 auto 10px auto;
-  max-width: 150px;
-  max-height: 150px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-#addTouristGuidelineImagePreview {
-  display: block;
-  margin: 0 auto 10px auto;
-  max-width: 150px;
-  max-height: 150px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-td ul {
-  padding-left: 1.5em;
-  margin: 0;
-  list-style-position: inside;
-}
-td li {
-  margin-bottom: 0.25em;
-}
-.guidelines-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-}
-.guideline-item {
-  display: flex;
-  gap: 0.5em;
-  align-items: center;
-}
-.guideline-item input {
-  flex-grow: 1;
-}
-.remove-guideline-btn {
-  background-color: #ff4d4f;
-  color: white;
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.remove-guideline-btn i {
-  font-size: 20px;
-  color: white;
-}
-.remove-guideline-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-.add-guideline-btn {
-  margin-top: 10px;
-  color: var(--text-color);
-}
+
 
 @media (max-width: 1000px) {
     nav{
@@ -846,11 +797,18 @@ td li {
     .table-scroll .activity-table tbody td {
         padding: 8px;
     }
+    .editUserForm {
+        display: flex;
+        flex-direction: column;
+    }
     .action-btn i{
         font-size: 20px;
     }
     .add-btn i{
         font-size: 20px;
+    }
+    .submit-button {
+        max-width: 100%;
     }
 }
 @media (max-width: 400px) {

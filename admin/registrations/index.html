@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <title>Admin - FAQs</title>
+    <title>Admin - Registrations</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="module" src="./script.js"></script>
 </head>
@@ -30,13 +30,13 @@
                             <span class="link-name">Dashboard</span>
                         </a></li>
                     <li><a href="../users/">
-                        <i class="uil uil-user"></i>
-                        <span class="link-name">Users</span>
-                    </a></li>
+                            <i class="uil uil-user"></i>
+                            <span class="link-name">Users</span>
+                        </a></li>
                     <li><a href="../registrations/">
-                        <i class="uil uil-file-edit-alt"></i>
-                        <span class="link-name">Registrations</span>
-                    </a></li>
+                            <i class="uil uil-file-edit-alt"></i>
+                            <span class="link-name">Registrations</span>
+                        </a></li>
                     <li><a href="../analytics/">
                             <i class="uil uil-chart-line"></i>
                             <span class="link-name">Analytics</span>
@@ -93,26 +93,34 @@
             <div class="dash-content">
                 <div class="activity">
                     <div class="title">
-                        <i class="uil uil-question-circle icon-title"></i>
-                        <span class="text">FAQs Management</span>
-                        <button class="add-btn" id="addFAQBtn">
-                            <i class="uil uil-plus"></i>
-                        </button>
+                        <i class="uil uil-file-edit-alt"></i>
+                        <span class="text">Registrations Management</span>
+
+                        <!-- Search Bar -->
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Search by Registration No.">
+                            <button id="searchBtn">
+                                <i class="uil uil-search"></i>
+                            </button>
+                        </div>
                     </div>
                     <hr>
                     <div class="table-container">
                         <table class="activity-table">
                             <thead>
                                 <tr>
-                                    <th>Question</th>
-                                    <th>Answer</th>
+                                    <th>Registration No.</th>
+                                    <th>Type</th>
+                                    <th>Name / Group</th>
+                                    <th>Details</th>
+                                    <th>Date of Registration</th>
                                     <th>Created At</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="FAQsTableBody">
+                            <tbody id="registrationsTableBody">
                                 <tr>
-                                    <td colspan="4" style="text-align: center;">Loading...</td>
+                                    <td colspan="7" style="text-align: center;">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -121,59 +129,64 @@
             </div>
         </section>
     </div>
-    <!-- Edit FAQ Modal -->
+    <!-- Edit Registration Modal -->
     <div id="editModal" class="modal" style="visibility: hidden;">
         <div class="modal-content">
             <button class="close-button" id="editModalClose" aria-label="Close">
                 <i class="uil uil-times"></i>
             </button>
-            <h2 class="modal-title">Edit FAQ</h2>
-            <form class="editFAQForm" id="editFAQForm">
-                <input type="hidden" id="editFAQId" />
+            <h2 class="modal-title">Edit Registration</h2>
+            <form class="editRegistrationForm" id="editRegistrationForm">
+                <input type="hidden" id="editRegistrationId" />
 
                 <div class="form-group">
-                    <label for="editFAQQuestion">Question</label>
-                    <textarea id="editFAQQuestion" rows="3" required></textarea>
+                    <label for="editRegistrationNumber">Registration No.</label>
+                    <input type="text" id="editRegistrationNumber" readonly />
                 </div>
 
                 <div class="form-group">
-                    <label for="editFAQAnswer">Answer</label>
-                    <textarea id="editFAQAnswer" rows="3" required></textarea>
+                    <label for="editRegistrationType">Type</label>
+                    <input type="text" id="editRegistrationType" readonly />
                 </div>
 
-                <!-- <div class="form-group">
-                    <label for="editFAQCreatedAt">Created At</label>
-                    <input type="text" id="editFAQCreatedAt" readonly />
-                </div> -->
+                <div class="form-group">
+                    <label for="editRegistrationEmail">Email</label>
+                    <input type="email" id="editRegistrationEmail" readonly />
+                </div>
+
+                <!-- Editable name/group -->
+                <div class="form-group">
+                    <label for="editRegistrationName">Name / Group</label>
+                    <input type="text" id="editRegistrationName" required />
+                </div>
+
+                <!-- Editable contact/email -->
+                <div class="form-group">
+                    <label for="editRegistrationContact">Contact Number</label>
+                    <input type="text" id="editRegistrationContact" required />
+                </div>
+
+                <!-- Editable region/country -->
+                <div class="form-group">
+                    <label for="editRegistrationRegion">Region</label>
+                    <input type="text" id="editRegistrationRegion" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="editRegistrationCountry">Country</label>
+                    <input type="text" id="editRegistrationCountry" required />
+                </div>
+
+                <!-- Editable date -->
+                <div class="form-group">
+                    <label for="editRegistrationDate">Registration Date</label>
+                    <input type="date" id="editRegistrationDate" required />
+                </div>
 
                 <button type="submit" class="submit-button">Save Changes</button>
             </form>
         </div>
     </div>
-
-    <!-- Add FAQ Modal -->
-    <div id="addModal" class="modal" style="visibility: hidden;">
-        <div class="modal-content">
-            <button class="close-button" id="addModalClose" aria-label="Close">
-                <i class="uil uil-times"></i>
-            </button>
-            <h2 class="modal-title">Add FAQ</h2>
-            <form id="addFAQForm" class="editFAQForm">
-                <div class="form-group">
-                    <label for="addFAQQuestion">Question</label>
-                    <textarea id="addFAQQuestion" rows="3" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="addFAQAnswer">Answer</label>
-                    <textarea id="addFAQAnswer" rows="3" required></textarea>
-                </div>
-
-                <button type="submit" class="submit-button">Add FAQ</button>
-            </form>
-        </div>
-    </div>
-
 
 </body>
 

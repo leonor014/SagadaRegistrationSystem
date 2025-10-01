@@ -209,7 +209,7 @@ function bindEditAndDeleteButtons() {
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = "../../login-register.html";
+    window.location.href = "../login-register.html";
   } else {
     document.getElementById("container").style.visibility = "visible";
     try {
@@ -282,8 +282,8 @@ window.addEventListener("DOMContentLoaded", () => {
     }).then(async () => {
       try {
         await signOut(auth);
-        localStorage.setItem("userValidated", "false");
-        window.location.href = "../../login-register.html";
+        localStorage.setItem("adminValidated", "false");
+        window.location.href = "../login-register.html";
       } catch (error) {
         console.error("Logout error:", error);
         Swal.fire({

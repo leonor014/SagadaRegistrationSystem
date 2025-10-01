@@ -20,6 +20,9 @@
     --box4-color: #A4F6C1;
     --box5-color: #FFB3BA;
     --box6-color: #B5EAEA;
+    --box7-color: #FFD6E0;
+    --box8-color: #C7CEEA;
+    --box9-color: #FFD8B1;
     --title-icon-color: #fff;
     --table-header-bg: #f0f2f5;
     --table-row-hover: #f5f5f5;
@@ -51,6 +54,9 @@ body.dark{
     --box4-color: #3A3B3C;
     --box5-color: #3A3B3C;
     --box6-color: #3A3B3C;
+    --box7-color: #3A3B3C;
+    --box8-color: #3A3B3C;
+    --box9-color: #3A3B3C;
     --title-icon-color: #CCC;
     --table-header-bg: #3a3b3c;
     --table-row-hover: #2c2d2e;

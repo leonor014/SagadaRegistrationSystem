@@ -1,59 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
-    <link rel="icon" href="data:,">
-
-    <script type="module" src="/SagadaRegistrationSystem/js/registration.js"></script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
+
 <body>
     <!-- Navigation Section -->
-    <nav>
-        <a href="/SagadaRegistrationSystem/index.html#home">Home</a>
-        <a href="/SagadaRegistrationSystem/about/index.html">About</a>
-        <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
-        <a href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- Hamburger Button -->
+            <button class="hamburger" id="hamburger">☰</button>
+
+            <!-- Nav Links -->
+            <div class="nav-links" id="nav-links">
+                <a href="/SagadaRegistrationSystem/index.html">Home</a>
+                <a href="/SagadaRegistrationSystem/about/index.html">About</a>
+                <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
+                <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+                <a id="touristCheckInLink"
+                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a>
+                <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
+                <a id="logoutLink" href="#">Logout</a>
+            </div>
+        </div>
     </nav>
 
     <!-- About Section -->
-    
+
 
     <section class="about">
         <div class="about-content">
             <h2>About Us</h2>
             <p>
-                Sagada, located in Mountain Province of the 
-                Philippines, is a picturesque town renowned for 
-                its breathtaking natural landscapes and unique 
-                cultural heritage. Nestled in the Cordillera 
-                mountain range, Sagada offers visitors stunning 
-                views of lush pine forests, dramatic cliffs, and 
-                rolling hills that create a serene and refreshing 
-                atmosphere. The town is renowned for its extensive 
+                Sagada, located in Mountain Province of the
+                Philippines, is a picturesque town renowned for
+                its breathtaking natural landscapes and unique
+                cultural heritage. Nestled in the Cordillera
+                mountain range, Sagada offers visitors stunning
+                views of lush pine forests, dramatic cliffs, and
+                rolling hills that create a serene and refreshing
+                atmosphere. The town is renowned for its extensive
                 limestone cave systems, which include the iconic Sumaguing
-                and Lumiang Caves, where adventurous travelers can explore 
+                and Lumiang Caves, where adventurous travelers can explore
                 underground rivers, stalactites, and stalagmites. <br>
-                 
-                One of Sagada’s most distinctive cultural attractions 
-                is the tradition of hanging coffins, an ancient burial 
-                practice where coffins are suspended on cliffsides, 
-                reflecting the community’s deep respect for their ancestors 
-                and their unique beliefs about life and death. Beyond its 
-                natural and cultural wonders, Sagada is also home to the Igorot 
-                people, whose indigenous customs, crafts, and festivals offer 
+
+                One of Sagada’s most distinctive cultural attractions
+                is the tradition of hanging coffins, an ancient burial
+                practice where coffins are suspended on cliffsides,
+                reflecting the community’s deep respect for their ancestors
+                and their unique beliefs about life and death. Beyond its
+                natural and cultural wonders, Sagada is also home to the Igorot
+                people, whose indigenous customs, crafts, and festivals offer
                 visitors an authentic glimpse into their rich heritage. <br>
-                
-                Sagada is ideal for adventure seekers and nature lovers, 
-                offering activities such as trekking to the majestic 
-                Bomod-ok Falls, exploring scenic rice terraces, and hiking 
-                to viewpoints like Pog-o to witness spectacular sunrises 
-                and sea-of-clouds views. The town’s tranquil ambiance, 
-                combined with its warm hospitality and vibrant local culture, 
-                makes Sagada a perfect destination for those seeking both 
+
+                Sagada is ideal for adventure seekers and nature lovers,
+                offering activities such as trekking to the majestic
+                Bomod-ok Falls, exploring scenic rice terraces, and hiking
+                to viewpoints like Pog-o to witness spectacular sunrises
+                and sea-of-clouds views. The town’s tranquil ambiance,
+                combined with its warm hospitality and vibrant local culture,
+                makes Sagada a perfect destination for those seeking both
                 adventure and cultural immersion in the heart of the Philippine mountains.
             </p>
 
@@ -82,5 +94,49 @@
     <footer>
         <p>&copy; 2025 Discover Sagada. All rights reserved.</p>
     </footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const authLink = document.getElementById("authLink");
+            const userValidated = localStorage.getItem("userValidated") === "true";
+
+            if (userValidated) {
+                authLink.textContent = "Profile";
+                authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
+            } else {
+                authLink.textContent = "Login";
+                authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
+                registerLink.style.display = "none";
+                touristCheckInLink.style.display = "none";
+                logoutLink.style.display = "none";
+            }
+
+            logoutLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                localStorage.setItem("userValidated", "false");
+                localStorage.removeItem("userId");
+                localStorage.removeItem("userEmail");
+                window.location.href = "/index.html";
+            });
+
+        });
+
+        const hamburger = document.getElementById("hamburger");
+        const navLinks = document.getElementById("nav-links");
+
+        // Toggle menu on hamburger click
+        hamburger.addEventListener("click", (e) => {
+            e.stopPropagation(); // prevent click bubbling
+            navLinks.classList.toggle("show");
+        });
+
+        // Close menu if clicking outside
+        document.addEventListener("click", (e) => {
+            if (navLinks.classList.contains("show") && !navLinks.contains(e.target) && e.target !== hamburger) {
+                navLinks.classList.remove("show");
+            }
+        });
+    </script>
+
 </body>
+
 </html>

@@ -33,6 +33,9 @@ const showSpinner = (element) => {
 
 const subscribeToDocumentCounts = () => {
   const collections = [
+    { name: "users", el: document.querySelector('[data-type="users"]') },
+    { name: "registrations", el: document.querySelector('[data-type="registrations"]') },
+    { name: "analytics", el: document.querySelector('[data-type="analytics"]') },
     { name: "reviews", el: document.querySelector('[data-type="reviews"]') },
     {
       name: "tourist-spots",
@@ -68,7 +71,7 @@ const subscribeToDocumentCounts = () => {
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = "../../login-register.html";
+    window.location.href = "../login-register.html";
   } else {
     document.getElementById("container").style.visibility = "visible";
     try {
@@ -140,8 +143,8 @@ window.addEventListener("DOMContentLoaded", () => {
     }).then(async () => {
       try {
         await signOut(auth);
-        localStorage.setItem("userValidated", "false");
-        window.location.href = "../../login-register.html";
+        localStorage.setItem("adminValidated", "false");
+        window.location.href = "../login-register.html";
       } catch (error) {
         console.error("Logout error:", error);
         Swal.fire({

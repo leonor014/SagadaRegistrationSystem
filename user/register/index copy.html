@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tourist Registration</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
+    <script type="text/javascript">
+        (function () {
+            emailjs.init({
+                publicKey: "qCwoFnSDmaCx9HtKS",
+            });
+        })();
+    </script>
+    <link rel="stylesheet" href="./style.css">
+    <script src="../../js/registration.js" type="module"></script>
+
+</head>
+
+<body id="body">
+    <!-- Nav Links -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- Hamburger Button -->
+            <button class="hamburger" id="hamburger">☰</button>
+
+            <!-- Nav Links -->
+            <div class="nav-links" id="nav-links">
+                <a href="/SagadaRegistrationSystem/index.html">Home</a>
+                <a href="/SagadaRegistrationSystem/about/index.html">About</a>
+                <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
+                <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+                <a id="touristCheckInLink" href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a>
+                <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
+                <a id="logoutLink" href="#">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- The Modal -->
+    <div id="noticeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Notice</h2>
+            <p>Welcome to the Tourist Registration Portal.
+                By proceeding, you agree to provide accurate
+                information for the purpose of registration.
+                This information will be used to facilitate
+                your travel and ensure your safety during
+                your visit.</p>
+            <button id="acknowledgeButton">I Understand</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Tourist Registration</h1>
+
+        <form id="registrationForm">
+            <label>Are you registering for an/a?</label>
+            <select id="groupRegistration" required>
+                <option value="">Select an option</option>
+                <option value="individual">Individual</option>
+                <option value="group">Group</option>
+            </select>
+
+            <div id="individualForm" style="display:none;">
+                <label>Date of Registration</label>
+                <input type="date" id="dateOfRegistration" placeholder="Enter date of registration" required>
+                <span class="error-message" id="dateOfRegistrationError"></span>
+
+                <label>Full Name:</label>
+                <input type="text" id="fullName" placeholder="Enter your full name" required>
+                <span class="error-message" id="fullNameError"></span>
+
+                <label>Date of Birth:</label>
+                <input type="date" id="dateOfBirth" required>
+                <span class="error-message" id="dateOfBirthError"></span>
+
+                <label>Sex:</label>
+                <select id="sex" required>
+                    <option value="">Select sex</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+                <span class="error-message" id="sexError"></span>
+
+                <label>Country of Origin:</label>
+                <select id="country" required>
+                    <option value="">Select Country</option>
+                </select>
+                <span class="error-message" id="countryError"></span>
+
+                <label>Region:</label>
+                <select id="region" required>
+                    <option value="">Select Region</option>
+                </select>
+                <span class="error-message" id="regionError"></span>
+
+                <label for="phone">Phone Number:</label>
+                <input type="text" id="phone" placeholder="+" required>
+                <span class="error-message" id="phoneError"></span>
+
+                <label>Email:</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+                <span class="error-message" id="emailError"></span>
+
+                <!-- <label>Upload Photo:</label>
+                <input type="file" id="uploadPhoto" accept="image/*" required>
+                <span class="error-message" id="uploadPhotoError"></span> -->
+            </div>
+
+
+            <div id="groupForm" style="display:none;">
+                <label>Date of Registration</label>
+                <input type="date" id="groupDateOfRegistration" placeholder="Enter date of registration" required>
+                <span class="error-message" id="groupDateOfRegistrationError"></span>
+
+                <label>Group Name:</label>
+                <input type="text" id="groupName" placeholder="Enter group name" required>
+                <span class="error-message" id="groupNameError"></span>
+
+                <label>Number of Members:</label>
+                <input type="number" id="groupSize" placeholder="Enter the number of members" required>
+                <span class="error-message" id="groupSizeError"></span>
+
+                <div id="groupMembers"></div>
+
+                <label>Country of Origin:</label>
+                <select id="groupCountry" required>
+                    <option value="">Select Country</option>
+                </select>
+                <span class="error-message" id="groupCountryError"></span>
+
+                <label>Region:</label>
+                <select id="groupRegion" required>
+                    <option value="">Select Region</option>
+                </select>
+                <span class="error-message" id="groupRegionError"></span>
+
+                <label for="phone">Phone Number:</label>
+                <input type="text" id="groupPhone" placeholder="+" required>
+                <span class="error-message" id="groupPhoneError"></span>
+
+                <label>Email:</label>
+                <input type="email" id="groupEmail" placeholder="Enter email" required>
+                <span class="error-message" id="groupEmailError"></span>
+
+                <!-- <label>Upload Group Photo:</label>
+                <input type="file" id="groupPhoto" accept="image/*" required>
+                <span class="error-message" id="groupPhotoError"></span> -->
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+
+
+        <div id="registrationDisplay" style="display:none;">
+            <h2>Registration Successful</h2>
+            <p><strong>Registration Number:</strong> <span id="displayRegistrationNumber"></span></p>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Discover Sagada. All rights reserved.</p>
+    </footer>
+
+    <div id="loadingModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <p>Submitting your registration, please wait...</p>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal-overlay hidden">
+        <div class="modal-content" id="successModalContent">
+            <!-- dynamic registration summary will be inserted here -->
+        </div>
+    </div>
+
+</body>
+
+</html>

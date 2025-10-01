@@ -15,6 +15,10 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+#body {
+  visibility: hidden;
+} 
         
 body {
     font-family: 'Poppins', sans-serif;
@@ -27,18 +31,18 @@ body {
     min-height: 100vh;
 }
 
-/* Enhanced About Section */
-.about {
+/* Enhanced profile Section */
+.profile {
     padding: 4rem 1.5rem;
     text-align: center;
-    background: linear-gradient(rgba(35, 45, 63, 0.85), rgba(35, 45, 63, 0.9)), url(/images/b7.jpg) center/cover no-repeat;
+    background: linear-gradient(rgba(35, 45, 63, 0.85), rgba(35, 45, 63, 0.9)), url(/images/blue-soil.jpg) center/cover no-repeat;
     position: relative;
     overflow: hidden;
     flex: 1;
 }
 
 /* Creative decorative elements */
-.about::before {
+.profile::before {
     content: "";
     position: absolute;
     top: 0;
@@ -51,14 +55,14 @@ body {
     z-index: 0;
 }
 
-.about-content {
+.profile-content {
     position: relative;
     z-index: 1;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-.about h2 {
+.profile h2 {
     font-size: 3rem;
     margin-bottom: 1.5rem;
     color: var(--light);
@@ -67,7 +71,7 @@ body {
     display: inline-block;
 }
 
-.about h2::after {
+.profile h2::after {
     content: "";
     position: absolute;
     bottom: -10px;
@@ -79,7 +83,7 @@ body {
     border-radius: 2px;
 }
 
-.about p {
+.profile p {
     font-size: 1.1rem;
     line-height: 1.8;
     max-width: 850px;
@@ -93,94 +97,178 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Feature cards for additional content */
-.about-features {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2.5rem;
-    flex-wrap: wrap;
+/* Profile Card */
+.profile-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  margin-bottom: 2rem;
+  text-align: left;
 }
 
-.feature-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 1.5rem;
-    width: 250px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.profile-card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary);
 }
 
-.feature-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 2rem;
 }
 
-.feature-card i {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    display: block;
-    background: linear-gradient(135deg, var(--accent), var(--secondary));
-    
-    -webkit-text-fill-color: transparent;
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: var(--dark);
 }
 
-.feature-card h3 {
-    color: var(--light);
-    margin-bottom: 0.5rem;
-    font-size: 1.3rem;
+.form-grid input,
+.form-grid select {
+  padding: 0.6rem;
+  margin-top: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
-.feature-card p {
-    font-size: 0.9rem;
-    color: rgba(248, 249, 250, 0.8);
-    margin: 0;
-    background: none;
-    padding: 0;
-    box-shadow: none;
-    border: none;
-    backdrop-filter: none;
+.save-btn {
+  margin-top: 1.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.save-btn:hover {
+  background: var(--primary-dark);
 }
 
-/* Call-to-action button */
-.about-cta {
-    margin-top: 2.5rem;
+/* Groups */
+.groups-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  text-align: left;
 }
 
-.cta-button {
-    display: inline-block;
-    padding: 0.8rem 2rem;
-    background: linear-gradient(135deg, var(--primary-light), var(--primary));
-    color: white;
-    text-decoration: none;
-    border-radius: 50px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
-    position: relative;
-    overflow: hidden;
+.groups-section h3 {
+  margin-bottom: 1rem;
+  color: var(--primary);
 }
 
-.cta-button::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+.groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
 }
 
-.cta-button:hover::before {
-    left: 100%;
+.group-card {
+  background: var(--light);
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 10px;
 }
 
-.cta-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(46, 125, 50, 0.6);
+.group-card h4 {
+  margin-bottom: 0.8rem;
+  color: var(--secondary);
 }
+
+.group-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.group-card li {
+  background: white;
+  padding: 0.6rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.add-btn {
+  margin-top: 1.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  background: var(--secondary);
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.add-btn:hover {
+  background: #e85b28;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Profile form buttons */
+.btn-row {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.edit-btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  background: var(--secondary);
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.edit-btn:hover {
+  background: #e85b28;
+}
+
+/* Group card inputs */
+.group-card label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+.group-card input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 0.3rem;
+}
+
+.group-card select {
+width: 100%;
+  display: inline-block;
+  padding: 0.6rem;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 0.3rem;
+}
+
+.group-card select {
+  min-width: 120px; /* make dropdown not tiny */
+}
+
 
 /* Navbar */
 .navbar {
@@ -261,8 +349,6 @@ body {
   }
 }
 
-
-
 /* Footer - Enhanced */
 footer {
     background: var(--dark);
@@ -270,46 +356,20 @@ footer {
     text-align: center;
     padding: 2rem;
     font-size: 1rem;
-}
-        
-.social-icons {
-    margin: 0.8rem 0;
-}
-        
-.social-icons a {
-    color: white;
-    font-size: 1.3rem;
-    margin: 0 8px;
-    transition: all 0.3s ease;
-}
-
-.social-icons a:hover {
-    color: var(--accent);
-    transform: translateY(-3px);
-}
+} 
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .about {
+    .profile {
         padding: 3rem 1rem;
     }
     
-    .about h2 {
+    .profile h2 {
         font-size: 2.2rem;
     }
     
-    .about p {
+    .profile p {
         font-size: 1rem;
         padding: 1rem;
-    }
-    
-    .about-features {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .feature-card {
-        width: 100%;
-        max-width: 300px;
     }
 }

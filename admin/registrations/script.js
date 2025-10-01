@@ -1,0 +1,380 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  collection,
+  getDoc,
+  getDocs,
+  query,
+  orderBy,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+} from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCt1EginvMZvYdlrseVPBiyvfto4bvED5Y",
+  authDomain: "sagadatouristregister.firebaseapp.com",
+  projectId: "sagadatouristregister",
+  storageBucket: "sagadatouristregister.firebasestorage.app",
+  messagingSenderId: "875774905793",
+  appId: "1:875774905793:web:d4fe2ea42fedba8d473340",
+  measurementId: "G-2VF5GCQGZ1",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const listenToRegistrations = () => {
+  const tableBody = document.getElementById("registrationsTableBody");
+
+  const user = auth.currentUser;
+
+  const registrationsQuery = query(
+    collection(db, "registrations"),
+    orderBy("createdAt", "desc")
+  );
+
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="7" style="text-align: center;">Loading...</td>
+    </tr>
+  `;
+
+  onSnapshot(registrationsQuery, async (querySnapshot) => {
+    tableBody.innerHTML = "";
+
+    if (querySnapshot.empty) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center;">No registrations found.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    let hasRegistrations = false;
+
+    querySnapshot.forEach((docSnap) => {
+      const registrationId = docSnap.id;
+
+      if (user && registrationId === user.uid) return;
+
+      hasRegistrations = true;
+      const reg = docSnap.data();
+      const regId = docSnap.id;
+      const tr = document.createElement("tr");
+
+      const regNo = reg.registrationNumber || "—";
+      const type = reg.registrationType || "—";
+      const regDate = reg.dateOfRegistration || "—";
+      const createdAt = reg.createdAt?.toDate().toLocaleString() || "—";
+
+      let nameOrGroup = "—";
+      let details = "";
+
+      if (type === "individual") {
+        nameOrGroup = reg.fullName || "—";
+        details = `
+          <div><strong>DOB:</strong> ${reg.dateOfBirth || "—"}</div>
+          <div><strong>Sex:</strong> ${reg.sex || "—"}</div>
+          <div><strong>Country:</strong> ${reg.country || "—"}</div>
+          <div><strong>Region:</strong> ${reg.region || "—"}</div>
+          <div><strong>Contact:</strong> ${reg.contactNumber || "—"}</div>
+          <div><strong>Email:</strong> ${reg.email || "—"}</div>
+        `;
+      } else if (type === "group") {
+        nameOrGroup = reg.groupName || "—";
+        details = `
+          <div><strong>Size:</strong> ${reg.groupSize || 0}</div>
+          <div><strong>Country:</strong> ${reg.groupCountry || "—"}</div>
+          <div><strong>Region:</strong> ${reg.groupRegion || "—"}</div>
+          <div><strong>Contact:</strong> ${reg.groupContact || "—"}</div>
+          <div><strong>Email:</strong> ${reg.groupEmail || "—"}</div>
+          <hr>
+          <div><strong>Members:</strong></div>
+          <ul style="margin-top: 5px; padding-left: 15px;">
+            ${
+              Array.isArray(reg.groupMembers)
+                ? reg.groupMembers
+                    .map(
+                      (m) => `
+                      <li>
+                        <strong>${m.memberName || "—"}</strong><br>
+                        DOB: ${m.memberDOB || "—"}<br>
+                        Sex: ${m.memberSex || "—"}
+                      </li>
+                    `
+                    )
+                    .join("")
+                : "<li>No members</li>"
+            }
+          </ul>
+        `;
+      }
+
+      tr.innerHTML = `
+        <td>${regNo}</td>
+        <td>${type}</td>
+        <td>${nameOrGroup}</td>
+        <td>${details}</td>
+        <td>${regDate}</td>
+        <td>${createdAt}</td>
+        <td>
+          <button class="action-btn edit-btn" title="Edit" data-id="${regId}">
+              <i class="uil uil-edit-alt"></i>
+            </button>
+          <button class="action-btn delete-btn" title="Delete" data-id="${regId}">
+            <i class="uil uil-trash-alt"></i>
+          </button>
+        </td>
+      `;
+
+      tableBody.appendChild(tr);
+    });
+
+    if (!hasRegistrations) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center;">No registrations found.</td>
+        </tr>
+      `;
+    }
+
+    attachActionButtons();
+  });
+};
+
+function attachActionButtons() {
+  // EDIT button
+  document.querySelectorAll(".edit-btn").forEach((button) => {
+    button.addEventListener("click", async (e) => {
+      const id = e.currentTarget.dataset.id;
+      try {
+        const regRef = doc(db, "registrations", id);
+        const regSnap = await getDoc(regRef);
+        if (regSnap.exists()) {
+          const regData = regSnap.data();
+
+          // Populate modal fields
+          document.getElementById("editRegistrationId").value = id;
+          document.getElementById("editRegistrationNumber").value =
+            regData.registrationNumber || "";
+          document.getElementById("editRegistrationType").value =
+            regData.registrationType || "";
+
+          document.getElementById("editRegistrationName").value =
+            regData.fullName || regData.groupName || "";
+
+          document.getElementById("editRegistrationContact").value =
+            regData.contactNumber || regData.groupContact || "";
+
+          document.getElementById("editRegistrationEmail").value =
+            regData.email || regData.groupEmail || "";
+
+          document.getElementById("editRegistrationRegion").value =
+            regData.region || regData.groupRegion || "";
+
+          document.getElementById("editRegistrationCountry").value =
+            regData.country || regData.groupCountry || "";
+
+          document.getElementById("editRegistrationDate").value =
+            regData.dateOfRegistration || "";
+
+          document.getElementById("editModal").style.visibility = "visible";
+          document.body.classList.add("modal-open");
+        }
+      } catch (error) {
+        console.error("Error fetching registration for edit:", error);
+        Swal.fire("Error!", "Could not load registration data.", "error");
+      }
+    });
+  });
+
+  // DELETE button
+  document.querySelectorAll(".delete-btn").forEach((button) => {
+    button.addEventListener("click", async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "This registration will be deleted permanently!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await deleteDoc(doc(db, "registrations", id));
+          Swal.fire("Deleted!", "Registration has been deleted.", "success");
+        } catch (error) {
+          console.error("Error deleting registration:", error);
+          Swal.fire("Error!", "Failed to delete registration.", "error");
+        }
+      }
+    });
+  });
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "../login-register.html";
+  } else {
+    document.getElementById("container").style.visibility = "visible";
+    try {
+      const docRef = doc(db, "admins", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const displayName = userData.name || "Name";
+        const nameElement = document.getElementById("userNameDisplay");
+        const userAvatar = document.getElementById("userAvatar");
+        if (nameElement) {
+          nameElement.textContent = displayName;
+        }
+        if (userAvatar) {
+          userAvatar.src = `https://avatar.iran.liara.run/username?username=${encodeURIComponent(
+            displayName
+          )}`;
+        }
+      } else {
+        console.log("User document not found");
+      }
+
+      listenToRegistrations();
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  const body = document.querySelector("body");
+  const modeToggle = body.querySelector(".mode-toggle");
+  const sidebar = body.querySelector("nav");
+  const sidebarToggle = body.querySelector(".sidebar-toggle");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const logoutIcon = document.getElementById("logoutIcon");
+
+  let getMode = localStorage.getItem("mode");
+  if (getMode === "dark") {
+    body.classList.add("dark");
+  }
+
+  let getStatus = localStorage.getItem("status");
+  if (getStatus === "close") {
+    sidebar.classList.add("close");
+  }
+
+  modeToggle?.addEventListener("click", () => {
+    body.classList.toggle("dark");
+    localStorage.setItem(
+      "mode",
+      body.classList.contains("dark") ? "dark" : "light"
+    );
+  });
+
+  sidebarToggle?.addEventListener("click", () => {
+    sidebar.classList.toggle("close");
+    localStorage.setItem(
+      "status",
+      sidebar.classList.contains("close") ? "close" : "open"
+    );
+  });
+
+  const logoutHandler = () => {
+    Swal.fire({
+      icon: "success",
+      title: "Logged Out",
+      text: "You have been signed out.",
+    }).then(async () => {
+      try {
+        await signOut(auth);
+        localStorage.setItem("adminValidated", "false");
+        window.location.href = "../login-register.html";
+      } catch (error) {
+        console.error("Logout error:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Logout Failed",
+          text: "Something went wrong while logging out.",
+        });
+      }
+    });
+  };
+
+  if (logoutBtn) logoutBtn.addEventListener("click", logoutHandler);
+  if (logoutIcon) logoutIcon.addEventListener("click", logoutHandler);
+
+  const normalize = (path) => path.replace(/\/+$/, "");
+
+  const currentPath = normalize(window.location.pathname);
+
+  document.querySelectorAll(".nav-links li a").forEach((link) => {
+    const linkPath = normalize(link.pathname);
+    if (linkPath === currentPath) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
+  });
+
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#registrationsTableBody tr");
+
+    rows.forEach((row) => {
+      const regCell = row.querySelector("td:first-child");
+      if (regCell) {
+        const text = regCell.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      }
+    });
+  });
+
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").focus();
+  });
+
+  document
+    .getElementById("editRegistrationForm")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById("editRegistrationId").value;
+
+      const updatedData = {
+        dateOfRegistration: document.getElementById("editRegistrationDate")
+          .value,
+        fullName: document.getElementById("editRegistrationName").value,
+        contactNumber: document.getElementById("editRegistrationContact").value,
+        region: document.getElementById("editRegistrationRegion").value,
+        country: document.getElementById("editRegistrationCountry").value,
+      };
+
+      try {
+        await setDoc(doc(db, "registrations", id), updatedData, {
+          merge: true,
+        });
+        Swal.fire("Success!", "Registration updated successfully.", "success");
+
+        document.getElementById("editModal").style.visibility = "hidden";
+        document.body.classList.remove("modal-open");
+      } catch (error) {
+        console.error("Error updating registration:", error);
+        Swal.fire("Error!", "Failed to update registration.", "error");
+      }
+    });
+
+  document.getElementById("editModalClose").addEventListener("click", () => {
+    document.getElementById("editModal").style.visibility = "hidden";
+    document.body.classList.remove("modal-open");
+  });
+});

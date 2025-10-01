@@ -8,10 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
-    <link rel="icon" href="data:,">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
-    
-    <script type="module" src="js/registration.js"></script>
 </head>
 
 <body>
@@ -35,7 +33,7 @@
             <div class="slide" style="background-image: url('./images/b9.jpg')"></div>
             <div class="slide" style="background-image: url('./images/fedilisan\ rice\ terraces.jpg')"></div>
             <div class="slide" style="background-image: url('./images/kapay-aw.jpg')"></div>
-            
+
         </div>
         <div class="banner-content">
             <h1>Discover Sagada</h1>
@@ -43,26 +41,28 @@
         </div>
     </div>
 
-    
-    
+
+
 
     <!-- Navigation Section -->
     <nav>
-        <a href="/SagadaRegistrationSystem/index.html#home">Home</a>
+        <a href="/SagadaRegistrationSystem/index.html">Home</a>
         <a href="/SagadaRegistrationSystem/about/index.html">About</a>
         <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
-        <a href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+        <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+        <a id="touristCheckInLink" href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site
+            Check-In</a>
+        <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
+        <a id="logoutLink" href="#">Logout</a>
     </nav>
 
-   
+
 
     <!-- Home Section -->
     <section id="home" class="main-content">
-        <h2>Home</h2>
-
         <!-- Grouped Buttons Section -->
         <div class="button-group">
-            <div class="button" onclick="toggleDetails(details1)">
+            <div class="button" onclick="toggleDetails(details1)" id="protectedButtons">
                 <a href="user/registration-per-site/index.html" class="button">Tourist Site Check-In</a>
                 <!-- <img src="images/per_site_registration.png" alt="Tourist Site Check-in"> -->
             </div>
@@ -70,7 +70,7 @@
             <div class="button" onclick="toggleDetails(details2)">
                 <a href="user/analytics/index.html" class="button">Analytics</a>
                 <!-- <img src="images/analytics.png" alt="Analytics">  -->
-            </div> 
+            </div>
 
             <div class="button" onclick="toggleDetails(details3)">
                 <a href="user/reviews/index.html" class="button">Reviews</a>
@@ -93,7 +93,7 @@
         <p>Explore the famous Echo Valley, Sumaguing Cave, Bomod-ok Falls, and many more 
             breathtaking sites that make Sagada a must-visit destination in the Philippines.</p>
     </section> -->
-    
+
 
 
     <!-- Tourist Guidelines -->
@@ -145,10 +145,37 @@
                 <p><br>Phone: 0939-806-7739</p>
             </div> 
         -->
-        </div>
+    </div>
     </section>
 
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const authLink = document.getElementById("authLink");
+            const userValidated = localStorage.getItem("userValidated") === "true";
+            const protectedButtons = document.getElementById("protectedButtons");
+
+            if (userValidated) {
+                authLink.textContent = "Profile";
+                authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
+            } else {
+                authLink.textContent = "Login";
+                authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
+                registerLink.style.display = "none";
+                touristCheckInLink.style.display = "none";
+                logoutLink.style.display = "none";
+                protectedButtons.style.display = "none";
+            }
+
+            logoutLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                localStorage.setItem("userValidated", "false");
+                localStorage.removeItem("userId");
+                localStorage.removeItem("userEmail");
+                window.location.href = "/index.html";
+            });
+
+        });
+
         // JavaScript to toggle details visibility
         function toggleDetails(detailsId) {
             // Hide all details sections
@@ -170,16 +197,16 @@
             header.classList.toggle('active');
         }
         // Slideshow functionality for the banner
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             let currentSlide = 0;
             const slides = document.querySelectorAll('.slide');
-            
+
             function showSlide(n) {
                 slides.forEach(slide => slide.classList.remove('active'));
                 currentSlide = (n + slides.length) % slides.length;
                 slides[currentSlide].classList.add('active');
             }
-            
+
             // Auto-advance slides every 5 seconds
             setInterval(() => {
                 showSlide(currentSlide + 1);

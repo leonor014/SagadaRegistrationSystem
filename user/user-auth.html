@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sagada Tourist Registration</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../css/user-auth.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body id="body">
+    <div class="container" id="container">
+        <!-- Sign Up Form -->
+        <div class="form-container sign-up-container">
+            <form action="#" id="signupForm">
+                <h1 class="form-title">Register as a Tourist</h1>
+                <p>Please create an account to register your visit to Sagada.</p>
+                <input type="text" id="signupName" placeholder="Full Name" required />
+                <input type="email" id="signupEmail" placeholder="Email Address" required />
+                <input type="password" id="signupPassword" placeholder="Password" required />
+                <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required />
+                <button class="sign-up">Register</button>
+            </form>
+        </div>
+
+        <!-- Sign In Form -->
+        <div class="form-container sign-in-container">
+            <form action="#" id="signinForm">
+                <h1 class="form-title">Tourist Login</h1>
+                <p>Log in to view or manage your registration details.</p>
+                <input type="email" id="signinEmail" placeholder="Email Address" required />
+                <input type="password" id="signinPassword" placeholder="Password" required />
+                <a href="#">Forgot your password?</a>
+                <button class="sign-in">Login</button>
+            </form>
+        </div>
+
+        <!-- Overlay Panels -->
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>Welcome Back!</h1>
+                    <p>If you’ve already registered, please log in to access your account and manage your visit.</p>
+                    <button class="ghost" id="signIn">Login</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>Hello, Tourist!</h1>
+                    <p>Don’t have an account yet? Sign up to register your trip to Sagada.</p>
+                    <button class="ghost" id="signUp">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const signUpButton = document.getElementById('signUp');
+        const signInButton = document.getElementById('signIn');
+        const container = document.getElementById('container');
+
+        signUpButton.addEventListener('click', () => {
+            container.classList.add("right-panel-active");
+        });
+
+        signInButton.addEventListener('click', () => {
+            container.classList.remove("right-panel-active");
+        });
+    </script>
+    <script type="module" src="../js/user-auth.js"></script>
+</body>
+
+</html>

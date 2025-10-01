@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="./script.js"></script>
+</head>
+
+<body id="body">
+    <!-- Navigation Section -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- Hamburger Button -->
+            <button class="hamburger" id="hamburger">☰</button>
+
+            <!-- Nav Links -->
+            <div class="nav-links" id="nav-links">
+                <a href="/SagadaRegistrationSystem/index.html">Home</a>
+                <a href="/SagadaRegistrationSystem/about/index.html">About</a>
+                <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
+                <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+                <a id="touristCheckInLink" href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a>
+                <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
+                <a id="logoutLink" href="#">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Section -->
+    <section class="profile">
+        <div class="profile-content">
+            <h2>My Profile</h2>
+
+            <!-- Personal Information -->
+            <div class="profile-card">
+                <h3>Personal Information</h3>
+                <form id="profileForm">
+                    <div class="form-grid">
+                        <label>
+                            Full Name:
+                            <input type="text" id="fullName" disabled required />
+                        </label>
+                        <label>
+                            Email:
+                            <input type="email" id="email" disabled required />
+                        </label>
+                        <label>
+                            Date of Birth:
+                            <input type="date" id="dob" disabled required />
+                        </label>
+                        <label>
+                            Sex:
+                            <select id="sex" disabled required>
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </label>
+                        <label>
+                            Country of Origin:
+                            <select id="country" disabled required>
+                                <option value="">Select Country</option>
+                            </select>
+                        </label>
+                        <label>
+                            Region:
+                            <select id="region" disabled required>
+                                <option value="">Select Region</option>
+                            </select>
+                        </label>
+                        <label>
+                            Phone:
+                            <input type="tel" id="phone" minlength="7" pattern="^\+\d{6,}$" required disabled />
+                        </label>
+                    </div>
+                    <div class="btn-row">
+                        <button type="button" class="edit-btn" id="editProfile">Edit</button>
+                        <button type="submit" class="save-btn" id="saveProfile" style="display:none;">Save</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Groups Section -->
+            <div class="groups-section">
+                <h3>My Groups</h3>
+                <div class="groups-grid">
+
+                    <div class="group-card">
+                        <label>
+                            Group Name:
+                            <input type="text" placeholder="Enter group name" required disabled />
+                        </label>
+                        <ul id="group1"></ul>
+                        <button class="add-btn">+ Add Member</button>
+                    </div>
+
+                    <div class="group-card">
+                        <label>
+                            Group Name:
+                            <input type="text" placeholder="Enter group name" required disabled />
+                        </label>
+                        <ul id="group2"></ul>
+                        <button class="add-btn">+ Add Member</button>
+                    </div>
+
+                    <div class="group-card">
+                        <label>
+                            Group Name:
+                            <input type="text" placeholder="Enter group name" required disabled />
+                        </label>
+                        <ul id="group3"></ul>
+                        <button class="add-btn">+ Add Member</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Discover Sagada. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>

@@ -19,51 +19,12 @@
 body {
     font-family: 'Poppins', sans-serif;
     text-align: center;
-    color: var(--text);
+    color: var(--dark);
     line-height: 1.6;
-    font-size: 14px;
-}
-
-/* Sticky Navigation Bar */
-nav {
-    background-color: var(--dark);
-    padding: 0.5rem 1rem;
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-}
-
-nav a {
-    color: white;
-    text-decoration: none;
-    margin: 0 1rem;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-nav a::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: -5px;
-    left: 50%;
-    background: linear-gradient(to right, var(--accent), var(--secondary));
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
-}
-
-nav a:hover::after {
-    width: 100%;
-}
-
-nav a:hover {
-    text-decoration: none;
-    color: var(--accent);
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 /* Enhanced Contact Section */
@@ -76,6 +37,7 @@ nav a:hover {
     margin-top: 0; /* Remove gap above */
     position: relative;
     overflow: hidden;
+    flex: 1;
 }
 
 #contact::before {
@@ -282,6 +244,84 @@ nav a:hover {
     color: var(--secondary);
 }
 
+/* Navbar */
+.navbar {
+  background: var(--dark);
+  height: 60px;        
+  display: flex;
+  align-items: center;   
+  padding: 0 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;        
+}
+
+/* Links */
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+/* Hamburger button (hidden by default) */
+.hamburger {
+  display: none;
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  position: absolute;
+  right: 1rem;
+}
+
+/* Mobile Styles */
+@media (max-width: 780px) {
+  .hamburger {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    background: var(--dark);
+    position: fixed;   
+    top: 60px;         
+    left: 0;
+    width: 100%;     
+    text-align: center;
+    padding: 1rem 0;
+    z-index: 999;     
+    gap: 1rem; 
+  }
+
+  .nav-links a {
+    padding: 0.5rem 0;
+    display: block;
+  }
+
+  .nav-links.show {
+    display: flex;
+  }
+}
 
 /* Footer - Enhanced */
 footer {

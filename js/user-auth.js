@@ -2,20 +2,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebas
 import {
   getFirestore,
   collection,
-  query,
-  where,
-  getDocs,
+  getDoc,
   setDoc,
   doc,
   serverTimestamp,
+  query,
+  orderBy,
+  limit,
+  getDocs,
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -30,22 +25,44 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
-const adminValidated = localStorage.getItem("adminValidated") === "true";
 
+// 🔑 Helper: hash password
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
-onAuthStateChanged(auth, (user) => {
-  if (user && adminValidated) {
-    window.location.href = "./dashboard/";
+// 🔑 Helper: get next userId
+async function getNextUserId() {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, orderBy("userId", "desc"), limit(1));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    return 1; // first user
   } else {
-    document.getElementById("container").style.visibility = "visible";
+    const lastUser = snapshot.docs[0].data();
+    return (lastUser.userId || 0) + 1;
   }
-});
+}
 
 document.addEventListener("DOMContentLoaded", () => {
+  const userValidated = localStorage.getItem("userValidated") === "true";
+
+  if (!userValidated) {
+    document.getElementById("body").style.visibility = "visible";
+  } else {
+    window.location.href = "/SagadaRegistrationSystem/index.html";
+  }
+
   const signupForm = document.getElementById("signupForm");
   const signinForm = document.getElementById("signinForm");
 
+  // 🔹 SIGNUP
   signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -55,9 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPassword = document.getElementById(
       "signupConfirmPassword"
     ).value;
-    const regCode = document.getElementById("signupRegCode").value.trim();
 
-    if (!name || !email || !password || !confirmPassword || !regCode) {
+    if (!name || !email || !password || !confirmPassword) {
       return Swal.fire({
         icon: "error",
         title: "Incomplete Form",
@@ -74,46 +90,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // Validate registration code
-      const regCodeQuery = query(
-        collection(db, "registration-code"),
-        where("regCode", "==", regCode)
-      );
-      const regCodeSnapshot = await getDocs(regCodeQuery);
-
-      if (regCodeSnapshot.empty) {
+      // check if user already exists
+      const existingUser = await getDoc(doc(db, "users", email));
+      if (existingUser.exists()) {
         return Swal.fire({
           icon: "error",
-          title: "Invalid Registration Code",
-          text: "The provided registration code is not valid.",
+          title: "Already Registered",
+          text: "This email is already in use. Please log in.",
         });
       }
 
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
+      // hash password
+      const hashedPassword = await hashPassword(password);
 
-      await setDoc(doc(db, "admins", user.uid), {
-        uid: user.uid,
+      // get new userId
+      const userId = await getNextUserId();
+
+      // save in Firestore
+      await setDoc(doc(db, "users", email), {
+        userId,
         name,
         email,
+        password: hashedPassword,
         createdAt: serverTimestamp(),
       });
 
       await Swal.fire({
         icon: "success",
         title: "Registration Successful",
+        text: `Your account has been created. Your User ID is ${userId}`,
       });
 
       signupForm.reset();
-      document
-        .getElementById("container")
-        .classList.remove("right-panel-active");
     } catch (error) {
-      console.error("Error saving admin:", error);
+      console.error("Error saving user:", error);
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -122,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle Sign-In
+  // 🔹 SIGNIN
   signinForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("signinEmail").value.trim();
@@ -138,22 +148,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // check Firestore for user
+      const userDoc = await getDoc(doc(db, "users", email));
+      if (!userDoc.exists()) {
+        return Swal.fire({
+          icon: "error",
+          title: "Invalid Login",
+          text: "User not found.",
+        });
+      }
+
+      const user = userDoc.data();
+
+      // verify password
+      const hashedPassword = await hashPassword(password);
+      if (user.password !== hashedPassword) {
+        return Swal.fire({
+          icon: "error",
+          title: "Invalid Login",
+          text: "Incorrect password.",
+        });
+      }
+
+      // success
       Swal.fire({
         icon: "success",
         title: "Login Successful",
         text: "Welcome!",
       }).then(() => {
-        localStorage.setItem("adminValidated", "true");
+        localStorage.setItem("userValidated", "true");
+        localStorage.setItem("userId", user.userId);
+        localStorage.setItem("userEmail", user.email);
         signinForm.reset();
-        window.location.href = "./dashboard/";
+        window.location.href = "/SagadaRegistrationSystem/index.html";
       });
     } catch (error) {
       console.error("Login error:", error);
       Swal.fire({
         icon: "error",
         title: "Invalid Login",
-        text: "Incorrect email or password.",
+        text: "Something went wrong.",
       });
     }
   });

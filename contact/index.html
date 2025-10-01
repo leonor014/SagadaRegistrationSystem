@@ -1,22 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
-    <link rel="icon" href="data:,">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
     <script type="module" src="/SagadaRegistrationSystem/js/registration.js"></script>
 </head>
+
 <body>
     <!-- Navigation Section -->
-    <nav>
-        <a href="/SagadaRegistrationSystem/index.html#home">Home</a>
-        <a href="/SagadaRegistrationSystem/about/index.html">About</a>
-        <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
-        <a href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- Hamburger Button -->
+            <button class="hamburger" id="hamburger">☰</button>
+
+            <!-- Nav Links -->
+            <div class="nav-links" id="nav-links">
+                <a href="/SagadaRegistrationSystem/index.html">Home</a>
+                <a href="/SagadaRegistrationSystem/about/index.html">About</a>
+                <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
+                <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+                <a id="touristCheckInLink"
+                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a>
+                <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
+                <a id="logoutLink" href="#">Logout</a>
+            </div>
+        </div>
     </nav>
 
     <!-- Contact Section 
@@ -42,38 +56,48 @@
 
     <section id="contact">
         <h2>Contact Us</h2>
-    
+
         <div class="contact-container">
-            <div class="contact-item">
-                <div class="contact-icon">📍</div>
-                <h3>Our Location</h3>
-                <p>
-                    Near the police station and public market <br>
-                    South Rd, Sagada <br>
-                    2619 Mountain Province
-                </p>
-            </div>
-        
+            <a href="https://maps.app.goo.gl/faaUeoaDFZBUeFkD7" target="_blank" style="text-decoration: none;"
+                class="contact-item">
+                <div>
+                    <div class="contact-icon">📍</div>
+                    <h3>Our Location</h3>
+                    <p>
+                        Near the police station and public market <br>
+                        South Rd, Sagada <br>
+                        2619 Mountain Province
+                    </p>
+                </div>
+            </a>
+
             <!-- class="contact-item">
                 <div class="contact-icon">📞</div>
                 <h3>Phone Number</h3>
                 <p>+1 (555) 123-4567<br>Mon-Fri: 9am-5pm</p>
             </div> -->
-        
-            <div class="contact-item">
-                <div class="contact-icon">✉️</div>
-                <h3>Email Address</h3>
-                <p>
-                    sagadatourism00@gmail.com
-                </p>
-            </div>
+
+            <a href="mailto:sagadatourism00@gmail.com?subject=Tour%20Inquiry&body=Hello%2C%20I%27m%20interested%20in%20learning%20more%20about%20Sagada%20tours."
+                style="text-decoration: none;" class="contact-item">
+                <div>
+                    <div class="contact-icon">✉️</div>
+                    <h3>Email Address</h3>
+                    <p>
+                        sagadatourism00@gmail.com
+                    </p>
+                </div>
+            </a>
+
 
             <!-- Facebook Connect Section -->
-            <div class="contact-item">
-                <div class="contact-icon">📘</div>
-                <h3>Facebook Page</h3>
-                <p><a href="https://www.facebook.com/SagadaTourism" target="_blank" class="facebook-link">Sagada Tourism</a></p>
-            </div>
+            <a href="https://www.facebook.com/SagadaTourism" target="_blank" style="text-decoration: none;"
+                class="contact-item">
+                <div>
+                    <div class="contact-icon">📘</div>
+                    <h3>Facebook Page</h3>
+                    <p>Sagada Tourism</p>
+                </div>
+            </a>
 
         </div>
     </section>
@@ -83,5 +107,49 @@
     <footer>
         <p>&copy; 2025 Discover Sagada.All rights reserved. </p>
     </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const authLink = document.getElementById("authLink");
+            const userValidated = localStorage.getItem("userValidated") === "true";
+
+            if (userValidated) {
+                authLink.textContent = "Profile";
+                authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
+            } else {
+                authLink.textContent = "Login";
+                authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
+                registerLink.style.display = "none";
+                touristCheckInLink.style.display = "none";
+                logoutLink.style.display = "none";
+            }
+
+            logoutLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                localStorage.setItem("userValidated", "false");
+                localStorage.removeItem("userId");
+                localStorage.removeItem("userEmail");
+                window.location.href = "/index.html";
+            });
+
+        });
+
+        const hamburger = document.getElementById("hamburger");
+        const navLinks = document.getElementById("nav-links");
+
+        // Toggle menu on hamburger click
+        hamburger.addEventListener("click", (e) => {
+            e.stopPropagation(); // prevent click bubbling
+            navLinks.classList.toggle("show");
+        });
+
+        // Close menu if clicking outside
+        document.addEventListener("click", (e) => {
+            if (navLinks.classList.contains("show") && !navLinks.contains(e.target) && e.target !== hamburger) {
+                navLinks.classList.remove("show");
+            }
+        });
+    </script>
 </body>
+
 </html>

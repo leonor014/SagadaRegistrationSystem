@@ -31,7 +31,7 @@ const db = getFirestore(app);
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = "../../login-register.html";
+    window.location.href = "../login-register.html";
   } else {
     document.getElementById("container").style.visibility = "visible";
     try {
