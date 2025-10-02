@@ -25,7 +25,6 @@ body {
     background-color: #c4e1f1;
     /* background-image: url('/images/b5.jpg'); */
     margin: 0;
-    padding: 20px;
 }
 /* Card Container */
 .review-form-card {
@@ -154,7 +153,7 @@ input[type="file"] {
     gap: 15px;
     margin-top: 20px;
     align-items: start;
-    padding: 10px;
+    padding: 20px;
 }
 .review-list h3 {
     grid-column: 1 / -1; /* Span full width of the grid */
@@ -231,24 +230,84 @@ input[type="file"] {
 }
 
 
-/* Sticky Navigation Bar */
-nav {
-    background-color: var(--dark); /* Green color matching SDG theme */
-    padding: 0.5rem 1rem;
+/* Navbar */
+.navbar {
+  background: var(--dark);
+  height: 60px;        
+  display: flex;
+  align-items: center;   
+  padding: 0 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;        
+}
+
+/* Links */
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+/* Hamburger button (hidden by default) */
+.hamburger {
+  display: none;
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  position: absolute;
+  right: 1rem;
+}
+
+/* Mobile Styles */
+@media (max-width: 780px) {
+  .hamburger {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    background: var(--dark);
+    position: fixed;   
+    top: 60px;         
+    left: 0;
+    width: 100%;     
     text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 1000; /* Ensure it stays above other content */
-}
+    padding: 1rem 0;
+    z-index: 999;     
+    gap: 1rem; 
+  }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin: 0 1rem;
-    font-weight: bold;
-    font-size: 1rem;
-}
+  .nav-links a {
+    padding: 0.5rem 0;
+    display: block;
+  }
 
+  .nav-links.show {
+    display: flex;
+  }
+}
 
 /* Responsive: Stack on Small Screens */
 @media (max-width: 768px) {

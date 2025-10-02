@@ -38,8 +38,19 @@
         </div>
     </nav>
 
+    <!-- Warning Modal (Highest Priority) -->
+    <div id="warningModal" class="modal-overlay" style="z-index: 9999; display: none;">
+        <div class="modal-content">
+            <h2>Warning!</h2>
+            <p>Your profile information is incomplete. Please update your personal details or groups to proceed with
+                registration.</p>
+            <button id="goToProfileBtn">Go to Profile</button>
+        </div>
+    </div>
+
+
     <!-- The Modal -->
-    <div id="noticeModal" class="modal">
+    <div id="noticeModal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Notice</h2>
@@ -70,25 +81,29 @@
                 <input type="date" id="dateOfRegistration" required>
 
                 <label>Full Name:</label>
-                <input type="text" id="fullName" disabled>
+                <input type="text" id="fullName" required>
 
                 <label>Date of Birth:</label>
-                <input type="date" id="dateOfBirth" disabled>
+                <input type="date" id="dateOfBirth" required>
 
                 <label>Sex:</label>
-                <input type="text" id="sex" disabled>
+                <select id="sex" required>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
 
                 <label>Country of Origin:</label>
-                <input type="text" id="country" disabled>
+                <select id="country" required></select>
 
                 <label>Region:</label>
-                <input type="text" id="region" disabled>
+                <select id="region" required></select>
 
                 <label>Phone Number:</label>
-                <input type="text" id="phone" disabled>
+                <input type="text" id="phone" required>
 
                 <label>Email:</label>
-                <input type="email" id="email" disabled>
+                <input type="email" id="email" readonly required>
             </div>
 
             <!-- Group Form -->
@@ -97,7 +112,7 @@
                 <input type="date" id="groupDateOfRegistration" required>
 
                 <label>Select Group</label>
-                <select id="existingGroupSelect">
+                <select id="existingGroupSelect" required>
                     <option value="">Select a group</option>
                 </select>
 
@@ -105,18 +120,19 @@
 
                 <div id="groupDetails" style="margin-top: 20px;">
                     <label>Country of Origin:</label>
-                    <input type="text" id="groupCountry" disabled>
+                    <select id="groupCountry" required></select>
 
                     <label>Region:</label>
-                    <input type="text" id="groupRegion" disabled>
+                    <select id="groupRegion" required></select>
 
                     <label>Phone Number:</label>
-                    <input type="text" id="groupPhone" disabled>
+                    <input type="text" id="groupPhone" required>
 
                     <label>Email:</label>
-                    <input type="email" id="groupEmail" disabled>
+                    <input type="email" id="groupEmail" readonly required>
                 </div>
             </div>
+
 
             <button type="submit">Register</button>
         </form>

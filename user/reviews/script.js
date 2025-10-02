@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     collection(db, "reviews"),
     orderBy("createdAt", "desc")
   );
-  
+
   const showMoreBtn = document.getElementById("showMoreBtn");
   const showLessBtn = document.getElementById("showLessBtn");
   let allReviews = [];
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function displayReviews() {
     reviewList.innerHTML = "<h3>Reviews</h3>";
-  
+
     // Show only 3 if showAll is false, otherwise show all
     const reviewsToShow = showAll ? allReviews : allReviews.slice(0, 4);
 
@@ -82,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     displayReviews();
   });
 
-
   // Base HTML content
   function displayReview(id, review) {
     const reviewDiv = document.createElement("div");
@@ -90,15 +89,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     reviewDiv.setAttribute("data-id", id);
 
     reviewDiv.innerHTML = `
-        ${review.imageBase64 ? `<img src="${review.imageBase64}" alt="Review Image">` : ""}
-        <p class="date"><strong>Date:</strong> ${review.createdAt?.toDate ? review.createdAt.toDate().toLocaleString() : review.createdAt}</p>
-        <p class="rating"><strong>Rating:</strong> ${getStars(review.rating)}</p>
+        ${
+          review.imageBase64
+            ? `<img src="${review.imageBase64}" alt="Review Image">`
+            : ""
+        }
+        <p class="date"><strong>Date:</strong> ${
+          review.createdAt?.toDate
+            ? review.createdAt.toDate().toLocaleString()
+            : review.createdAt
+        }</p>
+        <p class="rating"><strong>Rating:</strong> ${getStars(
+          review.rating
+        )}</p>
         <p class="comment"><strong>Comment:</strong> ${review.comment}</p>
     `;
 
     reviewList.appendChild(reviewDiv);
-}
-
+  }
 
   // ✅ Convert rating number to stars
   function getStars(rating) {
@@ -202,4 +210,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   //loadReviews();
+
+  const hamburger = document.getElementById("hamburger");
+  const navLinks = document.getElementById("nav-links");
+
+  // Toggle menu on hamburger click
+  hamburger.addEventListener("click", (e) => {
+    e.stopPropagation(); // prevent click bubbling
+    navLinks.classList.toggle("show");
+  });
+
+  // Close menu if clicking outside
+  document.addEventListener("click", (e) => {
+    if (
+      navLinks.classList.contains("show") &&
+      !navLinks.contains(e.target) &&
+      e.target !== hamburger
+    ) {
+      navLinks.classList.remove("show");
+    }
+  });
 });

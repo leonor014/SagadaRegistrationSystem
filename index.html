@@ -45,15 +45,23 @@
 
 
     <!-- Navigation Section -->
-    <nav>
-        <a href="/SagadaRegistrationSystem/index.html">Home</a>
-        <a href="/SagadaRegistrationSystem/about/index.html">About</a>
-        <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
-        <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
-        <a id="touristCheckInLink" href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site
-            Check-In</a>
-        <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
-        <a id="logoutLink" href="#">Logout</a>
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- Hamburger Button -->
+            <button class="hamburger" id="hamburger">☰</button>
+
+            <!-- Nav Links -->
+            <div class="nav-links" id="nav-links">
+                <a href="/SagadaRegistrationSystem/index.html">Home</a>
+                <a href="/SagadaRegistrationSystem/about/index.html">About</a>
+                <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
+                <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+                <!-- <a id="touristCheckInLink"
+                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a> -->
+                <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
+                <!-- <a id="logoutLink" href="#">Logout</a> -->
+            </div>
+        </div>
     </nav>
 
 
@@ -63,21 +71,21 @@
         <!-- Grouped Buttons Section -->
         <div class="button-group">
             <div class="button" onclick="toggleDetails(details1)" id="protectedButtons">
-                <a href="user/registration-per-site/index.html" class="button">Tourist Site Check-In</a>
+                <a href="user/registration-per-site/index.html" class="">Tourist Site Check-In</a>
                 <!-- <img src="images/per_site_registration.png" alt="Tourist Site Check-in"> -->
             </div>
 
             <div class="button" onclick="toggleDetails(details2)">
-                <a href="user/analytics/index.html" class="button">Analytics</a>
+                <a href="user/analytics/index.html" class="">Analytics</a>
                 <!-- <img src="images/analytics.png" alt="Analytics">  -->
             </div>
 
             <div class="button" onclick="toggleDetails(details3)">
-                <a href="user/reviews/index.html" class="button">Reviews</a>
+                <a href="user/reviews/index.html" class="">Reviews</a>
                 <!-- <img src="images/reviews.png" alt="Reviews"> -->
             </div>
             <div class="button" onclick="toggleDetails(details4)">
-                <a href="user/tourist-spots/index.html" class="button">Tourist Spots</a>
+                <a href="user/tourist-spots/index.html" class="">Tourist Spots</a>
                 <!-- <img src="images/tourist_spot.png" alt="Tourist Spot"> -->
             </div>
         </div>
@@ -152,7 +160,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             const authLink = document.getElementById("authLink");
             const userValidated = localStorage.getItem("userValidated") === "true";
-            const protectedButtons = document.getElementById("protectedButtons");
 
             if (userValidated) {
                 authLink.textContent = "Profile";
@@ -161,20 +168,37 @@
                 authLink.textContent = "Login";
                 authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
                 registerLink.style.display = "none";
-                touristCheckInLink.style.display = "none";
-                logoutLink.style.display = "none";
-                protectedButtons.style.display = "none";
+                /* touristCheckInLink.style.display = "none";
+                logoutLink.style.display = "none"; */
             }
 
-            logoutLink.addEventListener("click", (e) => {
+            /* logoutLink.addEventListener("click", (e) => {
                 e.preventDefault();
                 localStorage.setItem("userValidated", "false");
                 localStorage.removeItem("userId");
                 localStorage.removeItem("userEmail");
                 window.location.href = "/index.html";
+            }); */
+
+            const hamburger = document.getElementById("hamburger");
+            const navLinks = document.getElementById("nav-links");
+
+            // Toggle menu on hamburger click
+            hamburger.addEventListener("click", (e) => {
+                e.stopPropagation(); // prevent click bubbling
+                navLinks.classList.toggle("show");
+            });
+
+            // Close menu if clicking outside
+            document.addEventListener("click", (e) => {
+                if (navLinks.classList.contains("show") && !navLinks.contains(e.target) && e.target !== hamburger) {
+                    navLinks.classList.remove("show");
+                }
             });
 
         });
+
+
 
         // JavaScript to toggle details visibility
         function toggleDetails(detailsId) {

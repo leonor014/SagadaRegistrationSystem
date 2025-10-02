@@ -1,90 +1,104 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tourist Review Feature</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="./style.css">
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"></script>
-    <script type="module" src="./script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tourist Review Feature</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js"></script>
+  <script type="module" src="./script.js"></script>
 </head>
+
 <body>
-    <!-- Navigation Section -->
-    <nav>
+  <!-- Navigation Section -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <!-- Hamburger Button -->
+      <button class="hamburger" id="hamburger">☰</button>
+
+      <!-- Nav Links -->
+      <div class="nav-links" id="nav-links">
         <a href="/SagadaRegistrationSystem/index.html">Home</a>
         <a href="/SagadaRegistrationSystem/about/index.html">About</a>
         <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
         <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+        <!-- <a id="touristCheckInLink"
+                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a> -->
         <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
-    </nav>
-
-<!-- Review Form Card -->
-<div class="review-form-card">
-  <h2>Leave a Review</h2>
-  <form id="reviewForm" class="review-form-grid">
-    <!-- Left Column -->
-    <div class="left-column">
-      <label for="comment"><i class="fa fa-comment"></i> Comment:</label>
-      <textarea id="comment" name="comment" placeholder="Write your review..." required></textarea>
-
-      <div class="rating-container">
-        <label><i class="fa fa-star"></i> Rating:</label>
-        <div class="stars">
-          <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
-          <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
-          <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
-          <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-          <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
-        </div>
+        <!-- <a id="logoutLink" href="#">Logout</a> -->
       </div>
     </div>
+  </nav>
 
-    <!-- Right Column -->
-    <div class="right-column">
-      <label for="imageUpload"><i class="fa fa-image"></i> Upload Image:</label>
-      <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
-      <button type="submit" class="submit-btn">Submit Review</button>
-    </div>
-  </form>
-</div>
+  <!-- Review Form Card -->
+  <div class="review-form-card">
+    <h2>Leave a Review</h2>
+    <form id="reviewForm" class="review-form-grid">
+      <!-- Left Column -->
+      <div class="left-column">
+        <label for="comment"><i class="fa fa-comment"></i> Comment:</label>
+        <textarea id="comment" name="comment" placeholder="Write your review..." required></textarea>
 
-<!-- Font Awesome for Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-        <!-- Review Display Section -->
-        <div class="review-list" id="reviewList">
-            <h3>Reviews</h3>
+        <div class="rating-container">
+          <label><i class="fa fa-star"></i> Rating:</label>
+          <div class="stars">
+            <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+            <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+            <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+            <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+            <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+          </div>
         </div>
-        <div style="margin-top: 10px;">
-            <button id="showMoreBtn" style="display:none;">Show More</button>
-            <button id="showLessBtn" style="display:none;">Show Less</button>
-        </div>
+      </div>
 
-    </div>
+      <!-- Right Column -->
+      <div class="right-column">
+        <label for="imageUpload"><i class="fa fa-image"></i> Upload Image:</label>
+        <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
+        <button type="submit" class="submit-btn">Submit Review</button>
+      </div>
+    </form>
+  </div>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2025 Discover Sagada. All rights reserved.</p>
-    </footer>
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const authLink = document.getElementById("authLink");
-        const userValidated = localStorage.getItem("userValidated") === "true";
-        const protectedButtons = document.getElementById("protectedButtons");
+  <!-- Review Display Section -->
+  <div class="review-list" id="reviewList">
+    <h3>Reviews</h3>
+  </div>
+  <div style="margin-top: 10px; padding: 0 20px;">
+    <button id="showMoreBtn" style="display:none;">Show More</button>
+    <button id="showLessBtn" style="display:none;">Show Less</button>
+  </div>
 
-        if (userValidated) {
-          authLink.textContent = "Profile";
-          authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
-        } else {
-          authLink.textContent = "Login";
-          authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
-          registerLink.style.display = "none";
-          protectedButtons.style.display = "none";
-        }
+  </div>
 
-      });
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 Discover Sagada. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const authLink = document.getElementById("authLink");
+      const userValidated = localStorage.getItem("userValidated") === "true";
+      const protectedButtons = document.getElementById("protectedButtons");
+
+      if (userValidated) {
+        authLink.textContent = "Profile";
+        authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
+      } else {
+        authLink.textContent = "Login";
+        authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
+        registerLink.style.display = "none";
+        protectedButtons.style.display = "none";
+      }
+
+    });
   </script>
 </body>
+
 </html>

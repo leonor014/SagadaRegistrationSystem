@@ -25,10 +25,10 @@
                 <a href="/SagadaRegistrationSystem/about/index.html">About</a>
                 <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
                 <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
-                <a id="touristCheckInLink"
-                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a>
+                <!-- <a id="touristCheckInLink"
+                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a> -->
                 <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
-                <a id="logoutLink" href="#">Logout</a>
+                <!-- <a id="logoutLink" href="#">Logout</a> -->
             </div>
         </div>
     </nav>
@@ -120,17 +120,17 @@
                 authLink.textContent = "Login";
                 authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
                 registerLink.style.display = "none";
-                touristCheckInLink.style.display = "none";
-                logoutLink.style.display = "none";
+                /* touristCheckInLink.style.display = "none";
+                logoutLink.style.display = "none"; */
             }
 
-            logoutLink.addEventListener("click", (e) => {
+            /* logoutLink.addEventListener("click", (e) => {
                 e.preventDefault();
                 localStorage.setItem("userValidated", "false");
                 localStorage.removeItem("userId");
                 localStorage.removeItem("userEmail");
                 window.location.href = "/index.html";
-            });
+            }); */
 
         });
 

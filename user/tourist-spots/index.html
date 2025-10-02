@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -59,13 +60,25 @@
     }
   </style>
 </head>
+
 <body>
-  <nav>
-    <a href="/SagadaRegistrationSystem/index.html">Home</a>
-    <a href="/SagadaRegistrationSystem/about/index.html">About</a>
-    <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
-    <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
-    <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
+  <nav class="navbar">
+    <div class="nav-container">
+      <!-- Hamburger Button -->
+      <button class="hamburger" id="hamburger">☰</button>
+
+      <!-- Nav Links -->
+      <div class="nav-links" id="nav-links">
+        <a href="/SagadaRegistrationSystem/index.html">Home</a>
+        <a href="/SagadaRegistrationSystem/about/index.html">About</a>
+        <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
+        <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
+        <!-- <a id="touristCheckInLink"
+                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a> -->
+        <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
+        <!-- <a id="logoutLink" href="#">Logout</a> -->
+      </div>
+    </div>
   </nav>
 
   <header>
@@ -105,7 +118,23 @@
         protectedButtons.style.display = "none";
       }
 
+      const hamburger = document.getElementById("hamburger");
+      const navLinks = document.getElementById("nav-links");
+
+      // Toggle menu on hamburger click
+      hamburger.addEventListener("click", (e) => {
+        e.stopPropagation(); // prevent click bubbling
+        navLinks.classList.toggle("show");
+      });
+
+      // Close menu if clicking outside
+      document.addEventListener("click", (e) => {
+        if (navLinks.classList.contains("show") && !navLinks.contains(e.target) && e.target !== hamburger) {
+          navLinks.classList.remove("show");
+        }
+      });
     });
   </script>
 </body>
+
 </html>

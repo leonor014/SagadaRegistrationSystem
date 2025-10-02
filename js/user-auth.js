@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await Swal.fire({
         icon: "success",
         title: "Registration Successful",
-        text: `Your account has been created. Your User ID is ${userId}`,
+        text: `Your account has been created.`,
       });
 
       signupForm.reset();

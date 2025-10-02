@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     authLink.textContent = "Login";
     authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
     registerLink.style.display = "none";
-    touristCheckInLink.style.display = "none";
+    /* touristCheckInLink.style.display = "none"; */
     logoutLink.style.display = "none";
     window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
   }
@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("userValidated", "false");
     localStorage.removeItem("userId");
     localStorage.removeItem("userEmail");
-    window.location.href = "/index.html";
+    window.location.href = "/SagadaRegistrationSystem/index.html";
   });
 
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
@@ -135,6 +135,26 @@ document.addEventListener("DOMContentLoaded", () => {
     registerLink.style.display = "none";
     protectedButtons.style.display = "none";
   }
+
+  const hamburger = document.getElementById("hamburger");
+  const navLinks = document.getElementById("nav-links");
+
+  // Toggle menu on hamburger click
+  hamburger.addEventListener("click", (e) => {
+    e.stopPropagation(); // prevent click bubbling
+    navLinks.classList.toggle("show");
+  });
+
+  // Close menu if clicking outside
+  document.addEventListener("click", (e) => {
+    if (
+      navLinks.classList.contains("show") &&
+      !navLinks.contains(e.target) &&
+      e.target !== hamburger
+    ) {
+      navLinks.classList.remove("show");
+    }
+  });
 });
 
 function calculateAge(dob) {
