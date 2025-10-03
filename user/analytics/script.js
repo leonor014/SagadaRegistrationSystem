@@ -379,10 +379,17 @@ function renderKPIs(docs, site = "__all") {
 
 // --- Clear charts before rendering new ones ---
 function clearCharts() {
+  // destroy chart instances
   for (let chartId in charts) {
     if (charts[chartId]) charts[chartId].destroy();
   }
   charts = {};
+
+  // clear chart DOM areas
+  const generalCharts = document.getElementById("general-charts-area");
+  const touristCharts = document.getElementById("tourist-charts-area");
+  if (generalCharts) generalCharts.innerHTML = "";
+  if (touristCharts) touristCharts.innerHTML = "";
 }
 
 // --- Create chart container if not present ---

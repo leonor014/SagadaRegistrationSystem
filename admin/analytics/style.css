@@ -110,6 +110,7 @@ nav{
     background-color: var(--panel-color);
     border-right: 1px solid var(--border-color);
     transition: var(--tran-05);
+    overflow-y: auto;
 }
 nav.close{
     width: 73px;

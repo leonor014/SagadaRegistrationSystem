@@ -23,7 +23,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 document.addEventListener("DOMContentLoaded", () => {
-  checkUserData();
+  /* checkUserData(); */
   const authLink = document.getElementById("authLink");
   const userValidated = localStorage.getItem("userValidated") === "true";
   const userIdFromStorage = localStorage.getItem("userId");
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "/SagadaRegistrationSystem/index.html";
   });
 
-  // Elements
+  /* // Elements
   const warningModal = document.getElementById("warningModal");
   const closeWarning = document.getElementById("closeWarning");
 
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error fetching user data:", err);
       showWarningModal(); // show modal if fetch fails
     }
-  }
+  } */
 
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
   document.querySelectorAll('input[type="date"]').forEach((input) => {

@@ -23,6 +23,9 @@
                 <input type="email" id="signupEmail" placeholder="Email Address" required />
                 <input type="password" id="signupPassword" placeholder="Password" required />
                 <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required />
+                <p class="mobile-toggle">Already have an account?
+                    <a href="#" id="mobileSignInLink">Login</a>
+                </p>
                 <button class="sign-up">Register</button>
             </form>
         </div>
@@ -34,7 +37,9 @@
                 <p>Log in to view or manage your registration details.</p>
                 <input type="email" id="signinEmail" placeholder="Email Address" required />
                 <input type="password" id="signinPassword" placeholder="Password" required />
-                <!-- <a href="#">Forgot your password?</a> -->
+                <p class="mobile-toggle">Don’t have an account?
+                    <a href="#" id="mobileSignUpLink">Register</a>
+                </p>
                 <button class="sign-in">Login</button>
             </form>
         </div>
@@ -61,12 +66,44 @@
         const signInButton = document.getElementById('signIn');
         const container = document.getElementById('container');
 
+        // Desktop overlay toggle
         signUpButton.addEventListener('click', () => {
             container.classList.add("right-panel-active");
         });
 
         signInButton.addEventListener('click', () => {
             container.classList.remove("right-panel-active");
+        });
+
+        // Mobile toggle
+        const mobileSignUpLink = document.getElementById('mobileSignUpLink');
+        const mobileSignInLink = document.getElementById('mobileSignInLink');
+        const signUpContainer = document.querySelector('.sign-up-container');
+        const signInContainer = document.querySelector('.sign-in-container');
+
+        function showSignUp() {
+            signInContainer.classList.remove('active');
+            signUpContainer.classList.add('active');
+        }
+
+        function showSignIn() {
+            signUpContainer.classList.remove('active');
+            signInContainer.classList.add('active');
+        }
+
+        // Default show login on mobile
+        if (window.innerWidth <= 500) {
+            showSignIn();
+        }
+
+        mobileSignUpLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignUp();
+        });
+
+        mobileSignInLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignIn();
         });
     </script>
     <script type="module" src="../js/user-auth.js"></script>
