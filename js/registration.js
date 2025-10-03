@@ -545,6 +545,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           document.getElementById("fullName"),
           document.getElementById("dateOfBirth"),
           document.getElementById("dateOfRegistration"),
+          document.getElementById("country"),
+          document.getElementById("region"),
         ].forEach((el) => {
           if (el) {
             el.required = false;

@@ -27,56 +27,11 @@ html {
 
 body {
     font-family: 'Roboto', sans-serif;
-    text-align: center;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     color: #333;
     background-color: #c6fce3cb;
-}
-
-/* Navigation Bar */
-nav {
-    background-color: var(--dark); /* Green color matching SDG theme */
-    padding: 0.5rem 1rem;
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 1000; /* Ensure it stays above other content */
-}
-
-nav a {
-    color: white;
-    text-decoration: none;
-    margin: 0 1rem;
-    font-weight: bold;
-    font-size: 1rem;
-}
-
-
-nav ul {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-    }
-
-nav ul li {
-    display: inline;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: color 0.3s;
-}
-
-nav ul li a:hover {
-    color: #a5d6a7; /* Lighter green shade */
 }
 
 /* Table Styling */
@@ -149,7 +104,7 @@ input, select {
 }
 
 /* Buttons */
-button {
+.button {
     padding: 0.5rem 1rem;
     margin: 0.3rem;
     border: none;
@@ -162,12 +117,12 @@ button {
     width: 100%; /* default full width */
 }
 
-button:hover {
+.button:hover {
     background-color: #151616;
     transform: translateY(-2px);
 }
 
-button:disabled {
+.button:disabled {
     background-color: #9e9e9e;
     cursor: not-allowed;
 }
@@ -336,11 +291,6 @@ footer {
         margin: 15px auto;
     }
     
-    nav a {
-        margin: 0 0.8rem;
-        font-size: 0.9em;
-    }
-    
     #touristTable {
         font-size: 0.85em;
     }
@@ -356,15 +306,6 @@ footer {
 }
 
 @media (max-width: 480px) {
-    nav {
-        padding: 0.6rem 0.5rem;
-    }
-    
-    nav a {
-        margin: 0 0.5rem;
-        font-size: 0.85em;
-    }
-    
     .container {
         padding: 12px;
     }

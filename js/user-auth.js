@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("userId", user.userId);
         localStorage.setItem("userEmail", user.email);
         signinForm.reset();
-        window.location.href = "/SagadaRegistrationSystem/index.html";
+        window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
       });
     } catch (error) {
       console.error("Login error:", error);

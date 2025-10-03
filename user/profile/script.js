@@ -23,6 +23,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 document.addEventListener("DOMContentLoaded", () => {
+  checkUserData();
   const authLink = document.getElementById("authLink");
   const userValidated = localStorage.getItem("userValidated") === "true";
   const userIdFromStorage = localStorage.getItem("userId");
@@ -48,6 +49,86 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("userEmail");
     window.location.href = "/SagadaRegistrationSystem/index.html";
   });
+
+  // Elements
+  const warningModal = document.getElementById("warningModal");
+  const closeWarning = document.getElementById("closeWarning");
+
+  // Function to show modal
+  function showWarningModal() {
+    warningModal.style.display = "flex";
+    document.body.style.overflow = "hidden"; // prevent background scroll
+  }
+
+  // Function to hide modal
+  function hideWarningModal() {
+    warningModal.style.display = "none";
+    document.body.style.overflow = "auto";
+  }
+
+  // Close modal when clicking 'x'
+  closeWarning.addEventListener("click", hideWarningModal);
+
+  // Close modal when clicking outside the content
+  window.addEventListener("click", (event) => {
+    if (event.target === warningModal) {
+      hideWarningModal();
+    }
+  });
+
+  async function checkUserData() {
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) return;
+
+    try {
+      const userDocRef = doc(db, "users", userEmail);
+      const userSnap = await getDoc(userDocRef);
+
+      if (!userSnap.exists()) return;
+
+      const userData = userSnap.data();
+      const personalDetails = userData.personalDetails || {};
+      const groups = Array.isArray(userData.groups) ? userData.groups : [];
+
+      // --- Personal Details Validation ---
+      const today = new Date();
+      const dobDate = personalDetails.dob
+        ? new Date(personalDetails.dob)
+        : null;
+
+      const isPersonalEmpty =
+        !personalDetails.dob ||
+        !dobDate ||
+        dobDate > today || // DOB missing or in the future
+        !personalDetails.sex ||
+        !personalDetails.country ||
+        !personalDetails.region ||
+        !personalDetails.phone;
+
+      // --- Groups Validation ---
+      const isGroupsEmpty =
+        groups.length === 0 ||
+        groups.some((group) => {
+          if (!group.groupName) return true; // group name missing
+          if (!group.members || !Array.isArray(group.members)) return true; // members array missing
+          if (group.members.length === 0) return true; // no members
+          // check each member for valid fields
+          return group.members.some(
+            (m) => !m.memberName || !m.memberDOB || !m.memberSex
+          );
+        });
+
+      // --- Show modal if personal details or groups are invalid ---
+      if (isPersonalEmpty || isGroupsEmpty) {
+        showWarningModal();
+      } else {
+        hideWarningModal(); // all good
+      }
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+      showWarningModal(); // show modal if fetch fails
+    }
+  }
 
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
   document.querySelectorAll('input[type="date"]').forEach((input) => {
