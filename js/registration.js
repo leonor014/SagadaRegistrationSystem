@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isPersonalEmpty = Object.values(personalDetails).every((val) => !val);
     const isGroupsEmpty = groups.length === 0;
 
-    if (isPersonalEmpty || isGroupsEmpty) {
+    if (isPersonalEmpty) {
       // Show warning modal
       warningModal.style.display = "flex";
       document.body.style.overflow = "hidden"; // prevent background scroll
@@ -469,14 +469,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       groupEmailEl.value = savedEmail || individualData.email || "";
     }
 
+    function showGroupRequiredModal() {
+      const modal = document.getElementById("groupRequiredModal");
+      modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+
+      document.getElementById("closeGroupRequiredModal").onclick = () => {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+      };
+
+      document.getElementById("goToProfileBtnGroup").onclick = () => {
+        window.location.href =
+          "/SagadaRegistrationSystem/user/profile/index.html";
+      };
+    }
+
     // show/hide forms depending on selection
-    function handleSelectionChange() {
+    async function handleSelectionChange() {
       const val = groupRegistration?.value;
 
       // Clear members container and reset selected group
       if (groupMembersContainer) groupMembersContainer.innerHTML = "";
       selectedGroupGlobal = null;
-
       // Reset group and individual date inputs
       if (groupDateEl) groupDateEl.value = "";
       const dateRegEl = document.getElementById("dateOfRegistration");
@@ -516,6 +531,35 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (el) el.disabled = false;
         });
       } else if (val === "group") {
+        try {
+          const userEmail = localStorage.getItem("userEmail");
+          if (!userEmail) return;
+
+          const userDocRef = doc(db, "users", userEmail);
+          const userSnap = await getDoc(userDocRef);
+
+          if (!userSnap.exists()) return;
+
+          const userData = userSnap.data();
+          const groups = Array.isArray(userData.groups) ? userData.groups : [];
+
+          if (groups.length === 0) {
+            // No groups exist → reset to individual and show modal
+            groupRegistration.value = "";
+            handleSelectionChange(); // re-run for individual
+            showGroupRequiredModal();
+            return;
+          }
+        } catch (err) {
+          console.error("Error checking groups:", err);
+          // fallback: reset to individual
+          groupRegistration.value = "individual";
+          handleSelectionChange();
+          showGroupRequiredModal();
+          return;
+        }
+
+        // If groups exist → proceed with normal group form
         individualForm.style.display = "none";
         groupForm.style.display = "block";
         populateGroupCountryAndRegion(
