@@ -910,11 +910,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       return regNumber;
     }
 
+    let isSubmitting = false;
+
     // ---------- Form submission ----------
     const form = document.getElementById("registrationForm");
     form?.addEventListener("submit", async (ev) => {
       ev.preventDefault();
 
+      if (isSubmitting) return;
+
+      isSubmitting = true;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Registering...";
+      }
+      
       // determine if group registration
       const isGroup = groupRegistration.value === "group";
 
@@ -1048,6 +1059,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Failed to submit registration:", err);
         alert("Failed to submit registration. See console for details.");
       } finally {
+        isSubmitting = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Register";
+        }
         loadingModal?.classList.add("hidden");
       }
     });

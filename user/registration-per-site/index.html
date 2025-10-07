@@ -522,8 +522,19 @@
     }
 
 
+    let isSubmittingAttendance = false;
     // --- Firestore Save ---
     async function submitAttendance() {
+
+      if (isSubmittingAttendance) return;
+
+      isSubmittingAttendance = true;
+
+      const submitBtn = document.getElementById("submitAttendanceBtn");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Recording...";
+      }
       try {
         let selectedSite = document.getElementById("siteSelect").value;
         let registrationNumber = document.getElementById("registrationNumber").value.trim();
@@ -559,6 +570,12 @@
       } catch (error) {
         console.error("Error submitting attendance: ", error);
         alert("Error saving attendance. Please try again.");
+      } finally {
+        isSubmittingAttendance = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit Attendance";
+        }
       }
     }
 
