@@ -27,6 +27,7 @@
     --table-header-bg: #f0f2f5;
     --table-row-hover: #f5f5f5;
     --scrollbar-track-color: #f1f1f1;
+    --view-color: #2196F3;  
     --edit-color: #4CAF50;     
     --delete-color: #F44336;
     --action-text-color: #FFF;
@@ -58,6 +59,7 @@ body.dark{
     --table-header-bg: #3a3b3c;
     --table-row-hover: #2c2d2e;
     --scrollbar-track-color: #2c2d2e;
+    --view-color: #64B5F6;
     --edit-color: #81C784;    
     --delete-color: #EF9A9A;
     --action-text-color: #000; 
@@ -420,6 +422,11 @@ nav.close ~ .dashboard .top{
     display: flex;
     align-items: center;
 }
+.dash-content .title .title-header{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 .dash-content hr{
     margin: 20px 10px;
     border: none;
@@ -492,6 +499,11 @@ nav.close ~ .dashboard .top{
   width: 100%;
   table-layout: fixed;
 }
+.activity-table td {
+  white-space: normal;   
+  word-wrap: break-word; 
+  overflow-wrap: anywhere; 
+}
 .activity-table thead th,
 .activity-table tbody td {
   padding: 12px;
@@ -524,6 +536,9 @@ nav.close ~ .dashboard .top{
 .action-btn i {
     font-size: 24px;
     color: var(--action-text-color);
+}
+.view-btn {
+    background-color: var(--view-color);
 }
 .edit-btn {
     background-color: var(--edit-color);
@@ -558,7 +573,7 @@ body.modal-open {
   padding: 2rem;
   border-radius: 12px;
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   position: relative;
   animation: fadeIn 0.3s ease-out;
@@ -732,6 +747,22 @@ input[readonly] {
         width: calc(100% / 2 - 15px);
         margin-top: 15px;
     }
+
+    .dash-content .title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        }
+
+    .dash-content .title .search-box {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .dash-content .title .search-box input {
+        width: 100%;
+    }
+
 }
 @media (max-width: 560px) {
     .dash-content .boxes .box{

@@ -483,6 +483,11 @@ nav.close ~ .dashboard .top{
   width: 100%;
   table-layout: fixed;
 }
+.activity-table td {
+  white-space: normal;   
+  word-wrap: break-word; 
+  overflow-wrap: anywhere; 
+}
 .activity-table thead th,
 .activity-table tbody td {
   padding: 12px;

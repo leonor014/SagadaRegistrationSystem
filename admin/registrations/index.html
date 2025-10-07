@@ -93,8 +93,11 @@
             <div class="dash-content">
                 <div class="activity">
                     <div class="title">
-                        <i class="uil uil-file-edit-alt"></i>
-                        <span class="text">Registrations Management</span>
+                        <div class="title-header">
+                            <i class="uil uil-file-edit-alt"></i>
+                            <span class="text">Registrations Management</span>
+                        </div>
+
 
                         <!-- Search Bar -->
                         <div class="search-box">
@@ -187,6 +190,20 @@
             </form>
         </div>
     </div>
+
+    <!-- Attendance Details Modal -->
+    <div id="attendanceModal" class="modal" style="visibility: hidden;">
+        <div class="modal-content">
+            <button class="close-button" id="attendanceModalClose" aria-label="Close">
+                <i class="uil uil-times"></i>
+            </button>
+            <h2 class="modal-title">Attendance Details</h2>
+            <div id="attendanceList">
+                <p style="text-align:center;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
 
 </body>
 

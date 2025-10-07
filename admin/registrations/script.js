@@ -14,6 +14,7 @@ import {
   orderBy,
   setDoc,
   deleteDoc,
+  where,
   onSnapshot,
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
@@ -127,6 +128,9 @@ const listenToRegistrations = () => {
         <td>${regDate}</td>
         <td>${createdAt}</td>
         <td>
+          <button class="action-btn view-btn" title="View Attendance" data-reg="${regNo}">
+            <i class="uil uil-eye"></i>
+          </button>
           <button class="action-btn edit-btn" title="Edit" data-id="${regId}">
               <i class="uil uil-edit-alt"></i>
             </button>
@@ -142,7 +146,7 @@ const listenToRegistrations = () => {
     if (!hasRegistrations) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align: center;">No registrations found.</td>
+          <td colspan="7" style="text-align: center;">No registrations found.</td>
         </tr>
       `;
     }
@@ -152,6 +156,69 @@ const listenToRegistrations = () => {
 };
 
 function attachActionButtons() {
+  // VIEW Button
+  document.querySelectorAll(".view-btn").forEach((button) => {
+    button.addEventListener("click", async (e) => {
+      const regNum = e.currentTarget.dataset.reg;
+      const attendanceModal = document.getElementById("attendanceModal");
+      const attendanceList = document.getElementById("attendanceList");
+
+      attendanceModal.style.visibility = "visible";
+      document.body.classList.add("modal-open");
+      attendanceList.innerHTML = `<p style="text-align:center;">Loading...</p>`;
+
+      try {
+        const q = query(
+          collection(db, "attendance"),
+          where("registrationNumber", "==", regNum)
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          attendanceList.innerHTML = `<p style="text-align:center;">No attendance records found for <b>${regNum}</b>.</p>`;
+          return;
+        }
+
+        let html = `
+          <table class="activity-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Sex</th>
+                <th>Nationality</th>
+                <th>Region</th>
+                <th>Site</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        querySnapshot.forEach((docSnap) => {
+          const d = docSnap.data();
+          html += `
+            <tr>
+              <td>${d.name || "-"}</td>
+              <td>${d.age || "-"}</td>
+              <td>${d.sex || "-"}</td>
+              <td>${d.nationality || "-"}</td>
+              <td>${d.region || "-"}</td>
+              <td>${d.site || "-"}</td>
+              <td>${new Date(d.timestamp.seconds * 1000).toLocaleString()}</td>
+            </tr>
+          `;
+        });
+
+        html += `</tbody></table>`;
+        attendanceList.innerHTML = html;
+      } catch (err) {
+        console.error("Error fetching attendance:", err);
+        attendanceList.innerHTML = `<p style="text-align:center;color:red;">Error loading attendance records.</p>`;
+      }
+    });
+  });
+
   // EDIT button
   document.querySelectorAll(".edit-btn").forEach((button) => {
     button.addEventListener("click", async (e) => {
@@ -221,6 +288,21 @@ function attachActionButtons() {
     });
   });
 }
+
+document
+  .getElementById("attendanceModalClose")
+  .addEventListener("click", () => {
+    document.getElementById("attendanceModal").style.visibility = "hidden";
+    document.body.classList.remove("modal-open");
+  });
+
+window.addEventListener("click", (e) => {
+  const modal = document.getElementById("attendanceModal");
+  if (e.target === modal) {
+    modal.style.visibility = "hidden";
+    document.body.classList.remove("modal-open");
+  }
+});
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
