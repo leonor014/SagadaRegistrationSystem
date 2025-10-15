@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUnsubscribe = null;
 
   function renderSpots(snapshot) {
+    const container = document.getElementById("spotsContainer");
     container.innerHTML = "";
 
     if (snapshot.empty) {
@@ -36,54 +37,49 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const spotsByCategory = {};
+    const grid = document.createElement("div");
+    grid.classList.add("spots-grid");
 
     snapshot.forEach((doc) => {
       const spot = doc.data();
-      console.log("Spot data:", spot); // <-- Add this
-      const category = spot.category || "Uncategorized";
-      if (!spotsByCategory[category]) {
-        spotsByCategory[category] = [];
-      }
-      spotsByCategory[category].push(spot);
-    });
 
-    console.log("Grouped spotsByCategory:", spotsByCategory);
+      const card = document.createElement("div");
+      card.classList.add("spot-card");
 
-    Object.entries(spotsByCategory).forEach(([category, spots]) => {
-      const spotDiv = document.createElement("div");
-      spotDiv.classList.add("spot");
-
-      const title = document.createElement("h2");
-      title.textContent = category;
-      spotDiv.appendChild(title);
-
-      spots.forEach((spot) => {
-        const content = document.createElement("div");
-        content.classList.add("spot-content");
-
-        content.innerHTML = `
-        <img src="${spot.image}" alt="${spot.name}">
-        <h2>${spot.name}</h2>
-        <p>${spot.description}</p>
-        ${
-          spot.guideFee
-            ? `<p><strong>Guide Fee:</strong> ${spot.guideFee}</p>`
-            : ""
-        }
-        ${
-          spot.shuttleFee
-            ? `<p><strong>Shuttle Fee:</strong> ${spot.shuttleFee}</p>`
-            : ""
-        }
+      card.innerHTML = `
+        <div class="spot-card-inner">
+          <div class="spot-card-front">
+            <img src="${spot.image}" alt="${spot.name}">
+            <h3>${spot.name}</h3>
+          </div>
+          <div class="spot-card-back">
+            <h3>${spot.name}</h3>
+            <p>${spot.description}</p>
+            ${
+              spot.guideFee
+                ? `<p><strong>Guide Fee:</strong> ${spot.guideFee}</p>`
+                : ""
+            }
+            ${
+              spot.shuttleFee
+                ? `<p><strong>Shuttle Fee:</strong> ${spot.shuttleFee}</p>`
+                : ""
+            }
+          </div>
+        </div>
       `;
 
-        spotDiv.appendChild(content);
+      // Add flip effect on click
+      card.addEventListener("click", () => {
+        card.classList.toggle("flipped");
       });
 
-      container.appendChild(spotDiv);
+      grid.appendChild(card);
     });
+
+    container.appendChild(grid);
   }
+
 
   onSnapshot(collection(db, "categories"), (snapshot) => {
     console.log("Categories snapshot:", snapshot.size);

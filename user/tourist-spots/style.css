@@ -22,7 +22,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f7bdd5;
+    background-color: #e9eef1;
 }
 header {
     text-align: center;
@@ -49,7 +49,7 @@ select {
 }
 .spot {
     margin-bottom: 20px;
-    background-color: #ffefd5;
+    background-color: #f5f1ec;
     padding: 15px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -68,6 +68,96 @@ select {
 .spot-content h2 {
     margin-top: 0;
 }
+/* === Tourist Spots Grid === */
+.spots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* === Spot Card === */
+.spot-card {
+  background: rgb(125, 173, 245);
+  perspective: 1000px;
+  height: 320px;
+  cursor: pointer;
+}
+
+/* Inner container for flipping */
+.spot-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Flip on hover (for desktop) */
+@media (hover: hover) and (pointer: fine) {
+  .spot-card:hover .spot-card-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+/* Flip on click (for mobile) */
+.spot-card.flipped .spot-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* === Front and Back Faces === */
+.spot-card-front,
+.spot-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.spot-card-front {
+  background: var(--dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spot-card-front img {
+  width: 100%;
+  height: 70%;
+  object-fit: cover;
+}
+
+.spot-card-front h3 {
+  padding: 10px;
+  font-size: 1.1rem;
+  color: rgb(242, 243, 247);
+  background: var(--dark);
+  width: 100%;
+}
+
+.spot-card-back {
+  background: #ebecf0;
+  color: #333;
+  transform: rotateY(180deg);
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.spot-card-back h3 {
+  margin-bottom: 8px;
+}
+
+.spot-card-back p {
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
 .editable {
     width: 100%;
     padding: 10px;
@@ -80,7 +170,7 @@ select {
     margin-right: 5px;
     padding: 5px 10px;
     background-color: #4CAF50;
-    color: white;
+    color: rgb(241, 233, 233);
     border: none;
     border-radius: 3px;
     cursor: pointer;
