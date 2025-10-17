@@ -750,8 +750,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!dateStr) return false;
       const today = new Date();
       const d = new Date(dateStr);
-      const min = new Date(today); // 150 years ago
-      min.setFullYear(min.getFullYear() - 150);
+      const min = new Date(today); // 90 years ago
+      min.setFullYear(min.getFullYear() - 90);
       return d <= today && d >= min;
     }
 
