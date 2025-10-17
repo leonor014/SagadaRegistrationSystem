@@ -1,64 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <title>Tourism Analytics Dashboard</title>
+  <title>Tourism - Tourist Spot Analytics</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module" src="./script.js"></script>
 </head>
-
 <body>
   <nav class="navbar">
     <div class="nav-container">
-      <!-- Hamburger Button -->
       <button class="hamburger" id="hamburger">☰</button>
-
-      <!-- Nav Links -->
       <div class="nav-links" id="nav-links">
         <a href="/SagadaRegistrationSystem/index.html">Home</a>
         <a href="/SagadaRegistrationSystem/about/index.html">About</a>
         <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
         <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
-        <!-- <a id="touristCheckInLink"
-                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a> -->
         <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
-        <!-- <a id="logoutLink" href="#">Logout</a> -->
       </div>
     </div>
   </nav>
 
   <header>
-    <h1>Tourism Analytics Dashboard</h1>
-    <p>Insights into tourist visits and trends</p>
+    <h1>Tourist Spot Analytics</h1>
+    <p>Top 5 spots (by visits) & other sites — click a tile or choose a site to view charts.</p>
   </header>
 
   <div class="dashboard">
-    <!-- Report type selector and site dropdown -->
-    <div class="report-selector">
-      <div class="selector-group">
-        <label for="report-type">Report Type:</label>
-        <select id="report-type">
-          <option value="general">General Analytics</option>
-          <option value="tourist-spot">Tourist Spot</option>
-        </select>
-      </div>
-
-      <div class="selector-group" id="site-selector-container">
-        <label for="site-dropdown">Tourist Site:</label>
-        <select id="site-dropdown">
-          <option value="__all">All Sites</option>
-        </select>
-      </div>
-    </div>
-
-
-
-    <!-- Main content: Left: charts + top-left filters -->
     <main class="main-content">
       <section class="top-controls">
         <div class="filters-left">
@@ -70,77 +41,80 @@
 
           <label for="month-filter" id="date-filter-label">Month</label>
           <input type="month" id="month-filter" />
+
+          <div class="selector-group" id="site-selector-container">
+            <label for="site-dropdown">Select Tourist Spot:</label>
+            <select id="site-dropdown">
+              <option value="__all">All Tourist Spots</option>
+            </select>
+          </div>
+
           <button id="apply-filters">Apply</button>
         </div>
-        <div class="spacer"></div>
       </section>
 
-      <!-- Report Sections -->
-      <div id="general-analytics" class="report-section">
-        <div class="content-grid">
-          <section class="analytics-container" id="general-charts-area"></section>
+      <section id="tourist-spot-analytics" class="report-section" style="display:block;">
+        <div class="analytics-flex-container">
 
-          <aside class="analytics-area" id="analytics-area">
-            <div class="analytics-card">
-              <h3 id="analytics-title">General Analytics</h3>
-              <div id="kpi-section" class="kpi-section">
-                <!-- KPI cards -->
-              </div>
-            </div>
+          <!-- LEFT SIDE: Top 5 Tourist Spots -->
+          <div class="analytics-left">
+            <h2 class="section-title">Top 5 Tourist Spots</h2>
+            <div id="top5-tiles" class="tiles-vertical" aria-live="polite"></div>
+          </div>
 
-            <div class="analytics-card">
-              <h3>Filters</h3>
-              <p style="font-size:0.9rem;margin:0.25rem 0;">Pick date range and select site.</p>
+          <!-- MIDDLE: Charts Area -->
+          <div class="analytics-middle">
+            <h2 class="section-title">Analytics Charts</h2>
+            <div id="tourist-charts-area" class="charts-display-area"></div>
+          </div>
+
+          <!-- RIGHT SIDE: Quick Stat Summary -->
+          <div class="analytics-summary" id="analytics-summary">
+            <h3 class="summary-title">Tourist Spot Analytics</h3>
+            <div class="summary-card">
+              <div class="summary-value" id="summary-total">0</div>
+              <p>Total Visits</p>
             </div>
-          </aside>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div id="tourist-spot-analytics" class="report-section">
-        <div class="content-grid">
-          <section class="analytics-container" id="tourist-charts-area"></section>
 
-          <aside class="analytics-area" id="analytics-area">
-            <div class="analytics-card">
-              <h3>Tourist Spot Analytics</h3>
-              <div id="kpi-section-tourist" class="kpi-section">
-                <!-- KPI cards -->
-              </div>
-            </div>
-
-            <div class="analytics-card">
-              <h3>Filters</h3>
-              <p style="font-size:0.9rem;margin:0.25rem 0;">Pick date range and select site.</p>
-            </div>
-          </aside>
-        </div>
-      </div>
     </main>
-
-
   </div>
 
-
-
   <footer>
-    <p>&copy; 2025 Discover Sagada . All rights reserved. </p>
+    <p>&copy; 2025 Discover Sagada. All rights reserved.</p>
   </footer>
+
   <script>
+    // small profile link toggle
     document.addEventListener("DOMContentLoaded", () => {
       const authLink = document.getElementById("authLink");
+      const registerLink = document.getElementById("registerLink");
       const userValidated = localStorage.getItem("userValidated") === "true";
-
       if (userValidated) {
         authLink.textContent = "Profile";
         authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
       } else {
         authLink.textContent = "Login";
         authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
-        registerLink.style.display = "none";
+        if (registerLink) registerLink.style.display = "none";
       }
 
+      // hamburger
+      const hamburger = document.getElementById("hamburger");
+      const navLinks = document.getElementById("nav-links");
+      hamburger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navLinks.classList.toggle("show");
+      });
+      document.addEventListener("click", (e) => {
+        if (navLinks.classList.contains("show") && !navLinks.contains(e.target) && e.target !== hamburger) {
+          navLinks.classList.remove("show");
+        }
+      });
     });
   </script>
 </body>
-
 </html>
