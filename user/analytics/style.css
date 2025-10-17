@@ -34,9 +34,92 @@ header { background: #6495ed; color: #fff; text-align:center; padding: 1rem; }
 .analytics-container { display:flex; flex-direction:column; gap:16px; }
 .analytics-area { padding: 16px; }
 
-/* top controls */
-.top-controls { display:flex; gap:1rem; justify-content:center; margin: 12px 0; }
-.filters-left { display:flex; gap:0.75rem; align-items:center; padding:10px; border-radius:10px; background:linear-gradient(135deg,#fff,#f8f9fa); border:1px solid #e6e6e6; }
+/* --- Top Controls Layout --- */
+.top-controls {
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+.filters-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 0.8rem;
+  padding: 0 1rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.filters-left label {
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.filters-left select,
+.filters-left input[type="month"] {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  min-width: 160px;
+}
+
+.filters-left button {
+  padding: 0.6rem 1.2rem;
+  background-color: var(--primary-dark);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  height: fit-content;
+}
+
+.filters-left button:hover {
+  background-color: var(--primary);
+}
+
+/* --- Desktop: Apply button floats right --- */
+@media (min-width: 769px) {
+  .filters-left {
+    flex-wrap: nowrap;
+  }
+  #apply-filters {
+    margin-left: auto;
+  }
+}
+
+/* --- Mobile & Tablet Responsive --- */
+@media (max-width: 768px) {
+  .filters-left {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filters-left select,
+  .filters-left input[type="month"],
+  .filters-left button {
+    width: 100%;
+    max-width: 95%;
+    margin: 0 auto;
+  }
+
+  .filters-left button {
+    margin-top: 0.5rem;
+  }
+}
 
 /* selectors */
 .selector-group { display:flex; gap:0.5rem; align-items:center; }
@@ -74,11 +157,13 @@ header { background: #6495ed; color: #fff; text-align:center; padding: 1rem; }
 /* --- Analytics Layout --- */
 .analytics-flex-container {
   display: grid;
-  grid-template-columns: 26% 54% 20%;
+  grid-template-columns: minmax(240px, 1fr) minmax(400px, 2fr) minmax(220px, 1fr);
   gap: 1.5rem;
   padding: 1rem;
   margin: 0 auto;
   align-items: flex-start;
+  max-width: 1300px;
+  width: 100%;
 }
 
 /* Left: Top 5 Tiles */
@@ -209,6 +294,29 @@ header { background: #6495ed; color: #fff; text-align:center; padding: 1rem; }
   .summary-card {
     width: 90%;
     max-width: 350px;
+  }
+}
+
+
+@media (max-width: 768px) {
+  .filters-left {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filters-left select,
+  .filters-left input[type="month"],
+  .filters-left button {
+    width: 100%;
+  }
+
+  .filters-left button {
+    margin-top: 0.5rem;
   }
 }
 

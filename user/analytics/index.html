@@ -33,16 +33,20 @@
     <main class="main-content">
       <section class="top-controls">
         <div class="filters-left">
-          <label for="filter-type">View By:</label>
-          <select id="filter-type">
-            <option value="month">Monthly</option>
-            <option value="year">Yearly</option>
-          </select>
+          <div class="filter-group">
+            <label for="filter-type">View By:</label>
+            <select id="filter-type">
+              <option value="month">Monthly</option>
+              <option value="year">Yearly</option>
+            </select>
+          </div>
 
-          <label for="month-filter" id="date-filter-label">Month</label>
-          <input type="month" id="month-filter" />
+          <div class="filter-group">
+            <label for="month-filter" id="date-filter-label">Month</label>
+            <input type="month" id="month-filter" />
+          </div>
 
-          <div class="selector-group" id="site-selector-container">
+          <div class="filter-group selector-group" id="site-selector-container">
             <label for="site-dropdown">Select Tourist Spot:</label>
             <select id="site-dropdown">
               <option value="__all">All Tourist Spots</option>
@@ -52,6 +56,7 @@
           <button id="apply-filters">Apply</button>
         </div>
       </section>
+
 
       <section id="tourist-spot-analytics" class="report-section" style="display:block;">
         <div class="analytics-flex-container">
