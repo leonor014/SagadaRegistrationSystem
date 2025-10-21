@@ -190,7 +190,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 <input type="text" value="${
                   m.memberName
                 }" placeholder="Full Name" disabled />
-                <input type="date" value="${m.memberDOB}" disabled />
+                <input 
+                  type="date" 
+                  value="${m.memberDOB || ''}" 
+                  placeholder="Date of Birth" 
+                  disabled 
+                  onfocus="this.showPicker && this.showPicker()" 
+                />
                 <select disabled>
                 <option value="">Sex</option>
                 <option ${
