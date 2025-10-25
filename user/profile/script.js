@@ -5,6 +5,11 @@ import {
   doc,
   onSnapshot,
   updateDoc,
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // Firebase config
@@ -191,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   m.memberName
                 }" placeholder="Full Name" disabled />
                 <input type="date" value="${
-                  m.memberDOB 
+                  m.memberDOB
                 }" placeholder="Date of Birth" disabled />
                 <select disabled>
                 <option value="">Sex</option>
@@ -238,6 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
       navLinks.classList.remove("show");
     }
   });
+
+  // Registration
+  loadRegistrationHistory();
 });
 
 function calculateAge(dob) {
@@ -760,3 +768,211 @@ function setupCountryChange(selectEl, regionEl, phoneEl) {
 
 setupCountryChange(countrySelect, regionSelect, phoneInput);
 setupCountryChange(groupCountrySelect, groupRegionSelect, groupPhoneInput);
+
+// --- Registration History Section ---
+const registrationList = document.getElementById("registrationList");
+
+// Function to load registrations
+async function loadRegistrationHistory() {
+  const userEmail = localStorage.getItem("userEmail");
+  if (!userEmail) return;
+
+  // Clear table before loading
+  registrationList.innerHTML = `
+    <tr>
+      <td colspan="3" style="text-align:center; padding:1rem; color:#888;">
+        Loading registrations...
+      </td>
+    </tr>
+  `;
+
+  try {
+    // Build two queries: one for 'email', one for 'groupEmail'
+    const regRef = collection(db, "registrations");
+
+    // No orderBy — avoids Firestore index requirement
+    const emailQuery = query(regRef, where("email", "==", userEmail));
+    const groupEmailQuery = query(regRef, where("groupEmail", "==", userEmail));
+
+    const [emailSnap, groupEmailSnap] = await Promise.all([
+      getDocs(emailQuery),
+      getDocs(groupEmailQuery),
+    ]);
+
+    // Combine both sets
+    const registrations = [];
+
+    emailSnap.forEach((doc) =>
+      registrations.push({ id: doc.id, ...doc.data() })
+    );
+    groupEmailSnap.forEach((doc) =>
+      registrations.push({ id: doc.id, ...doc.data() })
+    );
+
+    // Sort locally by dateOfRegistration (descending)
+    registrations.sort(
+      (a, b) => new Date(b.dateOfRegistration) - new Date(a.dateOfRegistration)
+    );
+
+    // Render table
+    if (registrations.length === 0) {
+      registrationList.innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align:center; padding:1rem; color:#888;">
+            No registrations found.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    registrationList.innerHTML = ""; // clear loading message
+
+    registrations.forEach((reg) => {
+      const regNo = reg.registrationNumber || "(No Registration No.)";
+      const regDate =
+        reg.dateOfRegistration && !isNaN(new Date(reg.dateOfRegistration))
+          ? new Date(reg.dateOfRegistration).toLocaleDateString()
+          : "Unknown Date";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${regNo}</td>
+        <td>${regDate}</td>
+        <td><button class="view-btn" data-id="${regNo}">View</button></td>
+      `;
+      registrationList.appendChild(tr);
+    });
+
+    // Add event listener to each View button
+    registrationList.querySelectorAll(".view-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const regId = e.target.dataset.id;
+        openRegistrationModal(regId);
+      });
+    });
+  } catch (err) {
+    console.error("Error fetching registrations:", err);
+    registrationList.innerHTML = `
+      <tr>
+        <td colspan="3" style="text-align:center; padding:1rem; color:red;">
+          Failed to load registrations.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// Close modal
+const modal = document.getElementById("registrationModal");
+const closeModalBtn = document.getElementById("closeModal");
+
+closeModalBtn.addEventListener("click", () => {
+  modal.style.display = "none";
+});
+
+window.addEventListener("click", (event) => {
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+});
+
+// Function to open and load modal content
+async function openRegistrationModal(regNo) {
+  const registrationDetailsDiv = document.getElementById("registrationDetails");
+  const attendanceList = document.getElementById("attendanceList");
+  modal.style.display = "flex";
+
+  registrationDetailsDiv.innerHTML = `<p>Loading registration details...</p>`;
+  attendanceList.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#888;">Loading attendance...</td></tr>`;
+
+  try {
+    // --- Fetch registration details ---
+    const regRef = collection(db, "registrations");
+    const q = query(regRef, where("registrationNumber", "==", regNo));
+    const regSnap = await getDocs(q);
+
+    if (regSnap.empty) {
+      registrationDetailsDiv.innerHTML = `<p style="color:red;">Registration not found.</p>`;
+      return;
+    }
+
+    const reg = regSnap.docs[0].data();
+
+    // Format registration details
+    let html = "";
+
+    if (reg.registrationType === "group") {
+      html += `
+        <p><strong>Registration No:</strong> ${reg.registrationNumber}</p>
+        <p><strong>Type:</strong> Group</p>
+        <p><strong>Group Name:</strong> ${reg.groupName}</p>
+        <p><strong>Country:</strong> ${reg.groupCountry}</p>
+        <p><strong>Region:</strong> ${reg.groupRegion}</p>
+        <p><strong>Email:</strong> ${reg.groupEmail}</p>
+        <p><strong>Contact:</strong> ${reg.groupContact}</p>
+        <p><strong>Date of Registration:</strong> ${reg.dateOfRegistration}</p>
+        <h3 style="margin-top:1rem;">Members</h3>
+          ${reg.groupMembers
+            .map(
+              (m, i) => `
+              <p>
+                <strong>${i + 1}. ${m.memberName}</strong> 
+                — ${m.memberSex}, <span class="dob">DOB: ${m.memberDOB}</span>
+              </p>`
+            )
+            .join("")}
+      `;
+    } else if (reg.registrationType === "individual") {
+      html += `
+        <p><strong>Registration No:</strong> ${reg.registrationNumber}</p>
+        <p><strong>Type:</strong> Individual</p>
+        <p><strong>Full Name:</strong> ${reg.fullName}</p>
+        <p><strong>Sex:</strong> ${reg.sex}</p>
+        <p><strong>Date of Birth:</strong> ${reg.dateOfBirth}</p>
+        <p><strong>Country:</strong> ${reg.country}</p>
+        <p><strong>Region:</strong> ${reg.region}</p>
+        <p><strong>Email:</strong> ${reg.email}</p>
+        <p><strong>Contact:</strong> ${reg.contactNumber}</p>
+        <p><strong>Date of Registration:</strong> ${reg.dateOfRegistration}</p>
+      `;
+    }
+
+    registrationDetailsDiv.innerHTML = html;
+
+    // --- Fetch attendance records ---
+    const attendanceRef = collection(db, "attendance");
+    const attQuery = query(
+      attendanceRef,
+      where("registrationNumber", "==", regNo)
+    );
+    const attSnap = await getDocs(attQuery);
+
+    if (attSnap.empty) {
+      attendanceList.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#888;">No check-ins found.</td></tr>`;
+    } else {
+      attendanceList.innerHTML = "";
+      attSnap.forEach((doc) => {
+        const a = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${a.name || "-"}</td>
+          <td>${a.age}</td>
+          <td>${a.sex || "-"}</td>
+          <td>${a.nationality || "-"}</td>
+          <td>${a.region || "-"}</td>
+          <td>${a.site || "-"}</td>
+          <td>${
+            a.timestamp?.toDate
+              ? a.timestamp.toDate().toLocaleDateString()
+              : a.timestamp?.split(" at ")[0] || "-"
+          }</td>
+        `;
+        attendanceList.appendChild(tr);
+      });
+    }
+  } catch (err) {
+    console.error("Error loading modal:", err);
+    registrationDetailsDiv.innerHTML = `<p style="color:red;">Failed to load details.</p>`;
+  }
+}

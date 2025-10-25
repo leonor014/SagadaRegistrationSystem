@@ -7,7 +7,7 @@
     <title>Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/SagadaRegistrationSystem/favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="module" src="./script.js"></script>
 </head>
@@ -37,88 +37,114 @@
         <div class="profile-content">
             <h2>My Profile</h2>
 
-            <!-- Personal Information -->
-            <div class="profile-card">
-                <h3>Personal Information</h3>
-                <form id="profileForm">
-                    <div class="form-grid">
-                        <label>
-                            Full Name:
-                            <input type="text" id="fullName" disabled required />
-                        </label>
-                        <label>
-                            Email:
-                            <input type="email" id="email" disabled required />
-                        </label>
-                        <label>
-                            Date of Birth:
-                            <input type="date" id="dob" disabled required />
-                        </label>
-                        <label>
-                            Sex:
-                            <select id="sex" disabled required>
-                                <option value="">Select</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </label>
-                        <label>
-                            Country of Origin:
-                            <select id="country" disabled required>
-                                <option value="">Select Country</option>
-                            </select>
-                        </label>
-                        <label>
-                            Region:
-                            <select id="region" disabled required>
-                                <option value="">Select Region</option>
-                            </select>
-                        </label>
-                        <label>
-                            Phone:
-                            <input type="tel" id="phone" minlength="7" pattern="^\+\d{6,}$" required disabled />
-                        </label>
-                    </div>
-                    <div class="btn-row">
-                        <button type="button" class="edit-btn" id="editProfile">Edit</button>
-                        <button type="submit" class="save-btn" id="saveProfile" style="display:none;">Save</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Groups Section -->
-            <div class="groups-section">
-                <h3>My Groups</h3>
-                <div class="groups-grid">
-
-                    <div class="group-card">
-                        <label>
-                            Group Name:
-                            <input type="text" placeholder="Enter group name" required disabled />
-                        </label>
-                        <ul id="group1"></ul>
-                        <button class="add-btn">+ Add Member</button>
-                    </div>
-
-                    <div class="group-card">
-                        <label>
-                            Group Name:
-                            <input type="text" placeholder="Enter group name" required disabled />
-                        </label>
-                        <ul id="group2"></ul>
-                        <button class="add-btn">+ Add Member</button>
-                    </div>
-
-                    <div class="group-card">
-                        <label>
-                            Group Name:
-                            <input type="text" placeholder="Enter group name" required disabled />
-                        </label>
-                        <ul id="group3"></ul>
-                        <button class="add-btn">+ Add Member</button>
-                    </div>
-
+            <div class="profile-grid">
+                <!-- Personal Information -->
+                <div class="profile-card">
+                    <h3>Personal Information</h3>
+                    <form id="profileForm">
+                        <div class="form-grid">
+                            <label>
+                                Full Name:
+                                <input type="text" id="fullName" disabled required />
+                            </label>
+                            <label>
+                                Email:
+                                <input type="email" id="email" disabled required />
+                            </label>
+                            <label>
+                                Date of Birth:
+                                <input type="date" id="dob" disabled required />
+                            </label>
+                            <label>
+                                Sex:
+                                <select id="sex" disabled required>
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </label>
+                            <label>
+                                Country of Origin:
+                                <select id="country" disabled required>
+                                    <option value="">Select Country</option>
+                                </select>
+                            </label>
+                            <label>
+                                Region:
+                                <select id="region" disabled required>
+                                    <option value="">Select Region</option>
+                                </select>
+                            </label>
+                            <label>
+                                Phone:
+                                <input type="tel" id="phone" minlength="7" pattern="^\+\d{6,}$" required disabled />
+                            </label>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="edit-btn" id="editProfile">Edit</button>
+                            <button type="submit" class="save-btn" id="saveProfile" style="display:none;">Save</button>
+                        </div>
+                    </form>
                 </div>
+
+                <!-- Groups Section -->
+                <div class="groups-section">
+                    <h3>My Groups</h3>
+                    <div class="groups-grid">
+
+                        <div class="group-card">
+                            <label>
+                                Group Name:
+                                <input type="text" placeholder="Enter group name" required disabled />
+                            </label>
+                            <ul id="group1"></ul>
+                            <button class="add-btn">+ Add Member</button>
+                        </div>
+
+                        <div class="group-card">
+                            <label>
+                                Group Name:
+                                <input type="text" placeholder="Enter group name" required disabled />
+                            </label>
+                            <ul id="group2"></ul>
+                            <button class="add-btn">+ Add Member</button>
+                        </div>
+
+                        <div class="group-card">
+                            <label>
+                                Group Name:
+                                <input type="text" placeholder="Enter group name" required disabled />
+                            </label>
+                            <ul id="group3"></ul>
+                            <button class="add-btn">+ Add Member</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Registration History -->
+                <div class="registration-section" id="registration">
+                    <h3>Registration History</h3>
+                    <table class="registration-table">
+                        <thead>
+                            <tr>
+                                <th>Registration No.</th>
+                                <th>Date of Registration</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrationList">
+                            <!-- Example row (will be replaced dynamically by JS) -->
+                            <!--<tr>
+                                <td>REG12345</td>
+                                <td>2025-10-01</td>
+                                <td><button class="view-btn">View</button></td>
+                            </tr>-->
+                        </tbody>
+                    </table>
+                </div>
+
+
             </div>
         </div>
     </section>
@@ -135,6 +161,46 @@
             <p>Please fill up your personal details and groups before registering.</p>
         </div>
     </div> -->
+
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content registration-modal">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Registration Details</h2>
+
+            <!-- Registration Info Section -->
+            <div id="registrationDetails" class="modal-section">
+                <p>Loading registration details...</p>
+            </div>
+
+            <hr class="modal-divider" />
+
+            <!-- Tourist Site Check-ins Section -->
+            <div id="attendanceDetails" class="modal-section">
+                <h3>Tourist Site Check-ins</h3>
+                <div class="table-wrapper">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Sex</th>
+                                <th>Nationality</th>
+                                <th>Region</th>
+                                <th>Site</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceList">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:#888;">No records found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 </body>
