@@ -178,26 +178,73 @@ document.addEventListener("DOMContentLoaded", async () => {
   reviewForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const comment = document.getElementById("comment").value;
-    const rating =
-      document.querySelector('input[name="rating"]:checked')?.value ||
-      "No rating";
-    const createdAt = Timestamp.now();
-    const imageFile = document.getElementById("imageUpload").files[0];
+    const submitBtn = reviewForm.querySelector(".submit-btn");
+    submitBtn.disabled = true; // disable button
+    submitBtn.textContent = "Submitting...";
 
-    let imageBase64 = null;
-    if (imageFile) {
-      imageBase64 = await convertImageToBase64(imageFile);
+    try {
+      const comment = document.getElementById("comment").value.trim();
+      const rating = document.querySelector(
+        'input[name="rating"]:checked'
+      )?.value;
+      const imageFile = document.getElementById("imageUpload").files[0];
+
+      // Validation
+      if (!comment) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Review";
+        return Swal.fire({
+          icon: "error",
+          title: "Missing Comment",
+          text: "Please write your review before submitting.",
+        });
+      }
+
+      if (!rating) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Review";
+        return Swal.fire({
+          icon: "error",
+          title: "Missing Rating",
+          text: "Please select a star rating before submitting.",
+        });
+      }
+
+      let imageBase64 = null;
+      if (imageFile) {
+        imageBase64 = await convertImageToBase64(imageFile);
+      }
+
+      const createdAt = Timestamp.now();
+
+      // Save to Firestore
+      await addDoc(collection(db, "reviews"), {
+        comment,
+        rating: parseInt(rating),
+        createdAt,
+        imageBase64,
+      });
+
+      await Swal.fire({
+        icon: "success",
+        title: "Review Submitted",
+        text: "Thank you for your feedback!",
+      });
+
+      // Reset form
+      reviewForm.reset();
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: "Something went wrong. Please try again.",
+      });
+    } finally {
+      // Always re-enable button
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Review";
     }
-
-    await addDoc(collection(db, "reviews"), {
-      comment,
-      rating,
-      createdAt,
-      imageBase64,
-    });
-
-    reviewForm.reset();
   });
 
   async function convertImageToBase64(file) {
@@ -210,24 +257,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   //loadReviews();
-
-  const hamburger = document.getElementById("hamburger");
-  const navLinks = document.getElementById("nav-links");
-
-  // Toggle menu on hamburger click
-  hamburger.addEventListener("click", (e) => {
-    e.stopPropagation(); // prevent click bubbling
-    navLinks.classList.toggle("show");
-  });
-
-  // Close menu if clicking outside
-  document.addEventListener("click", (e) => {
-    if (
-      navLinks.classList.contains("show") &&
-      !navLinks.contains(e.target) &&
-      e.target !== hamburger
-    ) {
-      navLinks.classList.remove("show");
-    }
-  });
 });

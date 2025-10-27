@@ -9,15 +9,76 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" type="image/x-icon" href="/SagadaRegistrationSystem/favicon.ico">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
 </head>
 
 <body>
-    <!-- Header Section 
-    <header>
-        <h1>Welcome to Tourist Registration</h1>
-    </header> -->
+    <!-- Fixed Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
 
+            <!-- Logo (Left) -->
+            <a href="#" class="logo">
+                <img src="./images/sagada-tourism-logo.png" alt="Sagada Logo">
+                <span>Sagada Tourism</span>
+            </a>
+
+            <!-- Center Nav Links -->
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/SagadaRegistrationSystem/index.html">Home</a></li>
+
+                <!-- Dropdown 1: Explore -->
+                <li class="dropdown-nav ">
+                    <a href="#">Explore ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/SagadaRegistrationSystem/user/tourist-spots/index.html">Tourist Spots</a></li>
+                        <li><a href="/SagadaRegistrationSystem/user/reviews/index.html">Reviews</a></li>
+                    </ul>
+                </li>
+
+                <!-- Dropdown 2: Information -->
+                <li class="dropdown-nav ">
+                    <a href="#">Information ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/SagadaRegistrationSystem/about/index.html">About Sagada</a></li>
+                        <li><a href="/SagadaRegistrationSystem/index.html#tourist-guidelines">Tourist Guidelines</a>
+                        </li>
+                        <li><a href="/SagadaRegistrationSystem/index.html#faq">FAQ</a></li>
+                        <li><a href="/SagadaRegistrationSystem/user/analytics/index.html">Analytics</a></li>
+                    </ul>
+                </li>
+
+                <!-- Dropdown 3: Tourist Actions -->
+                <li class="dropdown-nav ">
+                    <a href="#">Tourist Actions ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/SagadaRegistrationSystem/user/register/index.html">Book a Visit</a></li>
+                        <li><a href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site
+                                Check-In</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="/SagadaRegistrationSystem/contact/index.html">Contact</a></li>
+
+                <li id="profileMobile"><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
+
+                <li id="authLinkMobile"><button class="login-btn">Login</button></li>
+
+                <li id="logOutLinkMobile"><button class="logout-btn">Logout</button></li>
+            </ul>
+
+            <!-- Right: Login + Hamburger -->
+            <div class="nav-right">
+                <button class="login-btn desktop-login" id="authLinkDesktop">Login</button>
+                <button class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+
+        </div>
+    </nav>
 
     <!-- Main Banner with Multiple Images -->
     <div class="main-banner">
@@ -31,7 +92,7 @@
             <div class="slide" style="background-image: url('./images/b7.jpg')"></div>
             <div class="slide" style="background-image: url('./images/b8.jpg')"></div>
             <div class="slide" style="background-image: url('./images/b9.jpg')"></div>
-            <div class="slide" style="background-image: url('./images/fedilisan\ rice\ terraces.jpg')"></div>
+            <!-- <div class="slide" style="background-image: url('./images/fedilisan\ rice\ terraces.jpg')"></div> -->
             <div class="slide" style="background-image: url('./images/kapay-aw.jpg')"></div>
 
         </div>
@@ -41,71 +102,30 @@
         </div>
     </div>
 
-
-
-
-    <!-- Navigation Section -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <!-- Hamburger Button -->
-            <button class="hamburger" id="hamburger">☰</button>
-
-            <!-- Nav Links -->
-            <div class="nav-links" id="nav-links">
-                <a href="/SagadaRegistrationSystem/index.html">Home</a>
-                <a href="/SagadaRegistrationSystem/about/index.html">About</a>
-                <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
-                <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
-                <!-- <a id="touristCheckInLink"
-                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a> -->
-                <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
-                <!-- <a id="logoutLink" href="#">Logout</a> -->
-            </div>
+    <section class="testimonial">
+        <div class="testimonial-header">
+            <h1>Tourist Reviews</h1>
+            <h3>What tourists are saying...</h3>
         </div>
-    </nav>
 
-
-
-    <!-- Home Section -->
-    <section id="home" class="main-content">
-        <!-- Grouped Buttons Section -->
-        <div class="button-group">
-            <div class="button" onclick="toggleDetails(details1)" id="protectedButtons">
-                <a href="user/registration-per-site/index.html" class="">Tourist Site Check-In</a>
-                <!-- <img src="images/per_site_registration.png" alt="Tourist Site Check-in"> -->
+        <div class="container">
+            <div class="testimonial__inner">
+                <div class="testimonial-slider" id="reviewsSlider">
+                    <!-- Reviews will be dynamically loaded here -->
+                </div>
             </div>
 
-            <div class="button" onclick="toggleDetails(details2)">
-                <a href="user/analytics/index.html" class="">Analytics</a>
-                <!-- <img src="images/analytics.png" alt="Analytics">  -->
-            </div>
-
-            <div class="button" onclick="toggleDetails(details3)">
-                <a href="user/reviews/index.html" class="">Reviews</a>
-                <!-- <img src="images/reviews.png" alt="Reviews"> -->
-            </div>
-            <div class="button" onclick="toggleDetails(details4)">
-                <a href="user/tourist-spots/index.html" class="">Tourist Spots</a>
-                <!-- <img src="images/tourist_spot.png" alt="Tourist Spot"> -->
+            <div class="testimonial-actions">
+                <a href="/SagadaRegistrationSystem/user/reviews/index.html" class="btn btn-secondary">See More
+                    Reviews</a>
+                <a href="/SagadaRegistrationSystem/user/reviews/index.html" class="btn btn-primary">Submit Your
+                    Review</a>
             </div>
         </div>
     </section>
 
-    <!-- About Section 
-    <section class="about">
-        <h2>About Sagada</h2>
-        <p>Sagada is a picturesque town in the Mountain Province of the Philippines, 
-            known for its stunning natural landscapes, limestone caves, hanging coffins, 
-            and rich indigenous culture. It's a perfect destination for adventure seekers 
-            and those looking to immerse themselves in nature and tradition.</p>
-        <p>Explore the famous Echo Valley, Sumaguing Cave, Bomod-ok Falls, and many more 
-            breathtaking sites that make Sagada a must-visit destination in the Philippines.</p>
-    </section> -->
-
-
 
     <!-- Tourist Guidelines -->
-    <link rel="stylesheet" href="user/tourist-guidelines/style.css">
     <section class="dropdown" id="tourist-guidelines">
         <div class="dropdown-header" onclick="toggleDropdown('guidelines-content')">
             Things to Remember (Tourist Guidelines)
@@ -134,71 +154,127 @@
         </div>
     </section>
 
-
-    <!--  Contact Section 
-    <section id="contact">
-        <h2>Contact</h2>
-        <div class="contact-container">
-            <div class="contact-item">
-                <h3>Where to find us</h3>
-                <p>3WP3+PJM, <br>South Rd, Sagada, <br>2619 Mountain Province</p>
-            </div>
-            <div class="contact-item">
-                <h3>Email Us At</h3>
-                <p>sagadatourism00@gmail.com</p>
-            </div>
-
-             <div class="contact-item">
-                <h3>Call Us At</h3>
-                <p><br>Phone: 0939-806-7739</p>
-            </div> 
-        -->
-    </div>
-    </section>
-
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const authLink = document.getElementById("authLink");
-            const userValidated = localStorage.getItem("userValidated") === "true";
-
-            if (userValidated) {
-                authLink.textContent = "Profile";
-                authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
-            } else {
-                authLink.textContent = "Login";
-                authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
-                registerLink.style.display = "none";
-                /* touristCheckInLink.style.display = "none";
-                logoutLink.style.display = "none"; */
-            }
-
-            /* logoutLink.addEventListener("click", (e) => {
-                e.preventDefault();
-                localStorage.setItem("userValidated", "false");
-                localStorage.removeItem("userId");
-                localStorage.removeItem("userEmail");
-                window.location.href = "/index.html";
-            }); */
-
             const hamburger = document.getElementById("hamburger");
             const navLinks = document.getElementById("nav-links");
 
-            // Toggle menu on hamburger click
-            hamburger.addEventListener("click", (e) => {
-                e.stopPropagation(); // prevent click bubbling
+            const desktopLoginBtn = document.getElementById("authLinkDesktop");
+            const mobileLoginBtn = document.getElementById("authLinkMobile");
+
+            const desktopProfile = document.getElementById("profileDesktop");
+            const mobileLogoutBtn = document.getElementById("logOutLinkMobile");
+            const mobileProfile = document.getElementById("profileMobile");
+
+            // === USER AUTH CHECK ===
+            const userValidated = localStorage.getItem("userValidated") === "true";
+            const userEmail = localStorage.getItem("userEmail");
+            const userId = localStorage.getItem("userId");
+            const userName = localStorage.getItem("userName");
+            const isUserValid = userValidated && userEmail && userId && userName;
+
+            // === REDIRECT TO LOGIN PAGE ===
+            const goToLogin = () => {
+                window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
+            };
+
+            // === LOGOUT HANDLER ===
+            const logoutHandler = () => {
+                localStorage.setItem("userValidated", "false");
+                localStorage.removeItem("userEmail");
+                localStorage.removeItem("userId");
+                localStorage.removeItem("userName");
+                window.location.href = "/SagadaRegistrationSystem/index.html";
+            };
+
+            // === SET VISIBILITY BASED ON AUTH ===
+            function updateVisibility() {
+                const isMobile = window.innerWidth <= 850;
+                const desktopProfile = document.getElementById("profileDesktop");
+
+                if (isUserValid) {
+                    // USER IS LOGGED IN
+                    if (desktopProfile) desktopProfile.style.display = isMobile ? "none" : "block";
+                    if (mobileProfile) mobileProfile.style.display = isMobile ? "block" : "none";
+                    if (mobileLogoutBtn) mobileLogoutBtn.style.display = isMobile ? "block" : "none";
+                    if (desktopLoginBtn) desktopLoginBtn.style.display = "none";
+                    if (mobileLoginBtn) mobileLoginBtn.style.display = "none";
+                } else {
+                    // USER IS NOT LOGGED IN
+                    if (desktopLoginBtn) desktopLoginBtn.style.display = isMobile ? "none" : "block";
+                    if (mobileLoginBtn) mobileLoginBtn.style.display = isMobile ? "block" : "none";
+                    if (mobileLogoutBtn) mobileLogoutBtn.style.display = "none";
+                    if (mobileProfile) mobileProfile.style.display = "none";
+                    if (desktopProfile) desktopProfile.style.display = "none";
+                }
+            }
+
+            // Update on resize (for responsiveness)
+            window.addEventListener("resize", updateVisibility);
+
+            // === EVENT BINDINGS ===
+            if (isUserValid) {
+                // --- DESKTOP DROPDOWN ---
+                const desktopDropdown = document.createElement("li");
+                desktopDropdown.classList.add("dropdown-nav");
+                desktopDropdown.id = "profileDesktop";
+                desktopDropdown.innerHTML = `
+            <a href="#">${userName} ▾</a>
+            <ul class="dropdown-menu">
+                <li><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
+                <li><button class="logout-btn desktop-logout" id="logoutLink">Logout</button></li>
+            </ul>
+        `;
+
+                document.querySelector(".nav-right").prepend(desktopDropdown);
+
+                document.getElementById("logoutLink")?.addEventListener("click", logoutHandler);
+                document.getElementById("logoutLinkMobile")?.addEventListener("click", logoutHandler);
+            } else {
+                desktopLoginBtn?.addEventListener("click", goToLogin);
+                mobileLoginBtn?.addEventListener("click", goToLogin);
+            }
+
+            // Run once on load
+            updateVisibility();
+
+            // === HAMBURGER MENU TOGGLE ===
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
                 navLinks.classList.toggle("show");
             });
 
-            // Close menu if clicking outside
+            // === DROPDOWN TOGGLE (FOR MOBILE) ===
+            const dropdowns = document.querySelectorAll(".dropdown-nav");
+            dropdowns.forEach(dropdown => {
+                const link = dropdown.querySelector("a");
+                link.addEventListener("click", (e) => {
+                    if (window.innerWidth <= 850) {
+                        e.preventDefault();
+                        dropdown.classList.toggle("open");
+                    }
+                });
+            });
+
+            // === CLOSE MENU WHEN CLICKING OUTSIDE ===
             document.addEventListener("click", (e) => {
-                if (navLinks.classList.contains("show") && !navLinks.contains(e.target) && e.target !== hamburger) {
+                if (!e.target.closest(".navbar")) {
                     navLinks.classList.remove("show");
+                    hamburger.classList.remove("active");
+                    dropdowns.forEach(d => d.classList.remove("open"));
                 }
             });
 
+            // === SLIDESHOW BANNER ===
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.slide');
+            function showSlide(n) {
+                slides.forEach(slide => slide.classList.remove('active'));
+                currentSlide = (n + slides.length) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
+            setInterval(() => showSlide(currentSlide + 1), 5000);
         });
-
-
 
         // JavaScript to toggle details visibility
         function toggleDetails(detailsId) {
@@ -220,24 +296,10 @@
             content.classList.toggle('active');
             header.classList.toggle('active');
         }
-        // Slideshow functionality for the banner
-        document.addEventListener('DOMContentLoaded', function () {
-            let currentSlide = 0;
-            const slides = document.querySelectorAll('.slide');
-
-            function showSlide(n) {
-                slides.forEach(slide => slide.classList.remove('active'));
-                currentSlide = (n + slides.length) % slides.length;
-                slides[currentSlide].classList.add('active');
-            }
-
-            // Auto-advance slides every 5 seconds
-            setInterval(() => {
-                showSlide(currentSlide + 1);
-            }, 5000);
-        });   
     </script>
 
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
     <script type="module" src="js/dynamic-content.js"></script>
 
     <!-- Footer -->

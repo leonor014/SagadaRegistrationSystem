@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
     <link rel="icon" type="image/x-icon" href="/SagadaRegistrationSystem/favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -13,22 +15,70 @@
 </head>
 
 <body id="body">
-    <!-- Navigation Section -->
+    <!-- Fixed Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
-            <!-- Hamburger Button -->
-            <button class="hamburger" id="hamburger">☰</button>
 
-            <!-- Nav Links -->
-            <div class="nav-links" id="nav-links">
-                <a href="/SagadaRegistrationSystem/index.html">Home</a>
-                <a href="/SagadaRegistrationSystem/about/index.html">About</a>
-                <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
-                <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
-                <!-- <a id="touristCheckInLink" href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a> -->
-                <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
-                <a id="logoutLink" href="#">Logout</a>
+            <!-- Logo (Left) -->
+            <a href="#" class="logo">
+                <img src="/images/sagada-tourism-logo.png" alt="Sagada Logo">
+                <span>Sagada Tourism</span>
+            </a>
+
+            <!-- Center Nav Links -->
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/SagadaRegistrationSystem/index.html">Home</a></li>
+
+                <!-- Dropdown 1: Explore -->
+                <li class="dropdown-nav ">
+                    <a href="#">Explore ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/SagadaRegistrationSystem/user/tourist-spots/index.html">Tourist Spots</a></li>
+                        <li><a href="/SagadaRegistrationSystem/user/reviews/index.html">Reviews</a></li>
+                    </ul>
+                </li>
+
+                <!-- Dropdown 2: Information -->
+                <li class="dropdown-nav ">
+                    <a href="#">Information ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/SagadaRegistrationSystem/about/index.html">About Sagada</a></li>
+                        <li><a href="/SagadaRegistrationSystem/index.html#tourist-guidelines">Tourist Guidelines</a>
+                        </li>
+                        <li><a href="/SagadaRegistrationSystem/index.html#faq">FAQ</a></li>
+                        <li><a href="/SagadaRegistrationSystem/user/analytics/index.html">Analytics</a></li>
+                    </ul>
+                </li>
+
+                <!-- Dropdown 3: Tourist Actions -->
+                <li class="dropdown-nav ">
+                    <a href="#">Tourist Actions ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/SagadaRegistrationSystem/user/register/index.html">Book a Visit</a></li>
+                        <li><a href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site
+                                Check-In</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="/SagadaRegistrationSystem/contact/index.html">Contact</a></li>
+
+                <li id="profileMobile"><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
+
+                <li id="authLinkMobile"><button class="login-btn">Login</button></li>
+
+                <li id="logOutLinkMobile"><button class="logout-btn">Logout</button></li>
+            </ul>
+
+            <!-- Right: Login + Hamburger -->
+            <div class="nav-right">
+                <button class="login-btn desktop-login" id="authLinkDesktop">Login</button>
+                <button class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
+
         </div>
     </nav>
 
@@ -70,14 +120,14 @@
                                 </select>
                             </label>
                             <label>
+                                Phone:
+                                <input type="tel" id="phone" minlength="7" pattern="^\+\d{6,}$" required disabled />
+                            </label>
+                            <label>
                                 Region:
                                 <select id="region" disabled required>
                                     <option value="">Select Region</option>
                                 </select>
-                            </label>
-                            <label>
-                                Phone:
-                                <input type="tel" id="phone" minlength="7" pattern="^\+\d{6,}$" required disabled />
                             </label>
                         </div>
                         <div class="btn-row">
@@ -88,7 +138,7 @@
                 </div>
 
                 <!-- Groups Section -->
-                <div class="groups-section">
+                <!-- <div class="groups-section">
                     <h3>My Groups</h3>
                     <div class="groups-grid">
 
@@ -120,7 +170,34 @@
                         </div>
 
                     </div>
+                </div> -->
+
+                <!-- Groups Section -->
+                <div class="groups-section">
+                    <h3>My Groups</h3>
+                    <div class="btn-row" style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                        <button id="addGroupBtn" class="view-btn">
+                            + Add Group
+                        </button>
+                    </div>
+                    
+
+                    <table class="groups-table">
+                        <thead>
+                            <tr>
+                                <th>Group Name</th>
+                                <th>No. of Members</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groupsList">
+                            <tr>
+                                <td colspan="3" style="text-align:center; color:#888;">Loading groups...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+
 
                 <!-- Registration History -->
                 <div class="registration-section" id="registration">
@@ -202,7 +279,166 @@
         </div>
     </div>
 
+    <!-- Group Modal -->
+    <div id="groupModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content registration-modal">
+            <span class="close" id="closeGroupModal">&times;</span>
+            <h2>Group Details</h2>
 
+            <div id="groupDetails" class="modal-section">
+                <p>Loading group details...</p>
+            </div>
+
+            <hr class="modal-divider" />
+
+            <div id="groupMembersSection" class="modal-section">
+                <h3>Members</h3>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button id="addMemberBtn" class="view-btn">+ Add Member</button>
+                </div>
+                <div class="table-wrapper" style="position: relative;">
+                    <table class="attendance-table" style="margin-top:10px;">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Sex</th>
+                                <th>Date of Birth</th>
+                                <th>Country</th>
+                                <th>Region</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersList">
+                            <tr>
+                                <td colspan="6" style="text-align:center; color:#888;">No members yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="text-align: right; margin-top: 10px;">
+                <button id="saveGroupBtn" class="view-btn" style="background:#4caf50;">Save</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const hamburger = document.getElementById("hamburger");
+            const navLinks = document.getElementById("nav-links");
+
+            const desktopLoginBtn = document.getElementById("authLinkDesktop");
+            const mobileLoginBtn = document.getElementById("authLinkMobile");
+
+            const desktopProfile = document.getElementById("profileDesktop");
+            const mobileLogoutBtn = document.getElementById("logOutLinkMobile");
+            const mobileProfile = document.getElementById("profileMobile");
+
+            // === USER AUTH CHECK ===
+            const userValidated = localStorage.getItem("userValidated") === "true";
+            const userEmail = localStorage.getItem("userEmail");
+            const userId = localStorage.getItem("userId");
+            const userName = localStorage.getItem("userName");
+            const isUserValid = userValidated && userEmail && userId && userName;
+
+            // === REDIRECT TO LOGIN PAGE ===
+            const goToLogin = () => {
+                window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
+            };
+
+            // === LOGOUT HANDLER ===
+            const logoutHandler = () => {
+                localStorage.setItem("userValidated", "false");
+                localStorage.removeItem("userEmail");
+                localStorage.removeItem("userId");
+                localStorage.removeItem("userName");
+                window.location.href = "/SagadaRegistrationSystem/index.html";
+            };
+
+            // === SET VISIBILITY BASED ON AUTH ===
+            function updateVisibility() {
+                const isMobile = window.innerWidth <= 850;
+                const desktopProfile = document.getElementById("profileDesktop");
+
+                if (isUserValid) {
+                    // USER IS LOGGED IN
+                    if (desktopProfile) desktopProfile.style.display = isMobile ? "none" : "block";
+                    if (mobileProfile) mobileProfile.style.display = isMobile ? "block" : "none";
+                    if (mobileLogoutBtn) mobileLogoutBtn.style.display = isMobile ? "block" : "none";
+                    if (desktopLoginBtn) desktopLoginBtn.style.display = "none";
+                    if (mobileLoginBtn) mobileLoginBtn.style.display = "none";
+                } else {
+                    // USER IS NOT LOGGED IN
+                    if (desktopLoginBtn) desktopLoginBtn.style.display = isMobile ? "none" : "block";
+                    if (mobileLoginBtn) mobileLoginBtn.style.display = isMobile ? "block" : "none";
+                    if (mobileLogoutBtn) mobileLogoutBtn.style.display = "none";
+                    if (mobileProfile) mobileProfile.style.display = "none";
+                    if (desktopProfile) desktopProfile.style.display = "none";
+                }
+            }
+
+            // Update on resize (for responsiveness)
+            window.addEventListener("resize", updateVisibility);
+
+            // === EVENT BINDINGS ===
+            if (isUserValid) {
+                document.getElementById("body").style.visibility = "visible";
+                // --- DESKTOP DROPDOWN ---
+                const desktopDropdown = document.createElement("li");
+                desktopDropdown.classList.add("dropdown-nav");
+                desktopDropdown.id = "profileDesktop";
+                desktopDropdown.innerHTML = `
+            <a href="#">${userName} ▾</a>
+            <ul class="dropdown-menu">
+                <li><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
+                <li><button class="logout-btn desktop-logout" id="logoutLink">Logout</button></li>
+            </ul>
+        `;
+
+                document.querySelector(".nav-right").prepend(desktopDropdown);
+
+                document.getElementById("logoutLink")?.addEventListener("click", logoutHandler);
+                document.getElementById("logoutLinkMobile")?.addEventListener("click", logoutHandler);
+            } else {
+                window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
+                desktopLoginBtn?.addEventListener("click", goToLogin);
+                mobileLoginBtn?.addEventListener("click", goToLogin);
+            }
+
+            // Run once on load
+            updateVisibility();
+
+            // === HAMBURGER MENU TOGGLE ===
+            hamburger.addEventListener("click", () => {
+                hamburger.classList.toggle("active");
+                navLinks.classList.toggle("show");
+            });
+
+            // === DROPDOWN TOGGLE (FOR MOBILE) ===
+            const dropdowns = document.querySelectorAll(".dropdown-nav");
+            dropdowns.forEach(dropdown => {
+                const link = dropdown.querySelector("a");
+                link.addEventListener("click", (e) => {
+                    if (window.innerWidth <= 850) {
+                        e.preventDefault();
+                        dropdown.classList.toggle("open");
+                    }
+                });
+            });
+
+            // === CLOSE MENU WHEN CLICKING OUTSIDE ===
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest(".navbar")) {
+                    navLinks.classList.remove("show");
+                    hamburger.classList.remove("active");
+                    dropdowns.forEach(d => d.classList.remove("open"));
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

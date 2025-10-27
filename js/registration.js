@@ -395,13 +395,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // populate group dropdown
     existingGroupSelect.innerHTML = `<option value="">Select a group</option>`;
+
     groups.forEach((g, idx) => {
+      // Skip groups with no members
+      if (!Array.isArray(g.members) || g.members.length === 0) return;
+
       const opt = document.createElement("option");
-      // use index as value to avoid name collisions and to easily map to array
-      opt.value = String(idx);
-      opt.textContent = g.groupName || `Group ${idx + 1}`;
+      opt.value = String(idx); // use index for mapping
+      opt.textContent = g.groupName?.trim() || `Group ${idx + 1}`;
       existingGroupSelect.appendChild(opt);
     });
+
+    // Optional: If no groups were added after filtering
+    if (existingGroupSelect.options.length === 1) {
+      existingGroupSelect.innerHTML = `<option value="">No groups with members available</option>`;
+    }
 
     // keep group contact synced to user's personal details
     function syncGroupContactInfo() {
@@ -720,18 +728,104 @@ document.addEventListener("DOMContentLoaded", async () => {
             member.memberName ?? member.memberFullName ?? member.fullName ?? "";
           const dob = member.memberDOB ?? member.dob ?? "";
           const sex = member.memberSex ?? member.sex ?? "";
+          const country = member.memberCountry ?? member.country ?? "";
+          const region = member.memberRegion ?? member.region ?? "";
 
           memberDiv.innerHTML = `
-      <label>Member ${i + 1} Full Name:</label>
-      <input type="text" value="${escapeHtml(name)}">
-      <label>DOB:</label>
-      <input type="date" value="${escapeHtml(dob)}" max="${today}">
-      <label>Sex:</label>
-      <input type="text" value="${escapeHtml(sex)}">
+      <label>Full Name:
+            <input type="text" value="${
+              name || ""
+            }" placeholder="Full Name" required>
+          </label>
+          <label>Sex:
+            <select required>
+              <option value="">Select</option>
+              <option value="Male" ${
+                sex === "Male" ? "selected" : ""
+              }>Male</option>
+              <option value="Female" ${
+                sex === "Female" ? "selected" : ""
+              }>Female</option>
+            </select>
+          </label>
+          <label>Date of Birth:
+            <input type="date" value="${dob || ""}" max="${today}" required>
+          </label>
+          <label>Country:
+            <select class="member-country" required>
+              <option value="">Select Country</option>
+            </select>
+          </label>
+          <label>Region:
+            <select class="member-region" required>
+              <option value="">Select Region</option>
+            </select>
+          </label>
       <br/><br/><hr>
     `;
 
           groupMembersContainer.appendChild(memberDiv);
+
+          // === Populate Country + Region ===
+          const countrySelect = memberDiv.querySelector(".member-country");
+          const regionSelect = memberDiv.querySelector(".member-region");
+
+          // Populate countries
+          countries.forEach((c) => {
+            const opt = document.createElement("option");
+            opt.value = c.name;
+            opt.textContent = c.name;
+            if (c.name === country) opt.selected = true;
+            countrySelect.appendChild(opt);
+          });
+
+          function setupCountryChangeGroups(countrySelect, regionSelect) {
+            countrySelect.addEventListener("change", () => {
+              const selectedCountry = countrySelect.value;
+
+              // Clear existing regions
+              regionSelect.innerHTML = "";
+
+              if (selectedCountry === "Philippines") {
+                // Enable and populate regions
+                regionSelect.disabled = false;
+                regionSelect.innerHTML = `<option value="">Select Region</option>`;
+                philippinesRegions.forEach((region) => {
+                  const opt = document.createElement("option");
+                  opt.value = region;
+                  opt.textContent = region;
+                  regionSelect.appendChild(opt);
+                });
+              } else {
+                // Disable and show N/A
+                regionSelect.disabled = true;
+                regionSelect.innerHTML = `<option value="N/A" selected>N/A</option>`;
+              }
+            });
+
+            // Initial state based on saved country
+            if (countrySelect.value === "Philippines") {
+              regionSelect.disabled = false;
+              regionSelect.innerHTML = `<option value="">Select Region</option>`;
+              philippinesRegions.forEach((region) => {
+                const opt = document.createElement("option");
+                opt.value = region;
+                opt.textContent = region;
+                regionSelect.appendChild(opt);
+              });
+            } else {
+              regionSelect.disabled = true;
+              regionSelect.innerHTML = `<option value="N/A" selected>N/A</option>`;
+            }
+          }
+
+          // Handle region population
+          setupCountryChangeGroups(countrySelect, regionSelect);
+
+          // Restore region if existing
+          if (country === "Philippines" && region) {
+            regionSelect.value = region;
+          }
         });
       }
 
@@ -925,79 +1019,155 @@ document.addEventListener("DOMContentLoaded", async () => {
         submitBtn.disabled = true;
         submitBtn.textContent = "Registering...";
       }
-      
-      // determine if group registration
-      const isGroup = groupRegistration.value === "group";
 
-      // basic validations
+      const isGroup = groupRegistration.value === "group";
+      const today = new Date().toISOString().split("T")[0];
       let valid = true;
 
-      const requiredFields = form.querySelectorAll("[required]");
-      for (const field of requiredFields) {
-        if (!field.value.trim()) {
-          alert("Please fill out all required fields.");
-          field.focus();
-          return;
-        }
-      }
+      // === Utility Validators ===
+      const showError = (title, text) => {
+        Swal.fire({ icon: "error", title, text });
+        valid = false;
+      };
 
-      // date of registration
+      const isFutureDate = (dateStr) => new Date(dateStr) > new Date();
+      const isPastDate = (dateStr) => new Date(dateStr) < new Date(today);
+      const hasTwoWords = (name) => name.trim().split(/\s+/).length >= 2;
+
+      // === Common date of registration ===
       const dateOfReg = isGroup
         ? groupDateEl?.value || ""
         : dateRegEl?.value || "";
-      if (!validateDateOfRegistration(dateOfReg)) {
-        const errEl = isGroup ? groupDateError : dateRegError;
-        errEl && (errEl.textContent = "Invalid registration date.");
-        valid = false;
+
+      if (!dateOfReg) {
+        showError("Missing Field", "Please enter a date of registration.");
+      } else if (isPastDate(dateOfReg)) {
+        showError(
+          "Invalid Date",
+          "Date of registration cannot be in the past."
+        );
       }
 
-      // If individual: ensure required fields are present (we pre-fill and disable them)
-      if (!isGroup) {
-        if (!validateFullName(fullNameEl.value)) {
-          fullNameError &&
-            (fullNameError.textContent = "Please enter a valid full name.");
-          valid = false;
+      // === INDIVIDUAL VALIDATION ===
+      if (!isGroup && valid) {
+        const name = fullNameEl.value.trim();
+        const dob = dobEl.value.trim();
+        const sex = document.getElementById("sex").value.trim();
+        const country = document.getElementById("country").value.trim();
+        const region = document.getElementById("region").value.trim();
+        const phone = phoneEl.value.trim();
+        const email = document.getElementById("email").value.trim();
+
+        // Required field check
+        if (!name || !sex || !dob || !country || !region || !phone || !email) {
+          showError(
+            "Incomplete Form",
+            "Please fill in all required fields before submitting."
+          );
+        } else if (!hasTwoWords(name)) {
+          showError(
+            "Invalid Full Name",
+            "Full name must contain at least two words."
+          );
+        } else if (isFutureDate(dob)) {
+          showError(
+            "Invalid Date of Birth",
+            "Date of birth cannot be in the future."
+          );
+        } else if (!validateContactNumber(phone)) {
+          showError("Invalid Phone", "Please enter a valid phone number.");
+        } else if (!validateEmailAddr(email)) {
+          showError("Invalid Email", "Please enter a valid email address.");
         }
-        if (!validateDateOfBirth(dobEl.value)) {
-          dobError && (dobError.textContent = "Invalid DOB.");
-          valid = false;
-        }
-        if (!validateContactNumber(phoneEl.value)) {
-          phoneErr && (phoneErr.textContent = "Invalid phone.");
-          valid = false;
-        }
-        const emailEl = document.getElementById("email");
-        const emailErr = document.getElementById("emailError");
-        if (!validateEmailAddr(emailEl?.value || "")) {
-          emailErr && (emailErr.textContent = "Invalid email domain.");
-          valid = false;
-        }
-      } else {
-        // group: ensure a group selected
+      }
+
+      const memberDivs =
+        groupMembersContainer.querySelectorAll(".member-entry");
+
+      // === GROUP VALIDATION ===
+      if (isGroup && valid) {
         if (!selectedGroupGlobal) {
-          alert("Please select a group.");
-          valid = false;
-        }
-        // group contact validation
-        if (!validateContactNumber(groupPhoneEl.value)) {
-          const err = document.getElementById("groupPhoneError");
-          err && (err.textContent = "Invalid group phone number.");
-          valid = false;
-        }
-        if (!validateEmailAddr(groupEmailEl.value)) {
-          const err = document.getElementById("groupEmailError");
-          err && (err.textContent = "Invalid group email domain.");
-          valid = false;
+          showError(
+            "No Group Selected",
+            "Please select a group before registering."
+          );
+        } else {
+          const groupPhone = groupPhoneEl.value.trim();
+          const groupEmail = groupEmailEl.value.trim();
+
+          if (!validateContactNumber(groupPhone)) {
+            showError(
+              "Invalid Group Phone",
+              "Please enter a valid group phone number."
+            );
+          } else if (!validateEmailAddr(groupEmail)) {
+            showError(
+              "Invalid Group Email",
+              "Please enter a valid group email address."
+            );
+          } else if (
+            !Array.isArray(selectedGroupGlobal.members) ||
+            selectedGroupGlobal.members.length === 0
+          ) {
+            showError("Missing Members", "Selected group has no members.");
+          } else {
+            // === Dynamic Group Member Validation ===
+            if (!memberDivs.length) {
+              showError("Missing Members", "Selected group has no members.");
+              valid = false;
+            } else {
+              for (let i = 0; i < memberDivs.length; i++) {
+                const div = memberDivs[i];
+                const name =
+                  div.querySelector('input[type="text"]')?.value.trim() || "";
+                const sex =
+                  div.querySelector(
+                    "select:not(.member-country):not(.member-region)"
+                  )?.value || "";
+                const dob =
+                  div.querySelector('input[type="date"]')?.value || "";
+                const country =
+                  div.querySelector(".member-country")?.value || "";
+                const region = div.querySelector(".member-region")?.value || "";
+
+                if (!name || !sex || !dob || !country || !region) {
+                  showError(
+                    "Incomplete Member Details",
+                    `Please fill all fields for Member ${i + 1}.`
+                  );
+                  valid = false;
+                  break;
+                } else if (!hasTwoWords(name)) {
+                  showError(
+                    "Invalid Member Name",
+                    `Member ${i + 1}'s full name must have at least two words.`
+                  );
+                  valid = false;
+                  break;
+                } else if (isFutureDate(dob)) {
+                  showError(
+                    "Invalid Member DOB",
+                    `Member ${i + 1}'s date of birth cannot be in the future.`
+                  );
+                  valid = false;
+                  break;
+                }
+              }
+            }
+          }
         }
       }
 
       if (!valid) {
-        // simple feedback
-        alert("Please fix form errors before submitting.");
+        isSubmitting = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Register";
+        }
         return;
       }
 
-      // Build formData
+      // === Proceed with submission ===
       const registrationNumber = await generateRegistrationNumber(isGroup);
       const formData = {
         registrationNumber,
@@ -1007,23 +1177,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
 
       if (isGroup) {
-        formData.groupName =
-          selectedGroupGlobal.groupName || selectedGroupGlobal.groupName || "";
-        formData.groupSize = Array.isArray(selectedGroupGlobal.members)
-          ? selectedGroupGlobal.members.length
-          : 0;
-        formData.groupCountry = groupCountryEl.value || individualData.country;
-        formData.groupRegion = groupRegionEl.value || individualData.region;
+        formData.groupName = selectedGroupGlobal.groupName || "";
+        formData.groupSize = selectedGroupGlobal.members?.length || 0;
+        //formData.groupCountry = groupCountryEl.value || individualData.country;
+        //formData.groupRegion = groupRegionEl.value || individualData.region;
         formData.groupContact = groupPhoneEl.value || individualData.phone;
         formData.groupEmail = groupEmailEl.value || individualData.email;
-        // members come from selectedGroupGlobal.members, map to consistent keys
-        formData.groupMembers = (selectedGroupGlobal.members || []).map(
-          (m) => ({
-            memberName: m.memberName ?? m.memberName ?? m.memberFullName ?? "",
-            memberDOB: m.memberDOB ?? m.dob ?? "",
-            memberSex: m.memberSex ?? m.sex ?? "",
-          })
-        );
+        formData.groupMembers = Array.from(memberDivs).map((div) => ({
+          memberName: div.querySelector('input[type="text"]').value.trim(),
+          memberSex: div.querySelector(
+            "select:not(.member-country):not(.member-region)"
+          ).value,
+          memberDOB: div.querySelector('input[type="date"]').value,
+          memberCountry: div.querySelector(".member-country").value,
+          memberRegion: div.querySelector(".member-region").value,
+        }));
       } else {
         formData.fullName = fullNameEl.value;
         formData.dateOfBirth = dobEl.value;
@@ -1034,30 +1202,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         formData.email = document.getElementById("email").value;
       }
 
-      // Show loading modal
       loadingModal?.classList.remove("hidden");
 
       try {
-        // Save to Firestore
         await addDoc(collection(db, "registrations"), formData);
-
-        // send email using EmailJS (use service and templates from your old file)
         sendEmailConfirmation(formData);
-
-        // Display success modal
         displayRegistration(formData);
-
-        // reset form UI
         form.reset();
-        // hide forms
         if (individualForm) individualForm.style.display = "none";
         if (groupForm) groupForm.style.display = "none";
-        // clear group members list
         if (groupMembersContainer) groupMembersContainer.innerHTML = "";
         selectedGroupGlobal = null;
       } catch (err) {
         console.error("Failed to submit registration:", err);
-        alert("Failed to submit registration. See console for details.");
+        Swal.fire({
+          icon: "error",
+          title: "Submission Failed",
+          text: "An error occurred while submitting your registration.",
+        });
       } finally {
         isSubmitting = false;
         if (submitBtn) {
@@ -1090,7 +1252,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       formattedMembers = data.groupMembers
         .map(
           (m, i) =>
-            `${i + 1}. ${m.memberName} - ${m.memberDOB} (${m.memberSex})`
+            `${i + 1}. ${m.memberName} - ${m.memberDOB} (${m.memberSex}) - ${
+              m.memberCountry
+            }, ${m.memberRegion}`
         )
         .join("\n");
     }
@@ -1112,8 +1276,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Group fields
       groupName: data.groupName || "",
       groupSize: data.groupSize || "",
-      groupCountry: data.groupCountry || "",
-      groupRegion: data.groupRegion || "",
+      //groupCountry: data.groupCountry || "",
+      //groupRegion: data.groupRegion || "",
       groupContact: data.groupContact || "",
       groupEmail: data.groupEmail || "",
       groupMembers: formattedMembers,
@@ -1186,8 +1350,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         <p><strong>Group Size:</strong> ${escapeHtml(
           String(data.groupSize || "")
         )}</p>
-        <p><strong>Country:</strong> ${escapeHtml(data.groupCountry || "")}</p>
-        <p><strong>Region:</strong> ${escapeHtml(data.groupRegion || "")}</p>
         <p><strong>Contact:</strong> ${escapeHtml(data.groupContact || "")}</p>
         <p><strong>Email:</strong> ${escapeHtml(data.groupEmail || "")}</p>
         <h3>Group Members</h3>
@@ -1198,7 +1360,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                   (m) =>
                     `<p>${escapeHtml(m.memberName)} - ${escapeHtml(
                       m.memberDOB
-                    )} (${escapeHtml(m.memberSex)})</p>`
+                    )} (${escapeHtml(m.memberSex)}) - ${escapeHtml(
+                      m.memberCountry
+                    )}, ${escapeHtml(m.memberRegion)}</p>`
                 )
                 .join("")
             : ""
@@ -1219,7 +1383,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       `
       }
       <br/><br/>
-      <button id="closeRegistrationBtn">Close</button>
     `;
 
     registrationModal.classList.remove("hidden");

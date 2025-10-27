@@ -13,6 +13,7 @@ import {
 import {
   getAuth,
   createUserWithEmailAndPassword,
+  fetchSignInMethodsForEmail,
   signInWithEmailAndPassword,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
@@ -32,7 +33,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const adminValidated = localStorage.getItem("adminValidated") === "true";
-
 
 onAuthStateChanged(auth, (user) => {
   if (user && adminValidated) {
@@ -65,6 +65,15 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    const nameParts = name.trim().split(/\s+/);
+    if (nameParts.length < 2) {
+      return Swal.fire({
+        icon: "error",
+        title: "Invalid Full Name",
+        text: "Please enter your full name (at least first and last name).",
+      });
+    }
+
     if (password !== confirmPassword) {
       return Swal.fire({
         icon: "error",
@@ -74,6 +83,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
+      // Check if email is already in use
+      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      if (signInMethods.length > 0) {
+        return Swal.fire({
+          icon: "error",
+          title: "Email Already Registered",
+          text: "This email is already in use. Please log in instead.",
+        });
+      }
+
       // Validate registration code
       const regCodeQuery = query(
         collection(db, "registration-code"),
@@ -114,11 +133,31 @@ document.addEventListener("DOMContentLoaded", () => {
         .classList.remove("right-panel-active");
     } catch (error) {
       console.error("Error saving admin:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Something went wrong. Please try again.",
-      });
+      if (error.code === "auth/email-already-in-use") {
+        Swal.fire({
+          icon: "error",
+          title: "Email Already Registered",
+          text: "This email is already in use. Please log in instead.",
+        });
+      } else if (error.code === "auth/invalid-email") {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid Email Format",
+          text: "Please enter a valid email address.",
+        });
+      } else if (error.code === "auth/weak-password") {
+        Swal.fire({
+          icon: "error",
+          title: "Weak Password",
+          text: "Password should be at least 6 characters long.",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Something went wrong. Please try again.",
+        });
+      }
     }
   });
 
@@ -141,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await signInWithEmailAndPassword(auth, email, password);
       Swal.fire({
         icon: "success",
-        title: "Login Successful",
+        title: "Sign In Successful",
         text: "Welcome!",
       }).then(() => {
         localStorage.setItem("adminValidated", "true");
@@ -149,10 +188,10 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "./dashboard/";
       });
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Sign In error:", error);
       Swal.fire({
         icon: "error",
-        title: "Invalid Login",
+        title: "Invalid Sign In",
         text: "Incorrect email or password.",
       });
     }

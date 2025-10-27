@@ -28,13 +28,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* checkUserData(); */
-  const authLink = document.getElementById("authLink");
   const userValidated = localStorage.getItem("userValidated") === "true";
   const userIdFromStorage = localStorage.getItem("userId");
   const userEmailFromStorage = localStorage.getItem("userEmail");
 
-  if (userValidated) {
+  /* if (userValidated) {
     authLink.textContent = "Profile";
     authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
     document.getElementById("body").style.visibility = "visible";
@@ -42,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     authLink.textContent = "Login";
     authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
     registerLink.style.display = "none";
-    /* touristCheckInLink.style.display = "none"; */
+    /* touristCheckInLink.style.display = "none"; 
     logoutLink.style.display = "none";
     window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
   }
@@ -53,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("userEmail");
     window.location.href = "/SagadaRegistrationSystem/index.html";
-  });
+  }); */
 
   /* // Elements
   const warningModal = document.getElementById("warningModal");
@@ -224,28 +222,11 @@ document.addEventListener("DOMContentLoaded", () => {
     protectedButtons.style.display = "none";
   }
 
-  const hamburger = document.getElementById("hamburger");
-  const navLinks = document.getElementById("nav-links");
-
-  // Toggle menu on hamburger click
-  hamburger.addEventListener("click", (e) => {
-    e.stopPropagation(); // prevent click bubbling
-    navLinks.classList.toggle("show");
-  });
-
-  // Close menu if clicking outside
-  document.addEventListener("click", (e) => {
-    if (
-      navLinks.classList.contains("show") &&
-      !navLinks.contains(e.target) &&
-      e.target !== hamburger
-    ) {
-      navLinks.classList.remove("show");
-    }
-  });
-
   // Registration
   loadRegistrationHistory();
+
+  // Groups
+  loadGroupsFromFirestore();
 });
 
 function calculateAge(dob) {
@@ -334,34 +315,129 @@ editBtn.addEventListener("click", () => {
 });
 document.getElementById("profileForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  inputs.forEach((input) => {
-    if (input.id !== "email") {
-      input.disabled = true;
-    }
-  });
-  editBtn.style.display = "inline-block";
-  saveBtn.style.display = "none";
 
+  const fullName = document.getElementById("fullName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const dob = document.getElementById("dob").value;
+  const sex = document.getElementById("sex").value;
+  const country = document.getElementById("country").value;
+  const region = document.getElementById("region").value;
+  const phone = document.getElementById("phone").value.trim();
+
+  // === VALIDATION ===
+  // 1. Required Fields
+  if (!fullName || !email || !dob || !sex || !country || !region || !phone) {
+    return Swal.fire({
+      icon: "error",
+      title: "Incomplete Form",
+      text: "Please fill in all required fields before saving.",
+    });
+  }
+
+  // 2. Full Name must have at least two words
+  const nameParts = fullName.split(/\s+/);
+  if (nameParts.length < 2) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Invalid Name",
+      text: "Please enter your full name with at least two words.",
+    });
+  }
+
+  // 3. Email Format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Invalid Email",
+      text: "Please enter a valid email address.",
+    });
+  }
+
+  // 4. Date of Birth cannot be in the future
+  const today = new Date().toISOString().split("T")[0];
+  if (dob > today) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Invalid Date of Birth",
+      text: "Date of birth cannot be in the future.",
+    });
+  }
+
+  // 5. Sex must be Male or Female
+  if (sex !== "Male" && sex !== "Female") {
+    return Swal.fire({
+      icon: "warning",
+      title: "Invalid Sex",
+      text: "Please select either Male or Female.",
+    });
+  }
+
+  // 6. Phone validation — must start with + and at least 7 digits total
+  const phoneRegex = /^\+\d{6,}$/;
+  if (!phoneRegex.test(phone)) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Invalid Phone Number",
+      text: "Phone number must start with '+' followed by at least 6 digits (e.g., +639123456789).",
+    });
+  }
+
+  // 7. Country / Region logic
+  if (country === "Philippines" && region === "") {
+    return Swal.fire({
+      icon: "warning",
+      title: "Missing Region",
+      text: "Please select your region if you are from the Philippines.",
+    });
+  }
+
+  // === SAVE TO FIRESTORE ===
   const userEmailFromStorage = localStorage.getItem("userEmail");
-  if (!userEmailFromStorage) return;
+  if (!userEmailFromStorage) {
+    return Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "User session not found. Please log in again.",
+    });
+  }
 
   try {
     const userDocRef = doc(db, "users", userEmailFromStorage);
     await updateDoc(userDocRef, {
-      name: document.getElementById("fullName").value,
-      email: document.getElementById("email").value,
+      name: fullName,
+      email,
       personalDetails: {
-        dob: document.getElementById("dob").value,
-        sex: document.getElementById("sex").value,
-        country: document.getElementById("country").value,
-        region: document.getElementById("region").value,
-        phone: document.getElementById("phone").value,
+        dob,
+        sex,
+        country,
+        region,
+        phone,
       },
     });
-    Swal.fire("Success", "Profile saved successfully!", "success");
+
+    Swal.fire({
+      icon: "success",
+      title: "Saved!",
+      text: "Profile saved successfully.",
+    });
+
+    // Disable fields again
+    const inputs = document.querySelectorAll(
+      "#profileForm input, #profileForm select"
+    );
+    inputs.forEach((input) => {
+      if (input.id !== "email") input.disabled = true;
+    });
+    document.getElementById("editProfile").style.display = "inline-block";
+    document.getElementById("saveProfile").style.display = "none";
   } catch (error) {
     console.error("Error updating profile:", error);
-    Swal.fire("Error", "Failed to save profile.", "error");
+    Swal.fire({
+      icon: "error",
+      title: "Save Failed",
+      text: "An error occurred while saving your profile. Please try again.",
+    });
   }
 });
 
@@ -918,7 +994,7 @@ async function openRegistrationModal(regNo) {
               (m, i) => `
               <p>
                 <strong>${i + 1}. ${m.memberName}</strong> 
-                — ${m.memberSex}, <span class="dob">DOB: ${m.memberDOB}</span>
+                — ${m.memberSex}, <span class="dob">DOB: ${m.memberDOB} — ${m.memberCountry}, ${m.memberRegion}</span>
               </p>`
             )
             .join("")}
@@ -974,5 +1050,440 @@ async function openRegistrationModal(regNo) {
   } catch (err) {
     console.error("Error loading modal:", err);
     registrationDetailsDiv.innerHTML = `<p style="color:red;">Failed to load details.</p>`;
+  }
+}
+
+// === GROUPS SECTION ===
+const groupsList = document.getElementById("groupsList");
+const groupModal = document.getElementById("groupModal");
+const closeGroupModal = document.getElementById("closeGroupModal");
+const groupDetailsDiv = document.getElementById("groupDetails");
+const membersList = document.getElementById("membersList");
+const addMemberBtn = document.getElementById("addMemberBtn");
+
+let currentUserDocId = null;
+let userGroups = [];
+
+// === Load Groups from Firestore ===
+async function loadGroupsFromFirestore() {
+  const userEmail = localStorage.getItem("userEmail");
+  if (!userEmail) return;
+
+  groupsList.innerHTML = `
+    <tr><td colspan="3" style="text-align:center; color:#888;">Loading groups...</td></tr>
+  `;
+
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", userEmail));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      groupsList.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">No user data found.</td></tr>`;
+      return;
+    }
+
+    const userDoc = snap.docs[0];
+    currentUserDocId = userDoc.id;
+
+    const userData = userDoc.data();
+    userGroups = userData.groups || [];
+
+    if (!userGroups.length) {
+      groupsList.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">No groups found.</td></tr>`;
+      return;
+    }
+
+    renderGroupsTable();
+  } catch (err) {
+    console.error("Error loading groups:", err);
+    groupsList.innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">Failed to load groups.</td></tr>`;
+  }
+}
+
+// === Render Groups Table ===
+function renderGroupsTable() {
+  groupsList.innerHTML = "";
+  userGroups.forEach((group, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${group.groupName}</td>
+      <td>${group.members?.length || 0}</td>
+      <td class="group-action">
+      <button class="view-btn" data-id="${index}">View</button>
+      <button class="view-btn" style="background: var(--secondary);" data-edit="${index}">Edit</button>
+      <button class="view-btn" style="background: red;" data-delete="${index}">Delete</button>
+    </td>
+    `;
+    groupsList.appendChild(tr);
+  });
+
+  // === VIEW GROUP ===
+  groupsList.querySelectorAll("[data-id]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      openGroupModal(+e.target.dataset.id, false);
+    });
+  });
+
+  // === EDIT GROUP ===
+  groupsList.querySelectorAll("[data-edit]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      openGroupModal(+e.target.dataset.edit, true);
+    });
+  });
+
+  // === DELETE GROUP ===
+  groupsList.querySelectorAll("[data-delete]").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      const index = +e.target.dataset.delete;
+      const group = userGroups[index];
+
+      const result = await Swal.fire({
+        icon: "warning",
+        title: "Delete Group?",
+        text: `Are you sure you want to delete "${group.groupName}"? This cannot be undone.`,
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it",
+        cancelButtonText: "Cancel",
+      });
+
+      if (result.isConfirmed) {
+        userGroups.splice(index, 1); // remove group from array
+        await saveGroupsToFirestore(); // save changes to Firestore
+
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: `"${group.groupName}" has been deleted.`,
+        });
+
+        renderGroupsTable(); // refresh UI
+      }
+    });
+  });
+}
+
+// === Add New Group ===
+const addGroupBtn = document.getElementById("addGroupBtn");
+
+addGroupBtn.addEventListener("click", async () => {
+  const { value: groupName } = await Swal.fire({
+    title: "Add New Group",
+    input: "text",
+    inputLabel: "Group Name",
+    inputPlaceholder: "Enter group name",
+    showCancelButton: true,
+    confirmButtonText: "Add",
+    inputValidator: (value) => {
+      if (!value.trim()) return "Group name cannot be empty.";
+      if (
+        userGroups.some(
+          (g) => g.groupName.toLowerCase() === value.trim().toLowerCase()
+        )
+      ) {
+        return "A group with this name already exists.";
+      }
+    },
+  });
+
+  if (!groupName) return;
+
+  const newGroup = {
+    groupName: groupName.trim(),
+    members: [],
+  };
+
+  userGroups.push(newGroup);
+  await saveGroupsToFirestore();
+
+  Swal.fire({
+    icon: "success",
+    title: "Group Added!",
+    text: `"${groupName}" has been added successfully.`,
+  });
+
+  renderGroupsTable();
+});
+
+// === Open Group Modal ===
+function openGroupModal(groupIndex, isEditing = false) {
+  const group = userGroups[groupIndex];
+  if (!group) return;
+
+  groupModal.style.display = "flex";
+
+  // Group details
+  groupDetailsDiv.innerHTML = `
+    <p><strong>Group Name:</strong> ${group.groupName}</p>
+    <p><strong>Total Members:</strong> ${group.members?.length || 0}</p>
+  `;
+
+  // Render members
+  membersList.innerHTML = "";
+  if (!group.members?.length) {
+    membersList.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">No members found.</td></tr>`;
+  } else {
+    group.members.forEach((m, i) => {
+      const tr = document.createElement("tr");
+      const today = new Date().toISOString().split("T")[0];
+
+      if (isEditing) {
+        tr.innerHTML = `
+          <td><input type="text" value="${
+            m.memberName || ""
+          }" placeholder="Full Name" required></td>
+          <td>
+            <select required>
+              <option value="">Select</option>
+              <option value="Male" ${
+                m.memberSex === "Male" ? "selected" : ""
+              }>Male</option>
+              <option value="Female" ${
+                m.memberSex === "Female" ? "selected" : ""
+              }>Female</option>
+            </select>
+          </td>
+          <td><input type="date" class="form-field" value="${
+            m.memberDOB || ""
+          }" max="${today}" required></td>
+          <td>
+            <select class="member-country" required>
+              <option value="">Select Country</option>
+            </select>
+          </td>
+          <td>
+            <select class="member-region" required>
+              <option value="">Select Region</option>
+            </select>
+          </td>
+          <td>
+            <button class="view-btn remove-btn" data-index="${i}" style="background:red;">Remove</button>
+          </td>
+        `;
+
+        membersList.appendChild(tr);
+
+        // === Populate Country + Region ===
+        const countrySelect = tr.querySelector(".member-country");
+        const regionSelect = tr.querySelector(".member-region");
+
+        // Populate countries
+        countries.forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c.name;
+          opt.textContent = c.name;
+          if (c.name === m.memberCountry) opt.selected = true;
+          countrySelect.appendChild(opt);
+        });
+
+        function setupCountryChangeGroups(countrySelect, regionSelect) {
+          countrySelect.addEventListener("change", () => {
+            const selectedCountry = countrySelect.value;
+
+            // Clear existing regions
+            regionSelect.innerHTML = "";
+
+            if (selectedCountry === "Philippines") {
+              // Enable and populate regions
+              regionSelect.disabled = false;
+              regionSelect.innerHTML = `<option value="">Select Region</option>`;
+              philippinesRegions.forEach((region) => {
+                const opt = document.createElement("option");
+                opt.value = region;
+                opt.textContent = region;
+                regionSelect.appendChild(opt);
+              });
+            } else {
+              // Disable and show N/A
+              regionSelect.disabled = true;
+              regionSelect.innerHTML = `<option value="N/A" selected>N/A</option>`;
+            }
+          });
+
+          // Initial state based on saved country
+          if (countrySelect.value === "Philippines") {
+            regionSelect.disabled = false;
+            regionSelect.innerHTML = `<option value="">Select Region</option>`;
+            philippinesRegions.forEach((region) => {
+              const opt = document.createElement("option");
+              opt.value = region;
+              opt.textContent = region;
+              regionSelect.appendChild(opt);
+            });
+          } else {
+            regionSelect.disabled = true;
+            regionSelect.innerHTML = `<option value="N/A" selected>N/A</option>`;
+          }
+        }
+
+        // Handle region population
+        setupCountryChangeGroups(countrySelect, regionSelect);
+
+        // Restore region if existing
+        if (m.memberCountry === "Philippines" && m.memberRegion) {
+          regionSelect.value = m.memberRegion;
+        }
+      } else {
+        // View mode
+        tr.innerHTML = `
+          <td>${m.memberName || ""}</td>
+          <td>${m.memberSex || ""}</td>
+          <td>${m.memberDOB || ""}</td>
+          <td>${m.memberCountry || ""}</td>
+          <td>${m.memberRegion || ""}</td>
+          <td>-</td>
+        `;
+        membersList.appendChild(tr);
+      }
+    });
+
+    if (isEditing) {
+      // Remove member
+      membersList.querySelectorAll(".remove-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const idx = +e.target.dataset.index;
+          group.members.splice(idx, 1);
+          openGroupModal(groupIndex, true);
+        });
+      });
+    }
+  }
+
+  // Add member button
+  addMemberBtn.style.display = isEditing ? "block" : "none";
+  addMemberBtn.onclick = () => {
+    group.members = group.members || [];
+    group.members.push({
+      memberName: "",
+      memberSex: "",
+      memberDOB: "",
+      memberCountry: "",
+      memberRegion: "",
+    });
+    openGroupModal(groupIndex, true);
+  };
+
+  // Save button
+  const saveBtn = document.getElementById("saveGroupBtn");
+
+  if (isEditing) {
+    saveBtn.style.display = "inline-block";
+
+    saveBtn.onclick = async () => {
+      let isValid = true;
+
+      for (let i = 0; i < group.members.length; i++) {
+        const m = group.members[i];
+        const row = membersList.rows[i];
+        if (!row) continue;
+
+        // Get values
+        const name = row.cells[0].querySelector("input").value.trim();
+        const sex = row.cells[1].querySelector("select").value;
+        const dob = row.cells[2].querySelector("input").value;
+        const country = row.cells[3]
+          .querySelector(".member-country")
+          .value.trim();
+        const region = row.cells[4]
+          .querySelector(".member-region")
+          .value.trim();
+
+        // === Required Fields ===
+        if (!name || !sex || !dob || !country || !region) {
+          Swal.fire({
+            icon: "error",
+            title: "Incomplete Form",
+            text: "Please fill in all required fields before saving.",
+          });
+          isValid = false;
+          break;
+        }
+
+        // === Name Validation ===
+        const nameParts = name.split(/\s+/);
+        if (nameParts.length < 2) {
+          Swal.fire({
+            icon: "warning",
+            title: "Invalid Name",
+            text: "Please enter a full name with at least two words.",
+          });
+          isValid = false;
+          break;
+        }
+
+        // === Sex Validation ===
+        if (sex !== "Male" && sex !== "Female") {
+          Swal.fire({
+            icon: "warning",
+            title: "Invalid Sex",
+            text: "Please select either Male or Female.",
+          });
+          isValid = false;
+          break;
+        }
+
+        // === DOB Validation ===
+        if (dob && new Date(dob) > new Date()) {
+          Swal.fire({
+            icon: "warning",
+            title: "Invalid Date of Birth",
+            text: "Date of birth cannot be in the future.",
+          });
+          isValid = false;
+          break;
+        }
+
+        // Update values if valid
+        m.memberName = name;
+        m.memberSex = sex;
+        m.memberDOB = dob;
+        m.memberCountry = country;
+        m.memberRegion = region;
+      }
+
+      if (!isValid) return;
+
+      // === Save to Firestore ===
+      await saveGroupsToFirestore();
+
+      Swal.fire({
+        icon: "success",
+        title: "Saved!",
+        text: "Group members updated successfully.",
+      });
+
+      groupModal.style.display = "none";
+    };
+  } else {
+    saveBtn.style.display = "none";
+  }
+
+  // Close modal
+  closeGroupModal.onclick = () => {
+    groupModal.style.display = "none";
+  };
+}
+
+// === Close Modal by clicking outside ===
+window.addEventListener("click", (e) => {
+  if (e.target === groupModal) groupModal.style.display = "none";
+});
+
+// === Save updated groups to Firestore ===
+async function saveGroupsToFirestore() {
+  if (!currentUserDocId) return;
+
+  try {
+    const userRef = doc(db, "users", currentUserDocId);
+
+    // Update the groups array
+    await updateDoc(userRef, { groups: userGroups });
+
+    console.log("Groups updated successfully!");
+
+    // Re-render table after saving
+    renderGroupsTable();
+  } catch (err) {
+    console.error("Error saving groups:", err);
   }
 }

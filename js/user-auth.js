@@ -81,6 +81,15 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    const nameParts = name.trim().split(/\s+/);
+    if (nameParts.length < 2) {
+      return Swal.fire({
+        icon: "error",
+        title: "Invalid Full Name",
+        text: "Please enter your full name (at least first and last name).",
+      });
+    }
+
     if (password !== confirmPassword) {
       return Swal.fire({
         icon: "error",
@@ -95,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (existingUser.exists()) {
         return Swal.fire({
           icon: "error",
-          title: "Already Registered",
+          title: "Already Existing",
           text: "This email is already in use. Please log in.",
         });
       }
@@ -153,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!userDoc.exists()) {
         return Swal.fire({
           icon: "error",
-          title: "Invalid Login",
+          title: "Invalid Sign In",
           text: "User not found.",
         });
       }
@@ -165,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (user.password !== hashedPassword) {
         return Swal.fire({
           icon: "error",
-          title: "Invalid Login",
+          title: "Invalid Sign In",
           text: "Incorrect password.",
         });
       }
@@ -173,20 +182,22 @@ document.addEventListener("DOMContentLoaded", () => {
       // success
       Swal.fire({
         icon: "success",
-        title: "Login Successful",
+        title: "Sign In Successful",
         text: "Welcome!",
       }).then(() => {
         localStorage.setItem("userValidated", "true");
         localStorage.setItem("userId", user.userId);
         localStorage.setItem("userEmail", user.email);
+        localStorage.setItem("userName", user.name);
         signinForm.reset();
-        window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
+        window.location.href =
+          "/SagadaRegistrationSystem/user/profile/index.html";
       });
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Sign In error:", error);
       Swal.fire({
         icon: "error",
-        title: "Invalid Login",
+        title: "Invalid Sign In",
         text: "Something went wrong.",
       });
     }

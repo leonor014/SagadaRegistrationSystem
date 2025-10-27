@@ -28,12 +28,12 @@ body {
     font-size: 20px;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
 }
 
 /* Enhanced profile Section */
 .profile {
-    padding: 4rem 1.5rem;
+    margin-top: 70px;
+    padding: 1rem 1.5rem;
     text-align: center;
     background: linear-gradient(rgba(35, 45, 63, 0.85), rgba(35, 45, 63, 0.9)), url("https://leonor014.github.io/SagadaRegistrationSystem/images/blue-soil.jpg") center/cover no-repeat;
     position: relative;
@@ -63,7 +63,7 @@ body {
 }
 
 .profile h2 {
-    font-size: 3rem;
+    font-size: 2.5rem;
     margin-bottom: 1.5rem;
     color: var(--light);
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -102,7 +102,7 @@ body {
   grid-template-columns: 3fr 2fr;
   grid-template-rows: auto auto;
   gap: 2rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 /* Profile Card */
@@ -115,6 +115,8 @@ body {
   text-align: left;
   grid-column: 1;
   grid-row: 1;
+  max-height: 500px;       /* adjust as needed */
+  overflow-y: auto;
 }
 
 .profile-card h3 {
@@ -167,6 +169,8 @@ body {
   text-align: left;
   grid-column: 1;
   grid-row: 2;
+  max-height: 500px;      
+  overflow-y: auto;
 }
 
 .groups-section h3 {
@@ -351,10 +355,12 @@ width: 100%;
   background: white;
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   text-align: left;
   grid-column: 2;
   grid-row: 1 / span 2;
+  max-height: 1200px;      
+  overflow-y: auto;
 }
 
 .registration-section h3 {
@@ -370,6 +376,7 @@ width: 100%;
   overflow: hidden;
   font-size: 0.95rem;
   text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 /* Table Header */
@@ -406,7 +413,7 @@ width: 100%;
 
 /* View Button */
 .view-btn {
-  background: var(--secondary);
+  background-color: #3498db;
   color: white;
   padding: 0.5rem 1rem;
   border: none;
@@ -417,7 +424,7 @@ width: 100%;
 }
 
 .view-btn:hover {
-  background: #e85b28;
+  background-color: #246794;
   transform: scale(1.05);
 }
 
@@ -429,12 +436,6 @@ width: 100%;
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-  .registration-section {
-    grid-column: auto;
-    grid-row: auto;
-    max-height: none;
-  }
-
   .registration-table th,
   .registration-table td {
     font-size: 0.9rem;
@@ -483,7 +484,7 @@ width: 100%;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   width: 90%;
-  max-width: 800px;
+  max-width: 1200px;
   padding: 2rem;
   position: relative;
   text-align: left;
@@ -639,61 +640,68 @@ width: 100%;
   }
 }
 
+/* === Groups Table (same as registration table) === */
+.groups-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 0.95rem;
+  text-align: center;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.groups-table thead {
+  background: var(--primary);
+  color: white;
+}
+
+.groups-table th,
+.groups-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.groups-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.groups-table tbody tr:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.group-action {
+  display: flex; 
+  flex-direction: row;
+  gap: 10px;
+}
+
+#groupModal input,
+#groupModal select {
+  padding: 0.6rem;
+  margin-top: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
 
 /* Responsive */
 @media (max-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr;
   }
-}
-
-/* Navbar */
-.navbar {
-  background: var(--dark);
-  height: 60px;        
-  display: flex;
-  align-items: center;   
-  padding: 0 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.nav-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  width: 100%;        
-}
-
-/* Links */
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.nav-links a:hover {
-  color: var(--accent);
-}
-
-/* Hamburger button (hidden by default) */
-.hamburger {
-  display: none;
-  font-size: 1.8rem;
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  position: absolute;
-  right: 1rem;
+  .profile-card,
+  .groups-section,
+  .registration-section {
+    max-height: 800px;
+  }
+  .group-action { 
+    flex-direction: column;
+    gap: 5px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -707,37 +715,6 @@ width: 100%;
   .registration-section {
     grid-column: auto;
     grid-row: auto;
-  }
-}
-
-
-/* Mobile Styles */
-@media (max-width: 780px) {
-  .hamburger {
-    display: block;
-  }
-
-  .nav-links {
-    display: none;
-    flex-direction: column;
-    background: var(--dark);
-    position: fixed;   
-    top: 60px;         
-    left: 0;
-    width: 100%;     
-    text-align: center;
-    padding: 1rem 0;
-    z-index: 999;     
-    gap: 1rem; 
-  }
-
-  .nav-links a {
-    padding: 0.5rem 0;
-    display: block;
-  }
-
-  .nav-links.show {
-    display: flex;
   }
 }
 
@@ -776,13 +753,292 @@ footer {
   }
 
   .registration-table th {
-    padding: 0.3rem;
+    padding: 0.5rem 0.3rem;
   }
 
   .registration-table td {
-    padding: 0.2rem;
+    padding: 0.5rem 0.2rem;
     border-bottom: 1px solid #eee;
     color: var(--text);
     vertical-align: middle;
+  }
+}
+
+/* === NEW FIXED NAVBAR === */
+.navbar {
+  text-align: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 0 15px;
+  width: 100%;
+  height: 70px;
+  background: var(--dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Container */
+.nav-container {
+  height: 70px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffeb3b;
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.8rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.logo img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Nav Links */
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  align-items: center;
+  font-size: 1rem;
+  height: 70px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #ffeb3b;
+}
+
+.nav-right {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-right .dropdown-nav a{
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+    font-size: 1rem;
+}
+
+.nav-links .dropdown-nav a:hover {
+  color: #ffeb3b;
+}
+
+.nav-right .dropdown-menu {
+  left: auto;    
+  right: 0;     
+}
+
+.nav-right li::marker {
+  content: none;
+}
+
+
+/* Login Button */
+.login-btn {
+  background: #ffeb3b;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  background: var(--primary-light);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+
+/* Logout Button */
+.logout-btn {
+  background: #ffeb3b;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: var(--primary-light);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+/* === Hamburger Menu === */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 30px;
+  height: 25px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* === Dropdown Menu Styling === */
+.dropdown-nav {
+  position: relative;
+}
+
+.dropdown-nav  > a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Hide by default */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--dark);
+  min-width: 100px;
+  border-radius: 8px;
+  padding: 10px 0;
+  list-style: none;
+  flex-direction: column;
+  z-index: 999;
+  width: max-content;
+}
+
+.dropdown-menu li {
+  width: 100%;
+}
+
+.dropdown-menu li a {
+  display: block;
+  padding: 10px 20px;
+  color: white;
+  text-decoration: none;
+}
+
+.dropdown-menu li a:hover {
+  color: #ffeb3b;
+}
+
+/* Show dropdown on hover (desktop) */
+.dropdown-nav:hover .dropdown-menu {
+  display: flex;
+}
+
+/* === Responsive Styles === */
+@media (max-width: 1024px) {
+  .nav-links {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 850px) {
+  .nav-links {
+    gap: 0rem;
+    padding: 10px 0;
+    position: fixed;
+    top: 70px;
+    right: -100%; 
+    width: 100%;
+    height: 100vh;
+    background: rgba(35, 45, 63, 1);
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    transition: right 0.4s ease;
+    z-index: 999;
+    text-align: start;
+  }
+
+  .nav-links li {
+    width: 100%;
+    padding: 10px 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15); /* subtle separator line */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15); /* subtle separator line */
+  }
+
+  .nav-links.show {
+    right: 0;
+  }
+  
+  .hamburger {
+    display: flex;
+  }
+
+  /* Animate hamburger to "X" */
+  .hamburger.active span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .hamburger.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger.active span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  .dropdown-menu {
+    position: static;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    display: none;
+  }
+
+  .dropdown-nav:hover .dropdown-menu {
+    display: none; 
+  }
+
+  .dropdown-nav.open .dropdown-menu {
+    display: flex;
+  }
+
+  .dropdown-menu {
+    width: auto;
+  }
+
+  .dropdown-menu li {
+    padding: 0;
+    
   }
 }

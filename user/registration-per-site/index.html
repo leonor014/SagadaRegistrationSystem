@@ -6,27 +6,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tourist Site Registration</title>
   <link rel="icon" type="image/x-icon" href="/SagadaRegistrationSystem/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Pacifico&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body id="body">
-  <!-- Navigation Section -->
+  <!-- Fixed Navigation Bar -->
   <nav class="navbar">
     <div class="nav-container">
-      <!-- Hamburger Button -->
-      <button class="hamburger" id="hamburger">☰</button>
 
-      <!-- Nav Links -->
-      <div class="nav-links" id="nav-links">
-        <a href="/SagadaRegistrationSystem/index.html">Home</a>
-        <a href="/SagadaRegistrationSystem/about/index.html">About</a>
-        <a href="/SagadaRegistrationSystem/contact/index.html">Contact</a>
-        <a id="registerLink" href="/SagadaRegistrationSystem/user/register/index.html">Register</a>
-        <!-- <a id="touristCheckInLink"
-                    href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a> -->
-        <a id="authLink" href="/SagadaRegistrationSystem/user/user-auth.html">Login</a>
-        <!-- <a id="logoutLink" href="#">Logout</a> -->
+      <!-- Logo (Left) -->
+      <a href="#" class="logo">
+        <img src="/images/sagada-tourism-logo.png" alt="Sagada Logo">
+        <span>Sagada Tourism</span>
+      </a>
+
+      <!-- Center Nav Links -->
+      <ul class="nav-links" id="nav-links">
+        <li><a href="/SagadaRegistrationSystem/index.html">Home</a></li>
+
+        <!-- Dropdown 1: Explore -->
+        <li class="dropdown-nav ">
+          <a href="#">Explore ▾</a>
+          <ul class="dropdown-menu">
+            <li><a href="/SagadaRegistrationSystem/user/tourist-spots/index.html">Tourist Spots</a></li>
+            <li><a href="/SagadaRegistrationSystem/user/reviews/index.html">Reviews</a></li>
+          </ul>
+        </li>
+
+        <!-- Dropdown 2: Information -->
+        <li class="dropdown-nav ">
+          <a href="#">Information ▾</a>
+          <ul class="dropdown-menu">
+            <li><a href="/SagadaRegistrationSystem/about/index.html">About Sagada</a></li>
+            <li><a href="/SagadaRegistrationSystem/index.html#tourist-guidelines">Tourist Guidelines</a></li>
+            <li><a href="/SagadaRegistrationSystem/index.html#faq">FAQ</a></li>
+            <li><a href="/SagadaRegistrationSystem/user/analytics/index.html">Analytics</a></li>
+          </ul>
+        </li>
+
+        <!-- Dropdown 3: Tourist Actions -->
+        <li class="dropdown-nav ">
+          <a href="#">Tourist Actions ▾</a>
+          <ul class="dropdown-menu">
+            <li><a href="/SagadaRegistrationSystem/user/register/index.html">Book a Visit</a></li>
+            <li><a href="/SagadaRegistrationSystem/user/registration-per-site/index.html">Tourist Site Check-In</a></li>
+          </ul>
+        </li>
+
+        <li><a href="/SagadaRegistrationSystem/contact/index.html">Contact</a></li>
+
+        <li id="profileMobile"><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
+
+        <li id="authLinkMobile"><button class="login-btn">Login</button></li>
+
+        <li id="logOutLinkMobile"><button class="logout-btn">Logout</button></li>
+      </ul>
+
+      <!-- Right: Login + Hamburger -->
+      <div class="nav-right">
+        <button class="login-btn desktop-login" id="authLinkDesktop">Login</button>
+        <button class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
+
     </div>
   </nav>
 
@@ -494,7 +542,7 @@
                 name: member.memberName,
                 age: calculateAge(member.memberDOB),
                 sex: member.memberSex,
-                nationality: getNationality(data.groupCountry),
+                nationality: getNationality(member.memberCountry),
                 region: data.groupRegion || "Region not applicable"
               }));
             }
@@ -540,7 +588,11 @@
         let registrationNumber = document.getElementById("registrationNumber").value.trim();
 
         if (selectedTourists.size === 0) {
-          alert("Please select at least one tourist.");
+          Swal.fire({
+            icon: "warning",
+            title: "No Tourist Selected",
+            text: "Please select at least one tourist before saving attendance.",
+          });
           return;
         }
 
@@ -561,7 +613,11 @@
           });
         }
 
-        alert("Attendance recorded successfully!");
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Attendance recorded successfully!",
+        });
         document.getElementById("touristDetails").style.display = "none";
         document.getElementById("registrationNumber").value = "REG-";
         document.getElementById("touristList").innerHTML = "";
@@ -569,7 +625,11 @@
 
       } catch (error) {
         console.error("Error submitting attendance: ", error);
-        alert("Error saving attendance. Please try again.");
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Error saving attendance. Please try again.",
+        });
       } finally {
         isSubmittingAttendance = false;
         if (submitBtn) {
@@ -582,42 +642,114 @@
 
     // --- Event Listeners ---
     document.addEventListener("DOMContentLoaded", () => {
-      const authLink = document.getElementById("authLink");
-      const userValidated = localStorage.getItem("userValidated") === "true";
-
-      if (userValidated) {
-        authLink.textContent = "Profile";
-        authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";
-        document.getElementById("body").style.visibility = "visible";
-      } else {
-        authLink.textContent = "Login";
-        authLink.href = "/SagadaRegistrationSystem/user/user-auth.html";
-        registerLink.style.display = "none";
-        window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
-        /* touristCheckInLink.style.display = "none";
-        logoutLink.style.display = "none"; */
-      }
-
-      /* logoutLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          localStorage.setItem("userValidated", "false");
-          localStorage.removeItem("userId");
-          localStorage.removeItem("userEmail");
-          window.location.href = "/index.html";
-      }); */
       const hamburger = document.getElementById("hamburger");
       const navLinks = document.getElementById("nav-links");
 
-      // Toggle menu on hamburger click
-      hamburger.addEventListener("click", (e) => {
-        e.stopPropagation(); // prevent click bubbling
+      const desktopLoginBtn = document.getElementById("authLinkDesktop");
+      const mobileLoginBtn = document.getElementById("authLinkMobile");
+
+      const desktopProfile = document.getElementById("profileDesktop");
+      const mobileLogoutBtn = document.getElementById("logOutLinkMobile");
+      const mobileProfile = document.getElementById("profileMobile");
+
+      // === USER AUTH CHECK ===
+      const userValidated = localStorage.getItem("userValidated") === "true";
+      const userEmail = localStorage.getItem("userEmail");
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName");
+      const isUserValid = userValidated && userEmail && userId && userName;
+
+      // === REDIRECT TO LOGIN PAGE ===
+      const goToLogin = () => {
+        window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
+      };
+
+      // === LOGOUT HANDLER ===
+      const logoutHandler = () => {
+        localStorage.setItem("userValidated", "false");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userName");
+        window.location.href = "/SagadaRegistrationSystem/index.html";
+      };
+
+      // === SET VISIBILITY BASED ON AUTH ===
+      function updateVisibility() {
+        const isMobile = window.innerWidth <= 850;
+        const desktopProfile = document.getElementById("profileDesktop");
+
+        if (isUserValid) {
+          // USER IS LOGGED IN
+          if (desktopProfile) desktopProfile.style.display = isMobile ? "none" : "block";
+          if (mobileProfile) mobileProfile.style.display = isMobile ? "block" : "none";
+          if (mobileLogoutBtn) mobileLogoutBtn.style.display = isMobile ? "block" : "none";
+          if (desktopLoginBtn) desktopLoginBtn.style.display = "none";
+          if (mobileLoginBtn) mobileLoginBtn.style.display = "none";
+        } else {
+          // USER IS NOT LOGGED IN
+          if (desktopLoginBtn) desktopLoginBtn.style.display = isMobile ? "none" : "block";
+          if (mobileLoginBtn) mobileLoginBtn.style.display = isMobile ? "block" : "none";
+          if (mobileLogoutBtn) mobileLogoutBtn.style.display = "none";
+          if (mobileProfile) mobileProfile.style.display = "none";
+          if (desktopProfile) desktopProfile.style.display = "none";
+        }
+      }
+
+      // Update on resize (for responsiveness)
+      window.addEventListener("resize", updateVisibility);
+
+      // === EVENT BINDINGS ===
+      if (isUserValid) {
+        document.getElementById("body").style.visibility = "visible";
+        // --- DESKTOP DROPDOWN ---
+        const desktopDropdown = document.createElement("li");
+        desktopDropdown.classList.add("dropdown-nav");
+        desktopDropdown.id = "profileDesktop";
+        desktopDropdown.innerHTML = `
+            <a href="#">${userName} ▾</a>
+            <ul class="dropdown-menu">
+                <li><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
+                <li><button class="logout-btn desktop-logout" id="logoutLink">Logout</button></li>
+            </ul>
+        `;
+
+        document.querySelector(".nav-right").prepend(desktopDropdown);
+
+        document.getElementById("logoutLink")?.addEventListener("click", logoutHandler);
+        document.getElementById("logoutLinkMobile")?.addEventListener("click", logoutHandler);
+      } else {
+        window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
+        desktopLoginBtn?.addEventListener("click", goToLogin);
+        mobileLoginBtn?.addEventListener("click", goToLogin);
+      }
+
+      // Run once on load
+      updateVisibility();
+
+      // === HAMBURGER MENU TOGGLE ===
+      hamburger.addEventListener("click", () => {
+        hamburger.classList.toggle("active");
         navLinks.classList.toggle("show");
       });
 
-      // Close menu if clicking outside
+      // === DROPDOWN TOGGLE (FOR MOBILE) ===
+      const dropdowns = document.querySelectorAll(".dropdown-nav");
+      dropdowns.forEach(dropdown => {
+        const link = dropdown.querySelector("a");
+        link.addEventListener("click", (e) => {
+          if (window.innerWidth <= 850) {
+            e.preventDefault();
+            dropdown.classList.toggle("open");
+          }
+        });
+      });
+
+      // === CLOSE MENU WHEN CLICKING OUTSIDE ===
       document.addEventListener("click", (e) => {
-        if (navLinks.classList.contains("show") && !navLinks.contains(e.target) && e.target !== hamburger) {
+        if (!e.target.closest(".navbar")) {
           navLinks.classList.remove("show");
+          hamburger.classList.remove("active");
+          dropdowns.forEach(d => d.classList.remove("open"));
         }
       });
 

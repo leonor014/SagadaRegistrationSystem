@@ -6,6 +6,7 @@ import {
   collection,
   query,
   orderBy,
+  limit,
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // Firebase configuration
@@ -23,11 +24,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Initialize on load
 document.addEventListener("DOMContentLoaded", () => {
   loadGuidelines();
   loadFAQs();
+  loadReviews(); // 👈 load reviews on page load
 });
 
+// =========================
+// LOAD GUIDELINES
+// =========================
 function loadGuidelines() {
   const guidelinesContainer = document.getElementById(
     "guidelines-sections-container"
@@ -65,6 +71,9 @@ function loadGuidelines() {
   );
 }
 
+// =========================
+// LOAD FAQS
+// =========================
 function loadFAQs() {
   const faqContainer = document.getElementById("faq-sections-container");
   const faqsCollection = query(
@@ -77,7 +86,6 @@ function loadFAQs() {
     (snapshot) => {
       faqContainer.innerHTML = "";
       const section = document.createElement("section");
-      /* section.innerHTML = `<h2>GENERAL</h2><ul id="faq-general-list"></ul>`; */
       section.innerHTML = `<ul id="faq-general-list"></ul>`;
       faqContainer.appendChild(section);
 
@@ -97,6 +105,106 @@ function loadFAQs() {
       console.error("Failed to load FAQs:", error);
       faqContainer.innerHTML =
         "<p>Error loading FAQs. Please try again later.</p>";
+    }
+  );
+}
+
+// LOAD REVIEWS 
+function loadReviews() {
+  const reviewsContainer = document.getElementById("reviewsSlider");
+  if (!reviewsContainer) return;
+
+  const reviewsQuery = query(
+    collection(db, "reviews"),
+    orderBy("createdAt", "desc"),
+    limit(7)
+  );
+
+  onSnapshot(
+    reviewsQuery,
+    (snapshot) => {
+      reviewsContainer.innerHTML = "";
+
+      if (snapshot.empty) {
+        reviewsContainer.innerHTML = `<div class="testimonial-slide"><div class="testimonial_box"><p>No reviews yet.</p></div></div>`;
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const rating = parseInt(data.rating) || 0;
+        const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+        const comment = data.comment || "";
+
+        // Format date
+        let formattedDate = "";
+        if (data.createdAt?.toDate) {
+          const dateObj = data.createdAt.toDate();
+          formattedDate = dateObj.toLocaleDateString("en-US", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+        } else if (typeof data.createdAt === "string") {
+          formattedDate = data.createdAt.split(" at ")[0];
+        }
+
+        // Truncate comment if too long
+        const maxLength = 100;
+        let displayComment = comment;
+        let readMore = "";
+        if (comment.length > maxLength) {
+          const shortComment = comment.slice(0, maxLength) + "...";
+          readMore = `<span class="read-more" style="color:#2563eb; cursor:pointer;"> Read more</span>`;
+          displayComment = shortComment + readMore;
+        }
+
+        const slide = `
+    <div class="testimonial-slide">
+      <div class="testimonial_box">
+        <div class="testimonial_box-text">
+          <p>${displayComment}</p>
+        </div> 
+        <div class="stars">${stars}</div>
+        <p class="review-date">${formattedDate}</p>
+      </div>
+    </div>
+  `;
+        reviewsContainer.insertAdjacentHTML("beforeend", slide);
+      });
+
+      // Add event listener for read more
+      reviewsContainer.querySelectorAll(".read-more").forEach((btn, index) => {
+        btn.addEventListener("click", () => {
+          const docData = snapshot.docs[index].data();
+          btn.parentElement.textContent = docData.comment;
+        });
+      });
+
+      // Initialize Slick carousel
+      if ($(".testimonial-slider").hasClass("slick-initialized")) {
+        $(".testimonial-slider").slick("unslick");
+      }
+
+      $(".testimonial-slider").slick({
+        autoplay: true,
+        autoplaySpeed: 2500,
+        speed: 600,
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        infinite: true,
+        arrows: false,
+        dots: true,
+        responsive: [
+          { breakpoint: 991, settings: { slidesToShow: 2 } },
+          { breakpoint: 575, settings: { slidesToShow: 1 } },
+        ],
+      });
+    },
+    (error) => {
+      console.error("Failed to load reviews:", error);
+      reviewsContainer.innerHTML =
+        "<p>Error loading reviews. Please try again later.</p>";
     }
   );
 }
