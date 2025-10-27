@@ -62,7 +62,7 @@ function getAgeCategory(ageOrDob) {
       age = null;
     }
   }
-  if (age === null || isNaN(age)) return "Unknown";
+  //if (age === null || isNaN(age)) return "Unknown";
   if (age <= 12) return "Children";
   if (age <= 19) return "Teenager";
   if (age <= 39) return "Young Adult";
