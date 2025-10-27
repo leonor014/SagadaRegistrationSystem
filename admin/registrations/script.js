@@ -94,8 +94,6 @@ const listenToRegistrations = () => {
         nameOrGroup = reg.groupName || "—";
         details = `
           <div><strong>Size:</strong> ${reg.groupSize || 0}</div>
-          <div><strong>Country:</strong> ${reg.groupCountry || "—"}</div>
-          <div><strong>Region:</strong> ${reg.groupRegion || "—"}</div>
           <div><strong>Contact:</strong> ${reg.groupContact || "—"}</div>
           <div><strong>Email:</strong> ${reg.groupEmail || "—"}</div>
           <hr>
@@ -109,7 +107,9 @@ const listenToRegistrations = () => {
                       <li>
                         <strong>${m.memberName || "—"}</strong><br>
                         DOB: ${m.memberDOB || "—"}<br>
-                        Sex: ${m.memberSex || "—"}
+                        Sex: ${m.memberSex || "—"}<br>
+                        Country: ${m.memberCountry || "—"}<br>
+                        Region: ${m.memberRegion || "—"}
                       </li>
                     `
                     )

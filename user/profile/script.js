@@ -26,6 +26,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+let userPersonalDetails = {};
 
 document.addEventListener("DOMContentLoaded", () => {
   const userValidated = localStorage.getItem("userValidated") === "true";
@@ -144,6 +145,8 @@ document.addEventListener("DOMContentLoaded", () => {
     onSnapshot(userDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const userData = docSnap.data();
+
+        userPersonalDetails = userData.personalDetails || {};
 
         // Personal Info
         document.getElementById("fullName").value = userData.name || "";
@@ -994,7 +997,9 @@ async function openRegistrationModal(regNo) {
               (m, i) => `
               <p>
                 <strong>${i + 1}. ${m.memberName}</strong> 
-                — ${m.memberSex}, <span class="dob">DOB: ${m.memberDOB} — ${m.memberCountry}, ${m.memberRegion}</span>
+                — ${m.memberSex}, <span class="dob">DOB: ${m.memberDOB} — ${
+                m.memberCountry
+              }, ${m.memberRegion}</span>
               </p>`
             )
             .join("")}
@@ -1353,13 +1358,29 @@ function openGroupModal(groupIndex, isEditing = false) {
   addMemberBtn.style.display = isEditing ? "block" : "none";
   addMemberBtn.onclick = () => {
     group.members = group.members || [];
+
+    // Save current input values for existing members
+    membersList.querySelectorAll("tr").forEach((row, i) => {
+      const inputs = row.querySelectorAll("input, select");
+      if (!inputs.length) return;
+
+      group.members[i].memberName = inputs[0].value;
+      group.members[i].memberSex = inputs[1].value;
+      group.members[i].memberDOB = inputs[2].value;
+      group.members[i].memberCountry = inputs[3].value;
+      group.members[i].memberRegion = inputs[4].value;
+    });
+
+    // Add new empty member
     group.members.push({
       memberName: "",
       memberSex: "",
       memberDOB: "",
-      memberCountry: "",
-      memberRegion: "",
+      memberCountry: userPersonalDetails.country || "",
+      memberRegion: userPersonalDetails.region || "",
     });
+
+    // Re-render modal with the new member
     openGroupModal(groupIndex, true);
   };
 

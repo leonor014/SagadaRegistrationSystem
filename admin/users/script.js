@@ -105,7 +105,9 @@ const listenToUsers = () => {
               <li>
                 <strong>${m.memberName || "—"}</strong><br>
                 <label>DOB:</label> ${m.memberDOB || "—"}<br>
-                <label>Sex:</label> ${m.memberSex || "—"}
+                <label>Sex:</label> ${m.memberSex || "—"}<br>
+                <label>Country:</label> ${m.memberCountry || "—"}<br>
+                <label>Region:</label> ${m.memberRegion || "—"}
               </li>
             `;
               });
