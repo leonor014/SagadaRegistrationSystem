@@ -264,11 +264,9 @@ function loadExploreSpots() {
                 ${guideFee}
                 ${shuttleFee}
               </div>
-              <div class="explore-btn-container${
-                isReversed ? "-reverse" : ""
-                }">
+              <div class="explore-btn-container${isReversed ? "-reverse" : ""}">
                 <a href="/SagadaRegistrationSystem/user/tourist-spots/index.html" class="explore-btn">
-                  View All Tourist Spots
+                  View all places
                 </a>
               </div>
             </div>
