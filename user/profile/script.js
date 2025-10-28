@@ -357,13 +357,33 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
     });
   }
 
-  // 4. Date of Birth cannot be in the future
-  const today = new Date().toISOString().split("T")[0];
-  if (dob > today) {
+  // 4. Date of Birth cannot be in the future and must be 0-90 years old
+  const today = new Date();
+  const birthDate = new Date(dob);
+  if (birthDate > today) {
     return Swal.fire({
       icon: "warning",
       title: "Invalid Date of Birth",
       text: "Date of birth cannot be in the future.",
+    });
+  }
+
+  // Calculate age
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  // Check age range
+  if (age < 0 || age > 90) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Invalid Age",
+      text: "Age must be between 0 and 90 years.",
     });
   }
 
@@ -1444,14 +1464,40 @@ function openGroupModal(groupIndex, isEditing = false) {
         }
 
         // === DOB Validation ===
-        if (dob && new Date(dob) > new Date()) {
-          Swal.fire({
-            icon: "warning",
-            title: "Invalid Date of Birth",
-            text: "Date of birth cannot be in the future.",
-          });
-          isValid = false;
-          break;
+        if (dob) {
+          const birthDate = new Date(dob);
+          const today = new Date();
+
+          if (birthDate > today) {
+            Swal.fire({
+              icon: "warning",
+              title: "Invalid Date of Birth",
+              text: "Date of birth cannot be in the future.",
+            });
+            isValid = false;
+            break;
+          }
+
+          // Calculate age
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birthDate.getDate())
+          ) {
+            age--;
+          }
+
+          // Check age range
+          if (age < 0 || age > 90) {
+            Swal.fire({
+              icon: "warning",
+              title: "Invalid Age",
+              text: "Member's age must be between 0 and 90 years.",
+            });
+            isValid = false;
+            break;
+          }
         }
 
         // Update values if valid

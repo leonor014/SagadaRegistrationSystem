@@ -31,7 +31,8 @@
                 <li class="dropdown-nav ">
                     <a href="#">Explore ▾</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/SagadaRegistrationSystem/user/tourist-spots/index.html">Tourist Spots</a></li>
+                        <li><a href="/SagadaRegistrationSystem/user/tourist-spots/index.html">Places you can visit</a>
+                        </li>
                         <li><a href="/SagadaRegistrationSystem/user/reviews/index.html">Reviews</a></li>
                     </ul>
                 </li>
@@ -64,7 +65,7 @@
 
                 <li id="authLinkMobile"><button class="login-btn">Login</button></li>
 
-                <li id="logOutLinkMobile"><button class="logout-btn">Logout</button></li>
+                <li id="logoutLinkMobile"><button class="logout-btn">Logout</button></li>
             </ul>
 
             <!-- Right: Login + Hamburger -->
@@ -101,6 +102,61 @@
             <h2> Discover Yourself</h2>
         </div>
     </div>
+
+    <!-- ===== Explore Sagada Section ===== -->
+    <section class="explore-section">
+        <div class="explore-header">
+            <h1>Explore Sagada</h1>
+            <h3>Most Visited Tourist Spots</h3>
+        </div>
+
+        <!-- <div class="explore-grid">
+
+            <div class="explore-row">
+                <div class="explore-image" style="background-image: url('./images/sumaguing-cave.jpg');"></div>
+                <div class="explore-card">
+                    <div class="explore-content">
+                        <h2>Sumaguing Cave</h2>
+                        <p>
+                            Known as the "Big Cave" of Sagada, Sumaguing offers a thrilling spelunking adventure.
+                            Inside, you'll find fascinating rock formations, underground pools, and natural chambers
+                            carved by time. A must-visit for thrill-seekers and nature enthusiasts.
+                        </p>
+                        <div class="explore-btn-container">
+                            <a href="/SagadaRegistrationSystem/user/tourist-spots/index.html" class="explore-btn">
+                                View More
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="explore-row reverse">
+                <div class="explore-image" style="background-image: url('./images/hanging-coffins.jpg');"></div>
+                <div class="explore-card">
+                    <div class="explore-content">
+                        <h2>Hanging Coffins of Echo Valley</h2>
+                        <p>
+                            A culturally rich site, the Hanging Coffins reflect Sagada’s ancient burial traditions.
+                            Visitors can take a short trek through Echo Valley to witness this fascinating
+                            glimpse into the town’s unique heritage and beliefs.
+                        </p>
+                        <div class="explore-btn-container-reverse">
+                            <a href="/SagadaRegistrationSystem/user/tourist-spots/index.html" class="explore-btn">
+                                View More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> -->
+
+        <!-- This will be populated dynamically from Firestore -->
+        <div class="explore-grid" id="exploreGrid"></div>
+    </section>
+
 
     <section class="testimonial">
         <div class="testimonial-header">
@@ -163,7 +219,7 @@
             const mobileLoginBtn = document.getElementById("authLinkMobile");
 
             const desktopProfile = document.getElementById("profileDesktop");
-            const mobileLogoutBtn = document.getElementById("logOutLinkMobile");
+            const mobileLogoutBtn = document.getElementById("logoutLinkMobile");
             const mobileProfile = document.getElementById("profileMobile");
 
             // === USER AUTH CHECK ===

@@ -28,7 +28,8 @@ const db = getFirestore(app);
 document.addEventListener("DOMContentLoaded", () => {
   loadGuidelines();
   loadFAQs();
-  loadReviews(); // 👈 load reviews on page load
+  loadReviews();
+  loadExploreSpots();
 });
 
 // =========================
@@ -109,7 +110,7 @@ function loadFAQs() {
   );
 }
 
-// LOAD REVIEWS 
+// LOAD REVIEWS
 function loadReviews() {
   const reviewsContainer = document.getElementById("reviewsSlider");
   if (!reviewsContainer) return;
@@ -163,7 +164,7 @@ function loadReviews() {
     <div class="testimonial-slide">
       <div class="testimonial_box">
         <div class="testimonial_box-text">
-          <p>${displayComment}</p>
+          <p>"${displayComment}"</p>
         </div> 
         <div class="stars">${stars}</div>
         <p class="review-date">${formattedDate}</p>
@@ -205,6 +206,81 @@ function loadReviews() {
       console.error("Failed to load reviews:", error);
       reviewsContainer.innerHTML =
         "<p>Error loading reviews. Please try again later.</p>";
+    }
+  );
+}
+
+// =========================
+// LOAD FEATURED TOURIST SPOTS
+// =========================
+function loadExploreSpots() {
+  const exploreContainer = document.getElementById("exploreGrid");
+  if (!exploreContainer) return;
+
+  const touristSpotsRef = collection(db, "tourist-spots");
+
+  // Only show these five
+  const allowedSpots = [
+    "Bomod-ok Falls",
+    "Sumaguing Cave",
+    "Paytokan Walk",
+    "Marlboro",
+    "Blue Soil",
+  ];
+
+  onSnapshot(
+    touristSpotsRef,
+    (snapshot) => {
+      exploreContainer.innerHTML = "";
+
+      const spots = snapshot.docs
+        .map((doc) => doc.data())
+        .filter((spot) => allowedSpots.includes(spot.name));
+
+      if (!spots.length) {
+        exploreContainer.innerHTML = `<p>No tourist spots available.</p>`;
+        return;
+      }
+
+      spots.forEach((spot, index) => {
+        const isReversed = index % 2 !== 0; // Alternate layout
+
+        const imageSrc = spot.image || "./images/placeholder.jpg";
+        const guideFee = spot.guideFee
+          ? `<p><strong>Guide Fee:</strong> ${spot.guideFee}</p>`
+          : "";
+        const shuttleFee = spot.shuttleFee
+          ? `<p><strong>Shuttle Fee:</strong> ${spot.shuttleFee}</p>`
+          : "";
+
+        const cardHTML = `
+          <div class="explore-row ${isReversed ? "reverse" : ""}">
+            <div class="explore-image" style="background-image: url('${imageSrc}')"></div>
+            <div class="explore-card">
+              <div class="explore-content">
+                <h2>${spot.name}</h2>
+                <p>${spot.description}</p>
+                <p><strong>Category:</strong> ${spot.category || "—"}</p>
+                ${guideFee}
+                ${shuttleFee}
+              </div>
+              <div class="explore-btn-container${
+                isReversed ? "-reverse" : ""
+                }">
+                <a href="/SagadaRegistrationSystem/user/tourist-spots/index.html" class="explore-btn">
+                  View All Tourist Spots
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        exploreContainer.insertAdjacentHTML("beforeend", cardHTML);
+      });
+    },
+    (error) => {
+      console.error("Failed to load explore spots:", error);
+      exploreContainer.innerHTML = "<p>Error loading tourist spots.</p>";
     }
   );
 }
