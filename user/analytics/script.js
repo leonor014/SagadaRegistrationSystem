@@ -340,7 +340,7 @@ function renderSpotCharts(siteName, filteredAttendance) {
   const visitValues = [...periodMap.values()];
 
   // Age distribution
-  const ageBuckets = { Children:0, Teenager:0, "Young Adult":0, "Middle Aged Adult":0, Senior:0, Unknown:0 };
+  const ageBuckets = { Children:0, Teenager:0, "Young Adult":0, "Middle Aged Adult":0, Senior:0 };
   siteRecords.forEach(r => {
     const cat = getAgeCategory(r.age ?? r.dateOfBirth);
     ageBuckets[cat] = (ageBuckets[cat] || 0) + 1;
