@@ -93,39 +93,76 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      // Validate registration code
+      // Validate registration code in both collections
       const regCodeQuery = query(
         collection(db, "registration-code"),
         where("regCode", "==", regCode)
       );
       const regCodeSnapshot = await getDocs(regCodeQuery);
 
-      if (regCodeSnapshot.empty) {
+      const superAdminCodeQuery = query(
+        collection(db, "superadmin-code"),
+        where("regCode", "==", regCode)
+      );
+      const superAdminCodeSnapshot = await getDocs(superAdminCodeQuery);
+
+      let userCredential;
+      let user;
+
+      // Check if regCode exists in "registration-code"
+      if (!regCodeSnapshot.empty) {
+        userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        user = userCredential.user;
+
+        await setDoc(doc(db, "admins", user.uid), {
+          uid: user.uid,
+          name,
+          email,
+          role: "Admin", // optional, for clarity
+          createdAt: serverTimestamp(),
+        });
+
+        await Swal.fire({
+          icon: "success",
+          title: "Admin Registration Successful",
+        });
+      }
+
+      // Check if regCode exists in "superadmin-code"
+      else if (!superAdminCodeSnapshot.empty) {
+        userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        user = userCredential.user;
+
+        await setDoc(doc(db, "admins", user.uid), {
+          uid: user.uid,
+          name,
+          email,
+          role: "Super Admin",
+          createdAt: serverTimestamp(),
+        });
+
+        await Swal.fire({
+          icon: "success",
+          title: "Super Admin Registration Successful",
+        });
+      }
+
+      // If not found in either collection
+      else {
         return Swal.fire({
           icon: "error",
           title: "Invalid Registration Code",
           text: "The provided registration code is not valid.",
         });
       }
-
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "admins", user.uid), {
-        uid: user.uid,
-        name,
-        email,
-        createdAt: serverTimestamp(),
-      });
-
-      await Swal.fire({
-        icon: "success",
-        title: "Registration Successful",
-      });
 
       signupForm.reset();
       document

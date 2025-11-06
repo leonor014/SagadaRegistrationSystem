@@ -31,7 +31,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const loadAdmins = () => {
+const loadAdmins = (currentUserRole) => {
   const tableBody = document.getElementById("adminsTableBody");
   tableBody.innerHTML = `
     <tr>
@@ -73,17 +73,25 @@ const loadAdmins = () => {
       const name = admin.name || "—";
       const createdAt = admin.createdAt?.toDate().toLocaleString() || "—";
 
+      const showActions = currentUserRole === "Super Admin";
+
       tr.innerHTML = `
         <td>${email}</td>
         <td>${name}</td>
         <td>${createdAt}</td>
         <td>
-          <button class="action-btn edit-btn" title="Edit" data-id="${adminId}">
-            <i class="uil uil-edit-alt"></i>
-          </button>
-          <button class="action-btn delete-btn" title="Delete" data-id="${adminId}">
-            <i class="uil uil-trash-alt"></i>
-          </button>
+          ${
+            showActions
+              ? `
+            <button class="action-btn edit-btn" title="Edit" data-id="${adminId}">
+              <i class="uil uil-edit-alt"></i>
+            </button>
+            <button class="action-btn delete-btn" title="Delete" data-id="${adminId}">
+              <i class="uil uil-trash-alt"></i>
+            </button>
+            `
+              : `<span style="color: gray;">No permission</span>`
+          }
         </td>
       `;
 
@@ -98,7 +106,7 @@ const loadAdmins = () => {
       `;
     }
 
-    attachEditAndDeleteListeners(); 
+    if (currentUserRole === "Super Admin") attachEditAndDeleteListeners();
   });
 };
 
@@ -114,7 +122,8 @@ function attachEditAndDeleteListeners() {
         if (adminSnap.exists()) {
           const adminData = adminSnap.data();
           document.getElementById("editAdminId").value = id;
-          document.getElementById("editAdminEmail").value = adminData.email || "";
+          document.getElementById("editAdminEmail").value =
+            adminData.email || "";
           document.getElementById("editAdminName").value = adminData.name || "";
 
           document.getElementById("editModal").style.visibility = "visible";
@@ -152,8 +161,6 @@ function attachEditAndDeleteListeners() {
   });
 }
 
-
-
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "../login-register.html";
@@ -163,8 +170,10 @@ onAuthStateChanged(auth, async (user) => {
       const docRef = doc(db, "admins", user.uid);
       const docSnap = await getDoc(docRef);
 
+      let userData = {};
+
       if (docSnap.exists()) {
-        const userData = docSnap.data();
+        userData = docSnap.data();
         const displayName = userData.name || "Name";
         const nameElement = document.getElementById("userNameDisplay");
         const userAvatar = document.getElementById("userAvatar");
@@ -179,8 +188,9 @@ onAuthStateChanged(auth, async (user) => {
       } else {
         console.log("User document not found");
       }
+      const currentUserRole = userData.role || "";
 
-      loadAdmins();
+      loadAdmins(currentUserRole);
     } catch (error) {
       console.error("Error fetching user data:", error);
     }

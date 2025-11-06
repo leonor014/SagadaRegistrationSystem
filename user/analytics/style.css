@@ -1,6 +1,7 @@
 :root {
   --primary: #2e7d32;
   --primary-dark: #1b5e20;
+  --primary-light: #4caf50;
   --accent: #ffd166;
   --dark: #232D3F;
   --white: #ffffff;
@@ -489,11 +490,12 @@ footer { background: var(--dark); color:white; text-align:center; padding: 1.25r
   background: var(--dark);
   min-width: 100px;
   border-radius: 8px;
-  padding: 10px 0;
+  padding: 20px 0;
   list-style: none;
   flex-direction: column;
   z-index: 999;
   width: max-content;
+  margin: 0 !important;
 }
 
 .dropdown-menu li {

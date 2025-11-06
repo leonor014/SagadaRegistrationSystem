@@ -937,7 +937,7 @@ footer {
   background: var(--dark);
   min-width: 100px;
   border-radius: 8px;
-  padding: 10px 0;
+  padding: 20px 0;
   list-style: none;
   flex-direction: column;
   z-index: 999;
