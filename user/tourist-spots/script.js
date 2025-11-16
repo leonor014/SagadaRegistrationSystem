@@ -47,14 +47,20 @@ document.addEventListener("DOMContentLoaded", () => {
       card.classList.add("spot-card");
 
       card.innerHTML = `
-        <div class="spot-card-inner">
-          <div class="spot-card-front">
-            <img src="${spot.image}" alt="${spot.name}">
+      <div class="spot-card-inner">
+
+        <!-- FRONT SIDE -->
+        <div class="spot-card-front">
+          
+          <div class="front-header">
             <h3>${spot.name}</h3>
           </div>
-          <div class="spot-card-back">
-            <h3>${spot.name}</h3>
-            <p>${spot.description}</p>
+
+          <div class="front-body">
+            <img src="${spot.image}" alt="${spot.name}">
+          </div>
+
+          <div class="front-footer">
             ${
               spot.guideFee
                 ? `<p><strong>Guide Fee:</strong> ${spot.guideFee}</p>`
@@ -66,8 +72,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 : ""
             }
           </div>
+
         </div>
-      `;
+
+        <!-- BACK SIDE -->
+        <div class="spot-card-back">
+          
+          <div class="back-header">
+            <h3>${spot.name}</h3>
+          </div>
+
+          <div class="back-body">
+            <p>${spot.description}</p>
+          </div>
+
+          <div class="back-footer">
+            ${
+              spot.guideFee
+                ? `<p><strong>Guide Fee:</strong> ${spot.guideFee}</p>`
+                : ""
+            }
+            ${
+              spot.shuttleFee
+                ? `<p><strong>Shuttle Fee:</strong> ${spot.shuttleFee}</p>`
+                : ""
+            }
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
 
       // Add flip effect on click
       card.addEventListener("click", () => {
@@ -79,7 +115,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.appendChild(grid);
   }
-
 
   onSnapshot(collection(db, "categories"), (snapshot) => {
     console.log("Categories snapshot:", snapshot.size);

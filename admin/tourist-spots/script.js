@@ -36,10 +36,26 @@ const loadCategories = async () => {
     document.getElementById("addTouristSpotCategory"),
     document.getElementById("editTouristSpotCategory"),
   ];
+  const categoryFilter = document.getElementById("categoryFilter");
 
   try {
     const categoriesSnapshot = await getDocs(collection(db, "categories"));
 
+    // Reset filter dropdown
+    categoryFilter.innerHTML = `<option value="">All</option>`;
+
+    // Populate all dropdowns
+    categoriesSnapshot.forEach((doc) => {
+      const category = doc.data().name;
+
+      // Add to filter dropdown
+      const opt = document.createElement("option");
+      opt.value = category;
+      opt.textContent = category;
+      categoryFilter.appendChild(opt);
+    });
+
+    // Add to form selects (add & edit)
     categorySelects.forEach((select) => {
       select.innerHTML = '<option value="">Select a category</option>';
 
@@ -69,7 +85,7 @@ const loadTouristSpots = async () => {
     const user = auth.currentUser;
     const touristSpotsQuery = query(
       collection(db, "tourist-spots"),
-      orderBy("createdAt", "desc")
+      orderBy("name", "asc")
     );
 
     onSnapshot(touristSpotsQuery, (querySnapshot) => {
@@ -323,6 +339,23 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#tourist-spotsTableBody tr");
+
+    rows.forEach((row) => {
+      const regCell = row.querySelector("td:first-child");
+      if (regCell) {
+        const text = regCell.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      }
+    });
+  });
+
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").focus();
+  });
+
   document
     .getElementById("editTouristSpotForm")
     .addEventListener("submit", async (e) => {
@@ -526,5 +559,22 @@ window.addEventListener("DOMContentLoaded", () => {
       } finally {
         submitBtn.disabled = false;
       }
+    });
+
+  document
+    .getElementById("categoryFilter")
+    .addEventListener("change", function () {
+      const selected = this.value;
+      const rows = document.querySelectorAll("#tourist-spotsTableBody tr");
+
+      rows.forEach((row) => {
+        const categoryCell = row.querySelector("td:nth-child(3)");
+        if (!categoryCell) return;
+
+        const categoryText = categoryCell.textContent.trim();
+
+        const match = selected === "" || categoryText === selected;
+        row.style.display = match ? "" : "none";
+      });
     });
 });

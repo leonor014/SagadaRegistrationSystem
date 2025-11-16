@@ -631,7 +631,6 @@ nav.close ~ .dashboard .top{
     gap: 25px;
     width: 100%;
     box-sizing: border-box;
-    margin-top: 20px;
     min-height: 200px;
     align-items: start; /* Prevent stretching */
 }

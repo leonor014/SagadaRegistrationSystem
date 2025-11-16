@@ -100,6 +100,7 @@
                             <select id="report-type">
                                 <option value="general">General Analytics</option>
                                 <option value="tourist-spot">Tourist Spot</option>
+                                <option value="category">Category Analytics</option>
                             </select>
                         </div>
 
@@ -107,6 +108,17 @@
                             <label for="site-dropdown">Tourist Site:</label>
                             <select id="site-dropdown">
                                 <option value="__all">All Sites</option>
+                            </select>
+                        </div>
+
+                        <div class="selector-group" id="category-selector-container" style="display:none;">
+                            <label for="category-dropdown">Category:</label>
+                            <select id="category-dropdown">
+                                <option value="__all">All Categories</option>
+                                <option value="Caves">Caves</option>
+                                <option value="Falls">Falls</option>
+                                <option value="Mountains">Mountains</option>
+                                <option value="Sightseeing">Sightseeing</option>
                             </select>
                         </div>
                     </div>
@@ -172,6 +184,29 @@
                                     <h3>Filters</h3>
                                     <p>Current selection: <span id="current-site-display">All Sites</span></p>
                                     <p>Date range: <span id="date-range-display-tourist">September 2025</span></p>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+
+                    <div id="category-analytics" class="report-section">
+                        <div class="content-grid">
+                            <section class="charts-container" id="category-charts-area">
+                                <!-- Category charts will be inserted here -->
+                            </section>
+
+                            <aside class="analytics-sidebar">
+                                <div class="analytics-card">
+                                    <h3>Category Analytics</h3>
+                                    <div id="kpi-section-category" class="kpi-section">
+                                        <!-- Category KPI cards -->
+                                    </div>
+                                </div>
+
+                                <div class="analytics-card">
+                                    <h3>Filters</h3>
+                                    <p>Category: <span id="current-category-display">All Categories</span></p>
+                                    <p>Date range: <span id="date-range-display-category">N/A</span></p>
                                 </div>
                             </aside>
                         </div>

@@ -52,7 +52,6 @@ onAuthStateChanged(auth, async (user) => {
             displayName
           )}`;
         }
-        subscribeToDocumentCounts();
       } else {
         console.log("User document not found");
       }
@@ -75,6 +74,10 @@ const filterType = document.getElementById("filter-type");
 const siteSelectorContainer = document.getElementById(
   "site-selector-container"
 );
+const categoryDropdown = document.getElementById("category-dropdown");
+const categorySelectorContainer = document.getElementById(
+  "category-selector-container"
+);
 
 // --- Data holders ---
 let registrations = [];
@@ -82,6 +85,24 @@ let attendance = [];
 let sites = [];
 let charts = {};
 let currentReportType = "general";
+let siteToCategoryMap = {};
+
+onSnapshot(query(collection(db, "tourist-spots"), orderBy("name", "asc")), (snap) => {
+  const touristSpots = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  
+  // Build dynamic map
+  siteToCategoryMap = {};
+  touristSpots.forEach(spot => {
+    if (spot.name && spot.category) {
+      siteToCategoryMap[spot.name] = spot.category;
+    }
+  });
+
+  // Update dropdown if needed
+  sites = touristSpots;
+  populateSiteDropdown();
+  recomputeAndRender();
+});
 
 // --- Helpers ---
 function getDateFromField(doc, field) {
@@ -103,6 +124,18 @@ function getDateFromField(doc, field) {
   if (value instanceof Date) return value;
 
   return null;
+}
+
+function formatMonthYear(value) {
+  if (!value) return "N/A";
+
+  if (value.includes("-")) {
+    const [y, m] = value.split("-");
+    const date = new Date(y, m - 1);
+    return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+  }
+
+  return value; // Year only
 }
 
 function getAgeCategory(ageOrDob) {
@@ -187,9 +220,15 @@ function switchReportType() {
   analyticsTitle.textContent =
     currentReportType === "general"
       ? "General Analytics"
-      : "Tourist Spot Analytics";
+      : currentReportType === "tourist-spot"
+      ? "Tourist Spot Analytics"
+      : "Category Analytics";
+
   siteSelectorContainer.style.display =
-    currentReportType === "general" ? "none" : "flex";
+    currentReportType === "tourist-spot" ? "flex" : "none";
+
+  categorySelectorContainer.style.display =
+    currentReportType === "category" ? "flex" : "none";
 
   recomputeAndRender();
 }
@@ -288,7 +327,6 @@ function expandAttendanceDocs(docs) {
 // --- Enhanced Filter Function ---
 function filterByPeriod(docs, value, type, field) {
   if (!value) return docs;
-
   return docs.filter((doc) => {
     const dt = getDateFromField(doc, field);
     if (!dt) return false;
@@ -301,7 +339,6 @@ function filterByPeriod(docs, value, type, field) {
     if (type === "year") {
       return dt.getFullYear() === +value;
     }
-
     return true;
   });
 }
@@ -360,7 +397,11 @@ function populateSiteDropdown() {
 function renderKPIs(docs, site = "__all") {
   // Determine which KPI section to use based on current report type
   const kpiSectionId =
-    currentReportType === "general" ? "kpi-section" : "kpi-section-tourist";
+    currentReportType === "general"
+      ? "kpi-section"
+      : currentReportType === "category"
+      ? "kpi-section-category"
+      : "kpi-section-tourist"; // make sure you have this in HTML
   const kpiSectionElement = document.getElementById(kpiSectionId);
 
   if (!kpiSectionElement) {
@@ -368,55 +409,65 @@ function renderKPIs(docs, site = "__all") {
     return;
   }
 
-  let data = site === "__all" ? docs : docs.filter((d) => d.site === site);
+  const data = site === "__all" ? docs : docs.filter((d) => d.site === site);
   const total = data.length;
 
-  if (total === 0) {
-    kpiSectionElement.innerHTML = `
-      <div class="kpi-card"><h2>0</h2><p>Total visits</p></div>
-      <div class="kpi-card"><h2>No data</h2><p>Gender counts</p></div>
-      <div class="kpi-card"><h2>No data</h2><p>Top Non-Filipino</p></div>
-      <div class="kpi-card"><h2>No data</h2><p>Top Regions</p></div>
-    `;
-    return;
-  }
+  // Clear previous content
+  kpiSectionElement.innerHTML = "";
 
-  const genderMap = new Map();
-  const natMap = new Map();
-  const regionMap = new Map();
+  // Always render total visits
+  const totalCard = document.createElement("div");
+  totalCard.className = "kpi-card";
+  totalCard.innerHTML = `<h2>${total}</h2><p>Total visits</p>`;
+  kpiSectionElement.appendChild(totalCard);
 
-  data.forEach((d) => {
-    const gender = d.sex && d.sex !== "Unknown" ? d.sex : "Unknown";
-    genderMap.set(gender, (genderMap.get(gender) || 0) + 1);
+  // Only show other KPIs for general/tourist reports
+  if (currentReportType !== "category") {
+    const genderMap = new Map();
+    const natMap = new Map();
+    const regionMap = new Map();
 
-    const nat = (d.nationality || "Unknown").toLowerCase();
-    if (!["philippines", "filipino", "ph"].includes(nat)) {
-      natMap.set(d.nationality, (natMap.get(d.nationality) || 0) + 1);
-    }
+    data.forEach((d) => {
+      const gender = d.sex && d.sex !== "Unknown" ? d.sex : "Unknown";
+      genderMap.set(gender, (genderMap.get(gender) || 0) + 1);
 
-    const region = d.region && d.region !== "Unknown" ? d.region : "Unknown";
-    regionMap.set(region, (regionMap.get(region) || 0) + 1);
-  });
+      const nat = (d.nationality || "Unknown").toLowerCase();
+      if (!["philippines", "filipino", "ph"].includes(nat)) {
+        natMap.set(d.nationality, (natMap.get(d.nationality) || 0) + 1);
+      }
 
-  const topN = (map, n = 5) =>
-    [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, n);
+      const region = d.region && d.region !== "Unknown" ? d.region : "Unknown";
+      regionMap.set(region, (regionMap.get(region) || 0) + 1);
+    });
 
-  kpiSectionElement.innerHTML = `
-    <div class="kpi-card"><h2>${total}</h2><p>Total visits</p></div>
-    <div class="kpi-card"><h2>${
+    const topN = (map, n = 5) =>
+      [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, n);
+
+    const genderCard = document.createElement("div");
+    genderCard.className = "kpi-card";
+    genderCard.innerHTML = `<h2>${
       [...genderMap].map(([g, v]) => `${g}: ${v}`).join(", ") || "No data"
-    }</h2><p>Gender counts</p></div>
-    <div class="kpi-card"><h2>${
+    }</h2><p>Gender counts</p>`;
+    kpiSectionElement.appendChild(genderCard);
+
+    const nonFilipinoCard = document.createElement("div");
+    nonFilipinoCard.className = "kpi-card";
+    nonFilipinoCard.innerHTML = `<h2>${
       topN(natMap)
         .map((x) => x[0])
         .join(", ") || "No data"
-    }</h2><p>Top Non-Filipino</p></div>
-    <div class="kpi-card"><h2>${
+    }</h2><p>Top Non-Filipino</p>`;
+    kpiSectionElement.appendChild(nonFilipinoCard);
+
+    const regionCard = document.createElement("div");
+    regionCard.className = "kpi-card";
+    regionCard.innerHTML = `<h2>${
       topN(regionMap)
         .map((x) => x[0])
         .join(", ") || "No data"
-    }</h2><p>Top Regions</p></div>
-  `;
+    }</h2><p>Top Regions</p>`;
+    kpiSectionElement.appendChild(regionCard);
+  }
 }
 
 // --- Clear charts before rendering new ones ---
@@ -433,7 +484,10 @@ function createChartCanvas(canvasId, title) {
   const chartsAreaId =
     currentReportType === "general"
       ? "general-charts-area"
+      : currentReportType === "category"
+      ? "category-charts-area"
       : "tourist-charts-area";
+
   const chartsArea = document.getElementById(chartsAreaId);
 
   if (!chartsArea) {
@@ -1000,7 +1054,7 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
         : "tourist-charts-area";
     const chartsArea = document.getElementById(chartsAreaId);
     if (chartsArea) {
-      chartsArea.innerHTML = `<div class="no-data-message">No data available for ${
+      chartsArea.innerHTML = `<div class="no-data-message show">No data available for ${
         selectedSite === "__all" ? "All Sites" : selectedSite
       } in the selected period</div>`;
     }
@@ -1162,6 +1216,105 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   );
 }
 
+function renderCategoryAnalytics(selectedCategory, docs) {
+  console.log("=== renderCategoryAnalytics ===");
+  console.log("Selected category:", selectedCategory);
+  console.log("Total documents fetched:", docs.length);
+
+  // Destroy old charts if they exist
+  if (charts["category-visits"]) {
+    charts["category-visits"].destroy();
+    delete charts["category-visits"];
+  }
+  if (charts["category-sites"]) {
+    charts["category-sites"].destroy();
+    delete charts["category-sites"];
+  }
+
+  // Remove container elements from DOM
+  const visitsContainer = document.getElementById("category-visits-container");
+  if (visitsContainer) visitsContainer.remove();
+
+  const sitesContainer = document.getElementById("category-sites-container");
+  if (sitesContainer) sitesContainer.remove();
+
+  const chartsArea = document.getElementById("category-charts-area");
+  if (!chartsArea) return;
+
+  // --- REMOVE any existing "no data" messages ---
+  const oldMessage = chartsArea.querySelector(".no-data-message");
+  if (oldMessage) oldMessage.remove();
+
+  // Map sites to categories
+  const siteToCategoryMap = {
+    "Lumiang Cave": "Caves",
+    "Balangagan Cave": "Caves",
+    "Sumaguing Cave": "Caves",
+    "Bomod-ok Falls": "Falls",
+    "Bokong Falls": "Falls",
+    "Pongas Falls": "Falls",
+    "Ubwa Blue Lagoon": "Sightseeing",
+    "Ticangan to Ubwa River Tracing, Bouldering and Swimming": "Sightseeing",
+    Ampacao: "Mountains",
+    "Nabas-ang to Ampacao": "Mountains",
+    Langsayan: "Mountains",
+    Marlboro: "Mountains",
+    "Marlboro to Blue Soil": "Mountains",
+    "Blue Soil": "Mountains",
+    "Paytokan Walk": "Sightseeing",
+    "Hanging Coffins": "Sightseeing",
+    "Lumiang Cave Entrance": "Caves",
+    "Sumaguing Cave Entrance": "Caves",
+    "Dokiw Hanging Coffins": "Sightseeing",
+    "Kapay-aw Rice Terraces": "Sightseeing",
+  };
+
+  if (selectedCategory === "__all") {
+    const allCategories = ["Caves", "Falls", "Sightseeing", "Mountains"];
+    const categoryCounts = {};
+    allCategories.forEach((cat) => (categoryCounts[cat] = 0));
+
+    docs.forEach((d) => {
+      const cat = siteToCategoryMap[d.site] || "Unknown";
+      if (categoryCounts[cat] !== undefined) categoryCounts[cat] += 1;
+    });
+
+    const labels = Object.keys(categoryCounts);
+    const data = Object.values(categoryCounts);
+
+    if (data.every((count) => count === 0)) {
+      chartsArea.innerHTML = `<div class="no-data-message show">No data available for the selected period</div>`;
+      return;
+    }
+
+    drawBarChart("category-visits", "Visits by Category", labels, data);
+  } else {
+    const filtered = docs.filter(
+      (d) => (siteToCategoryMap[d.site] || "Unknown") === selectedCategory
+    );
+
+    if (filtered.length === 0) {
+      chartsArea.innerHTML = `<div class="no-data-message show">No data available for ${selectedCategory} in the selected period</div>`;
+      return;
+    }
+
+    const siteCounts = {};
+    filtered.forEach((d) => {
+      siteCounts[d.site] = (siteCounts[d.site] || 0) + 1;
+    });
+
+    const labels = Object.keys(siteCounts);
+    const data = Object.values(siteCounts);
+
+    drawBarChart(
+      "category-sites",
+      `Visits for ${selectedCategory} Sites`,
+      labels,
+      data
+    );
+  }
+}
+
 function recomputeAndRender() {
   let value = monthInput.value;
   const type = filterType.value;
@@ -1216,6 +1369,42 @@ function recomputeAndRender() {
     );
     renderKPIs(filtered);
     renderGeneralAnalytics(filtered);
+  } else if (currentReportType === "category") {
+    const expanded = expandAttendanceDocs(attendance);
+    const filtered = filterByPeriod(expanded, value, type, "timestamp");
+    const category = categoryDropdown.value || "__all";
+
+    /* // Only include docs for the selected category
+    const siteToCategoryMap = {
+      "Lumiang Cave": "Caves",
+      "Balangagan Cave": "Caves",
+      "Sumaguing Cave": "Caves",
+      "Bomod-ok Falls": "Falls",
+      "Bokong Falls": "Falls",
+      "Pongas Falls": "Falls",
+      "Ubwa Blue Lagoon": "Sightseeing",
+      "Ticangan to Ubwa River Tracing, Bouldering and Swimming": "Sightseeing",
+      Ampacao: "Mountains",
+      "Nabas-ang to Ampacao": "Mountains",
+      Langsayan: "Mountains",
+      Marlboro: "Mountains",
+      "Marlboro to Blue Soil": "Mountains",
+      "Blue Soil": "Mountains",
+      "Paytokan Walk": "Sightseeing",
+      "Hanging Coffins": "Sightseeing",
+      "Lumiang Cave Entrance": "Caves",
+      "Sumaguing Cave Entrance": "Caves",
+      "Dokiw Hanging Coffins": "Sightseeing",
+      "Kapay-aw Rice Terraces": "Sightseeing",
+    }; */
+
+    const filteredByCategory =
+      category === "__all"
+        ? filtered
+        : filtered.filter((d) => siteToCategoryMap[d.site] === category);
+
+    renderCategoryAnalytics(category, filtered);
+    renderKPIs(filteredByCategory);
   } else {
     const expanded = expandAttendanceDocs(attendance);
     const filtered = filterByPeriod(expanded, value, type, "timestamp");
@@ -1223,6 +1412,51 @@ function recomputeAndRender() {
       site === "__all" ? filtered : filtered.filter((d) => d.site === site);
     renderKPIs(siteData, site);
     renderTouristSpotAnalytics(site, siteData);
+  }
+
+  // --- UPDATE FILTER DISPLAY UI ---
+  const filterDisplayGeneral = document.getElementById(
+    "current-filter-display"
+  );
+  const dateDisplayGeneral = document.getElementById("date-range-display");
+
+  const filterDisplayTourist = document.getElementById("current-site-display");
+  const dateDisplayTourist = document.getElementById(
+    "date-range-display-tourist"
+  );
+
+  const filterDisplayCategory = document.getElementById(
+    "current-category-display"
+  );
+  const dateDisplayCategory = document.getElementById(
+    "date-range-display-category"
+  );
+
+  // Format month/year nicely
+  const niceDate = formatMonthYear(value);
+
+  // GENERAL REPORT
+  if (currentReportType === "general") {
+    filterDisplayGeneral.textContent = "All data";
+    dateDisplayGeneral.textContent = niceDate;
+  }
+
+  // TOURIST REPORT
+  if (currentReportType === "tourist-spot") {
+    const site =
+      siteDropdown.value === "__all" ? "All Sites" : siteDropdown.value;
+    filterDisplayTourist.textContent = site;
+    dateDisplayTourist.textContent = niceDate;
+  }
+
+  // CATEGORY REPORT
+  if (currentReportType === "category") {
+    const category =
+      categoryDropdown.value === "__all"
+        ? "All Categories"
+        : categoryDropdown.value;
+    filterDisplayCategory.textContent = category;
+    dateDisplayCategory.textContent = niceDate;
   }
 }
 
@@ -1251,16 +1485,8 @@ onSnapshot(
 // --- UI Events ---
 applyBtn.addEventListener("click", recomputeAndRender);
 siteDropdown.addEventListener("change", recomputeAndRender);
-reportType.addEventListener("change", () => {
-  currentReportType = reportType.value;
-  analyticsTitle.textContent =
-    currentReportType === "general"
-      ? "General Analytics"
-      : "Tourist Spot Analytics";
-  siteSelectorContainer.style.display =
-    currentReportType === "general" ? "none" : "flex";
-  recomputeAndRender();
-});
+categoryDropdown.addEventListener("change", recomputeAndRender);
+
 filterType.addEventListener("change", () => {
   dateFilterLabel.textContent = filterType.value === "month" ? "Month" : "Year";
   monthInput.type = filterType.value === "month" ? "month" : "number";

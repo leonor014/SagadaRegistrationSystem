@@ -35,7 +35,8 @@ header {
     text-align: center;
 } */
 .container {
-    width: 80%;
+    max-width: 1500px;
+    width: 100%;
     margin: 20px auto;
 }
 select {
@@ -81,7 +82,7 @@ select {
 .spot-card {
   background: rgb(125, 173, 245);
   perspective: 1000px;
-  height: 320px;
+  height: 400px;
   cursor: pointer;
 }
 
@@ -120,41 +121,92 @@ select {
   overflow: hidden;
 }
 
+/* === FRONT SIDE NEW LAYOUT === */
 .spot-card-front {
   background: var(--dark);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  height: 100%;
+  border-radius: 10px;
 }
 
-.spot-card-front img {
+/* header */
+.front-header {
+  padding: 12px;
+  background: var(--dark);
+  border-bottom: 1px solid #222;
+}
+
+.front-header h3 {
+  color: white;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* body - image fills center */
+.front-body {
+  flex: 1;
   width: 100%;
-  height: 70%;
+  overflow: hidden;
+}
+
+.front-body img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.spot-card-front h3 {
+/* footer */
+.front-footer {
   padding: 10px;
-  font-size: 1.1rem;
-  color: rgb(242, 243, 247);
+  border-top: 1px solid #222;
   background: var(--dark);
-  width: 100%;
+  font-size: 0.9rem;
+  text-align: left;
 }
+
+.front-footer p {
+  color: white;
+  margin-bottom: 6px;
+}
+
 
 .spot-card-back {
   background: #ebecf0;
   color: #333;
   transform: rotateY(180deg);
-  padding: 15px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.spot-card-back .back-header {
+  padding: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #ccc;
+  color: rgb(242, 243, 247);
+  background: var(--dark);
+}
+
+/* Scrollable description section */
+.spot-card-back .back-body {
+  flex: 1; /* Makes it fill remaining space */
+  padding: 12px;
   overflow-y: auto;
 }
 
-.spot-card-back h3 {
-  margin-bottom: 8px;
+/* Footer */
+.spot-card-back .back-footer {
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  font-size: 0.9rem;
 }
 
+
 .spot-card-back p {
+  text-align: left;
   font-size: 0.9rem;
   margin-bottom: 6px;
 }

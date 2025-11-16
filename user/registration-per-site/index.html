@@ -106,27 +106,25 @@
 
       <label for="siteSelect">Select Tourist Site:</label>
       <select id="siteSelect">
-        <option value="Cave Connection (Lumiang and Sumaguing)">Cave Connection</option>
-        <option value="Sumaguing Cave">Sumaguing Cave</option>
-        <option value="Balangagan Cave">Balangagan Cave</option>
         <option value="Bomod-ok Falls">Bomod-ok Falls</option>
         <option value="Pongas Falls">Pongas Falls</option>
         <option value="Bokong Falls">Bokong Falls</option>
         <option value="Ubwa Blue Lagoon">Ubwa Blue Lagoon</option>
         <option value="Ticangan to Ubwa River Tracing, Bouldering and Swimming">Ticangan to Ubwa River Tracing,
           Bouldering and Swimming</option>
-        <option value="Ampacao">Ampacao</option>
-        <option value="Nabas-ang to Ampacao">Nabas-ang to Ampacao</option>
-        <option value="Langsayan">Langsayan</option>
-        <option value="Marlboro">Marlboro</option>
-        <option value="Marlboro to Blue Soil">Marlboro to Blue Soil</option>
-        <option value="Blue Soil">Blue Soil</option>
-        <option value="Paytokan Walk">Paytokan Walk</option>
-        <option value="Hanging Coffins">Hanging Coffins</option>
+        <option value="Sumaguing Cave">Sumaguing Cave</option>
         <option value="Sumaguing Cave Entrance">Sumaguing Cave Entrance</option>
         <option value="Lumiang Cave Entrance">Lumiang Cave Entrance</option>
-        <option value="Dokiw Hanging Coffins">Dokiw Hanging Coffins</option>
-        <option value="Kapay-aw Rice Terraces">Kapay-aw Rice Terraces</option>
+        <option value="Balangagan Cave">Balangagan Cave</option>
+        <option value="Saint Mary the Virgin Church">Saint Mary the Virgin Church</option>
+        <option value="Latang Underground River">Latang Underground River</option>
+        <option value="Nabas-ang to Ampacao">Nabas-ang to Ampacao</option>
+        <option value="Sagada Cemetery">Sagada Cemetery</option>
+        <option value="Hanging Coffins">Hanging Coffins</option>
+        <option value="Marlboro">Marlboro</option>
+        <option value="Blue Soil">Blue Soil</option>
+        <option value="Langsayan">Langsayan</option>
+        <option value="Ampacao">Ampacao</option>
       </select>
       <button id="submitAttendanceBtn" class="button">Submit Attendance</button>
     </div>
@@ -639,6 +637,34 @@
       }
     }
 
+    async function populateTouristSites() {
+      const siteSelect = document.getElementById("siteSelect");
+      if (!siteSelect) return;
+
+      try {
+        const spotsSnapshot = await getDocs(collection(db, "tourist-spots"));
+        siteSelect.innerHTML = '<option value="">Select a site</option>'; // reset options
+
+        spotsSnapshot.forEach(docSnap => {
+          const spot = docSnap.data();
+          const option = document.createElement("option");
+          option.value = spot.name;
+          option.textContent = spot.name;
+          siteSelect.appendChild(option);
+        });
+
+        // Enable the select after loading
+        siteSelect.disabled = false;
+      } catch (error) {
+        console.error("Error fetching tourist spots:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to load tourist sites. Please try again later"
+        });
+      }
+    }
+
 
     // --- Event Listeners ---
     document.addEventListener("DOMContentLoaded", () => {
@@ -706,12 +732,12 @@
         desktopDropdown.classList.add("dropdown-nav");
         desktopDropdown.id = "profileDesktop";
         desktopDropdown.innerHTML = `
-            <a href="#">${userName} ▾</a>
-            <ul class="dropdown-menu">
-                <li><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
-                <li><button class="logout-btn desktop-logout" id="logoutLink">Logout</button></li>
-            </ul>
-        `;
+        <a href="#">${userName} ▾</a>
+        <ul class="dropdown-menu">
+            <li><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
+            <li><button class="logout-btn desktop-logout" id="logoutLink">Logout</button></li>
+        </ul>
+    `;
 
         document.querySelector(".nav-right").prepend(desktopDropdown);
 
@@ -757,7 +783,73 @@
       document.getElementById("fetchDetailsBtn").addEventListener("click", fetchDetails);
       document.getElementById("submitAttendanceBtn").addEventListener("click", submitAttendance);
       document.getElementById("selectAll").addEventListener("change", handleSelectAll);
+
+      // --- Default disable siteSelect, submitBtn, regNumberInput, and fetchDetailsBtn ---
+      const siteSelect = document.getElementById("siteSelect");
+      const submitBtn = document.getElementById("submitAttendanceBtn");
+      const regNumberInput = document.getElementById("registrationNumber");
+      const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
+
+      if (siteSelect) siteSelect.disabled = true;
+      if (submitBtn) submitBtn.disabled = true;
+      if (regNumberInput) regNumberInput.disabled = true; // disable input while validating
+      if (fetchDetailsBtn) fetchDetailsBtn.disabled = true; // disable fetch button
+
+      // --- Populate sites then handle QR ---
+      populateTouristSites().then(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const siteFromQR = urlParams.get("site");
+
+        if (siteSelect && submitBtn && regNumberInput && fetchDetailsBtn) {
+          if (siteFromQR) {
+            // QR site parameter exists
+            const foundOption = Array.from(siteSelect.options).find(
+              opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
+            );
+
+            if (foundOption) {
+              // Valid site
+              siteSelect.value = foundOption.value;
+              siteSelect.disabled = true;
+              submitBtn.disabled = false;
+              regNumberInput.disabled = false; // enable input
+              fetchDetailsBtn.disabled = false; // enable fetch
+              console.log("Site pre-selected from QR:", foundOption.value);
+            } else {
+              // Invalid QR site
+              Swal.fire({
+                icon: "error",
+                title: "Invalid QR Code",
+                text: `The site "${siteFromQR}" is not recognized. Redirecting to home...`,
+                timer: 2500,
+                showConfirmButton: false
+              }).then(() => {
+                window.location.href = "https://leonor014.github.io/SagadaRegistrationSystem/index.html";
+              });
+              submitBtn.disabled = true;
+              regNumberInput.disabled = true;
+              fetchDetailsBtn.disabled = true;
+            }
+          } else {
+            // No site parameter in QR
+            Swal.fire({
+              icon: "warning",
+              title: "Missing Site Information",
+              text: "No tourist site detected in this QR link. Redirecting to home...",
+              timer: 2500,
+              showConfirmButton: false
+            }).then(() => {
+              window.location.href = "https://leonor014.github.io/SagadaRegistrationSystem/index.html";
+            });
+            submitBtn.disabled = true;
+            regNumberInput.disabled = true;
+            fetchDetailsBtn.disabled = true;
+          }
+        }
+      });
+
     });
+
   </script>
 </body>
 
