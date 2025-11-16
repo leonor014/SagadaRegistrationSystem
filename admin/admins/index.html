@@ -93,8 +93,18 @@
             <div class="dash-content">
                 <div class="activity">
                     <div class="title">
-                        <i class="uil uil-users-alt"></i>
-                        <span class="text">Admins Management</span>
+                        <div class="title-header">
+                            <i class="uil uil-users-alt"></i>
+                            <span class="text">Admins Management</span>
+                        </div>
+
+                        <!-- Search Bar -->
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Search by Name">
+                            <button id="searchBtn">
+                                <i class="uil uil-search"></i>
+                            </button>
+                        </div>
                     </div>
                     <hr>
                     <div class="table-container">
@@ -103,13 +113,14 @@
                                 <tr>
                                     <th>Email</th>
                                     <th>Name</th>
+                                    <th>Role</th>
                                     <th>Created At</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="adminsTableBody">
                                 <tr>
-                                    <td colspan="4" style="text-align: center;">Loading...</td>
+                                    <td colspan="5" style="text-align: center;">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>

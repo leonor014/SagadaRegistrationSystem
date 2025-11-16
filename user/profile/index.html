@@ -96,15 +96,15 @@
                         <div class="form-grid">
                             <label>
                                 Full Name:
-                                <input type="text" id="fullName" disabled required />
+                                <input type="text" id="fullName" readonly required />
                             </label>
                             <label>
                                 Email:
-                                <input type="email" id="email" disabled required />
+                                <input type="email" id="email" readonly required />
                             </label>
                             <label>
                                 Date of Birth:
-                                <input type="date" id="dob" disabled required />
+                                <input type="date" id="dob" readonly required />
                             </label>
                             <label>
                                 Sex:
@@ -122,7 +122,7 @@
                             </label>
                             <label>
                                 Phone:
-                                <input type="tel" id="phone" minlength="7" pattern="^\+\d{6,}$" required disabled />
+                                <input type="tel" id="phone" minlength="7" pattern="^\+\d{6,}$" required readonly />
                             </label>
                             <label>
                                 Region:
@@ -438,6 +438,45 @@
                     dropdowns.forEach(d => d.classList.remove("open"));
                 }
             });
+
+            // === ENABLE EDIT MODE WHEN USER CLICKS A DISABLED FIELD (robust) ===
+            function enableEditMode() {
+
+                // Enable text inputs (remove readonly)
+                document.querySelectorAll("#profileForm input").forEach(el => {
+                    el.readOnly = false;
+                });
+
+                // Enable selects
+                document.querySelectorAll("#profileForm select").forEach(el => {
+                    el.disabled = false;
+                });
+
+                // Email stays readonly & styled disabled
+                const emailField = document.getElementById("email");
+                emailField.readOnly = true;
+                emailField.classList.add("force-disabled");
+
+                // Show save button
+                document.getElementById("editProfile").style.display = "none";
+                document.getElementById("saveProfile").style.display = "inline-block";
+            }
+
+            // CLICK ANY READONLY OR DISABLED FIELD → EDIT MODE
+            document.querySelectorAll("#profileForm input[readonly], #profileForm select:disabled")
+                .forEach(el => {
+                    el.addEventListener("mousedown", (e) => {
+                        // Do not trigger when clicking the label itself
+                        if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
+                            enableEditMode();
+                        }
+                    });
+                });
+
+
+            // Edit button
+            document.getElementById("editProfile").addEventListener("click", enableEditMode);
+
         });
     </script>
 </body>

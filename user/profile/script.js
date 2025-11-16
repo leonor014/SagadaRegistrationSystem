@@ -310,7 +310,7 @@ const inputs = document.querySelectorAll(
 editBtn.addEventListener("click", () => {
   inputs.forEach((input) => {
     if (input.id !== "email") {
-      input.disabled = false;
+      input.readOnly = false;
     }
   });
   editBtn.style.display = "none";
@@ -450,7 +450,7 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
       "#profileForm input, #profileForm select"
     );
     inputs.forEach((input) => {
-      if (input.id !== "email") input.disabled = true;
+      if (input.id !== "email") input.readOnly = true;
     });
     document.getElementById("editProfile").style.display = "inline-block";
     document.getElementById("saveProfile").style.display = "none";
@@ -1554,3 +1554,5 @@ async function saveGroupsToFirestore() {
     console.error("Error saving groups:", err);
   }
 }
+
+

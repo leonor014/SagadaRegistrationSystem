@@ -14,7 +14,7 @@ import {
   orderBy,
   setDoc,
   deleteDoc,
-  onSnapshot
+  onSnapshot,
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -34,10 +34,7 @@ const db = getFirestore(app);
 const listenToFAQs = () => {
   const tableBody = document.getElementById("FAQsTableBody");
 
-  const FAQsQuery = query(
-    collection(db, "faqs"),
-    orderBy("createdAt", "desc")
-  );
+  const FAQsQuery = query(collection(db, "faqs"), orderBy("createdAt", "desc"));
 
   onSnapshot(FAQsQuery, (querySnapshot) => {
     tableBody.innerHTML = "";
@@ -110,8 +107,7 @@ function attachFAQActionButtons() {
           document.getElementById("editFAQId").value = id;
           document.getElementById("editFAQQuestion").value =
             FAQData.question || "";
-          document.getElementById("editFAQAnswer").value =
-            FAQData.answer || "";
+          document.getElementById("editFAQAnswer").value = FAQData.answer || "";
 
           document.getElementById("editModal").style.visibility = "visible";
           document.body.classList.add("modal-open");
@@ -252,6 +248,23 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#FAQsTableBody tr");
+
+    rows.forEach((row) => {
+      const faqCell = row.querySelector("td:first-child");
+      if (faqCell) {
+        const text = faqCell.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      }
+    });
+  });
+
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").focus();
+  });
+
   document
     .getElementById("editFAQForm")
     .addEventListener("submit", async (e) => {
@@ -336,7 +349,6 @@ window.addEventListener("DOMContentLoaded", () => {
         document.getElementById("addFAQForm").reset();
         document.getElementById("addModal").style.visibility = "hidden";
         document.body.classList.remove("modal-open");
-
       } catch (error) {
         console.error("Error adding FAQ:", error);
         Swal.fire("Error!", "Failed to add FAQ.", "error");

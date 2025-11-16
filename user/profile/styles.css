@@ -145,6 +145,24 @@ body {
   border-radius: 6px;
 }
 
+.force-disabled {
+    background-color: var(--mycolor3);
+    opacity: .8;
+    cursor: not-allowed;
+}
+
+input[readonly],
+select:disabled {
+    background-color: var(--mycolor3);
+    opacity: .8;
+    cursor: not-allowed;
+}
+.force-disabled {
+    background-color: var(--mycolor3);
+    opacity: .8;
+    cursor: not-allowed;
+}
+
 .save-btn {
   margin-top: 1.5rem;
   padding: 0.8rem 1.5rem;

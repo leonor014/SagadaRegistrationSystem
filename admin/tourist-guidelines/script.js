@@ -311,6 +311,23 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#tourist-guidelinesTableBody tr");
+
+    rows.forEach((row) => {
+      const guidelineCell = row.querySelector("td:first-child");
+      if (guidelineCell) {
+        const text = guidelineCell.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      }
+    });
+  });
+
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").focus();
+  });
+
   document
     .getElementById("addAddGuidelineBtn")
     .addEventListener("click", () => {

@@ -14,7 +14,7 @@ import {
   orderBy,
   setDoc,
   deleteDoc,
-  onSnapshot
+  onSnapshot,
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -124,7 +124,9 @@ function attachActionButtons() {
           document.getElementById("editReviewRating").value =
             reviewData.rating || "";
 
-          const imagePreview = document.getElementById("editReviewImagePreview");
+          const imagePreview = document.getElementById(
+            "editReviewImagePreview"
+          );
           if (reviewData.imageBase64) {
             imagePreview.src = reviewData.imageBase64;
             imagePreview.style.display = "block";
@@ -166,7 +168,6 @@ function attachActionButtons() {
     });
   });
 }
-
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -270,6 +271,23 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       link.classList.remove("active");
     }
+  });
+
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#reviewsTableBody tr");
+
+    rows.forEach((row) => {
+      const reviewCell = row.querySelector("td:first-child");
+      if (reviewCell) {
+        const text = reviewCell.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      }
+    });
+  });
+
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").focus();
   });
 
   document

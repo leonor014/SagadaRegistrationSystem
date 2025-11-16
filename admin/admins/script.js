@@ -41,10 +41,7 @@ const loadAdmins = (currentUserRole) => {
 
   const user = auth.currentUser;
 
-  const adminsQuery = query(
-    collection(db, "admins"),
-    orderBy("createdAt", "desc")
-  );
+  const adminsQuery = query(collection(db, "admins"), orderBy("name", "asc"));
 
   onSnapshot(adminsQuery, (querySnapshot) => {
     tableBody.innerHTML = "";
@@ -63,7 +60,7 @@ const loadAdmins = (currentUserRole) => {
     querySnapshot.forEach((docSnap) => {
       const adminId = docSnap.id;
 
-      if (user && adminId === user.uid) return;
+      //if (user && adminId === user.uid) return;
 
       hasAdmins = true;
       const admin = docSnap.data();
@@ -71,25 +68,38 @@ const loadAdmins = (currentUserRole) => {
 
       const email = admin.email || "—";
       const name = admin.name || "—";
+      const role = admin.role || "—";
       const createdAt = admin.createdAt?.toDate().toLocaleString() || "—";
 
-      const showActions = currentUserRole === "Super Admin";
+      let showActions = false;
+
+      // Super Admin can edit/delete everyone
+      if (currentUserRole === "Super Admin") {
+        showActions = true;
+      }
+      // Admin can edit themselves only
+      else if (currentUserRole === "Admin" && user && adminId === user.uid) {
+        showActions = true;
+      }
 
       tr.innerHTML = `
         <td>${email}</td>
         <td>${name}</td>
+        <td>${role}</td>
         <td>${createdAt}</td>
         <td>
           ${
             showActions
-              ? `
-            <button class="action-btn edit-btn" title="Edit" data-id="${adminId}">
-              <i class="uil uil-edit-alt"></i>
-            </button>
-            <button class="action-btn delete-btn" title="Delete" data-id="${adminId}">
-              <i class="uil uil-trash-alt"></i>
-            </button>
-            `
+              ? `<button class="action-btn edit-btn" title="Edit" data-id="${adminId}">
+               <i class="uil uil-edit-alt"></i>
+             </button>
+             ${
+               currentUserRole === "Super Admin"
+                 ? `<button class="action-btn delete-btn" title="Delete" data-id="${adminId}">
+                      <i class="uil uil-trash-alt"></i>
+                    </button>`
+                 : ""
+             }`
               : `<span style="color: gray;">No permission</span>`
           }
         </td>
@@ -106,9 +116,11 @@ const loadAdmins = (currentUserRole) => {
       `;
     }
 
-    if (currentUserRole === "Super Admin") attachEditAndDeleteListeners();
+    attachEditAndDeleteListeners();
   });
 };
+
+let currentUserRole = "";
 
 function attachEditAndDeleteListeners() {
   document.querySelectorAll(".edit-btn").forEach((button) => {
@@ -121,10 +133,28 @@ function attachEditAndDeleteListeners() {
 
         if (adminSnap.exists()) {
           const adminData = adminSnap.data();
+
           document.getElementById("editAdminId").value = id;
           document.getElementById("editAdminEmail").value =
             adminData.email || "";
           document.getElementById("editAdminName").value = adminData.name || "";
+
+          // Only allow name to be editable if Admin editing self
+          if (currentUserRole === "Admin" && id === auth.currentUser.uid) {
+            document
+              .getElementById("editAdminName")
+              .removeAttribute("readonly");
+            document
+              .getElementById("editAdminEmail")
+              .setAttribute("readonly", true);
+          } else if (currentUserRole === "Super Admin") {
+            document
+              .getElementById("editAdminName")
+              .removeAttribute("readonly");
+            document
+              .getElementById("editAdminEmail")
+              .removeAttribute("readonly");
+          }
 
           document.getElementById("editModal").style.visibility = "visible";
           document.body.classList.add("modal-open");
@@ -188,7 +218,7 @@ onAuthStateChanged(auth, async (user) => {
       } else {
         console.log("User document not found");
       }
-      const currentUserRole = userData.role || "";
+      currentUserRole = userData.role || "";
 
       loadAdmins(currentUserRole);
     } catch (error) {
@@ -268,6 +298,23 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#adminsTableBody tr");
+
+    rows.forEach((row) => {
+      const adminCell = row.querySelector("td:first-child");
+      if (adminCell) {
+        const text = adminCell.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      }
+    });
+  });
+
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").focus();
+  });
+
   document
     .getElementById("editAdminForm")
     .addEventListener("submit", async (e) => {
@@ -287,7 +334,10 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        await setDoc(doc(db, "admins", id), { name }, { merge: true });
+        const updateData = { name };
+        if (currentUserRole === "Super Admin") updateData.email = email;
+
+        await setDoc(doc(db, "admins", id), updateData, { merge: true });
         Swal.fire("Success!", "Admin updated successfully.", "success");
         document.getElementById("editModal").style.visibility = "hidden";
         document.body.classList.remove("modal-open");

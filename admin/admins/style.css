@@ -423,6 +423,11 @@ nav.close ~ .dashboard .top{
     display: flex;
     align-items: center;
 }
+.dash-content .title .title-header{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 .dash-content hr{
     margin: 20px 10px;
     border: none;
@@ -446,6 +451,20 @@ nav.close ~ .dashboard .top{
     font-weight: 500;
     color: var(--text-color);
     margin-left: 10px;
+}
+.dash-content .title .search-box{
+    margin-left: auto; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+}
+.dash-content .title .search-box input{
+    padding: 5px 10px; 
+    border: 1px solid var(--border-color); 
+    background-color: var(--panel-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    height: 35px;
 }
 .activity {
   padding: 30px;
@@ -682,6 +701,21 @@ input[readonly] {
     .dash-content .boxes .box{
         width: calc(100% / 2 - 15px);
         margin-top: 15px;
+    }
+
+    .dash-content .title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        }
+
+    .dash-content .title .search-box {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .dash-content .title .search-box input {
+        width: 100%;
     }
 }
 @media (max-width: 560px) {

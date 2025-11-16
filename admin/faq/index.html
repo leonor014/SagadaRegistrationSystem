@@ -93,11 +93,24 @@
             <div class="dash-content">
                 <div class="activity">
                     <div class="title">
-                        <i class="uil uil-question-circle icon-title"></i>
-                        <span class="text">FAQs Management</span>
-                        <button class="add-btn" id="addFAQBtn">
-                            <i class="uil uil-plus"></i>
-                        </button>
+                        <div class="title-header">
+                            <i class="uil uil-question-circle icon-title"></i>
+                            <span class="text">FAQs Management</span>
+                        </div>
+
+                        <div class="title-actions">
+                            <!-- Search Bar -->
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="Search by Question">
+                                <button id="searchBtn">
+                                    <i class="uil uil-search"></i>
+                                </button>
+                            </div>
+
+                            <button class="add-btn" id="addFAQBtn">
+                                <i class="uil uil-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <hr>
                     <div class="table-container">

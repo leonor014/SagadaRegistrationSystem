@@ -34,10 +34,7 @@ const db = getFirestore(app);
 const listenToUsers = () => {
   const tableBody = document.getElementById("UsersTableBody");
 
-  const UsersQuery = query(
-    collection(db, "users"),
-    orderBy("createdAt", "desc")
-  );
+  const UsersQuery = query(collection(db, "users"), orderBy("name", "asc"));
 
   onSnapshot(UsersQuery, (querySnapshot) => {
     tableBody.innerHTML = "";
@@ -318,6 +315,23 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       link.classList.remove("active");
     }
+  });
+  
+  document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#UsersTableBody tr");
+
+    rows.forEach((row) => {
+      const userCell = row.querySelector("td:first-child");
+      if (userCell) {
+        const text = userCell.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      }
+    });
+  });
+
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").focus();
   });
 
   // Save user edits
