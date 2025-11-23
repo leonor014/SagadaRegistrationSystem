@@ -31,6 +31,27 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+function updateNavPadding() {
+  const nav = document.querySelector("nav");
+  if (!nav) return;
+
+  // Check if content is overflowing vertically
+  const hasVerticalScroll = nav.scrollHeight > nav.clientHeight;
+
+  if (hasVerticalScroll) {
+    nav.classList.add("has-scroll");
+  } else {
+    nav.classList.remove("has-scroll");
+  }
+}
+
+// Run once on load
+updateNavPadding();
+
+// Run again on resize (important for responsiveness)
+window.addEventListener("resize", updateNavPadding);
+
+
 const loadAdmins = (currentUserRole) => {
   const tableBody = document.getElementById("adminsTableBody");
   tableBody.innerHTML = `

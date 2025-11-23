@@ -10,6 +10,7 @@
     <link rel="icon" type="image/x-icon" href="/SagadaRegistrationSystem/favicon.ico">
     <title>Admin - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="./script.js"></script>
 </head>
 
@@ -91,7 +92,7 @@
             <img src="https://avatar.iran.liara.run/public/34" alt="Profile Icon"> -->
             </div>
             <div class="dash-content">
-                <div class="overview">
+                <div class="overview" style="margin-bottom: 50px;">
                     <div class="title">
                         <i class="uil uil-tachometer-fast-alt"></i>
                         <span class="text">Dashboard</span>
@@ -139,31 +140,81 @@
                         </a>
                     </div>
                 </div>
-                <!-- <div class="activity">
-                    <div class="title">
-                        <i class="uil uil-clock-three"></i>
-                        <span class="text">Recent Activity</span>
+
+                <div style="display: none;">
+                    <div class="report-selector">
+                        <div class="selector-group">
+                            <label for="report-type">Report Type:</label>
+                            <select id="report-type">
+                                <option value="general">General Analytics</option>
+                                <option value="tourist-spot">Tourist Spot</option>
+                                <option value="category">Category Analytics</option>
+                            </select>
+                        </div>
+
+                        <div class="selector-group" id="site-selector-container">
+                            <label for="site-dropdown">Tourist Site:</label>
+                            <select id="site-dropdown">
+                                <option value="__all">All Sites</option>
+                            </select>
+                        </div>
+
+                        <div class="selector-group" id="category-selector-container" style="display:none;">
+                            <label for="category-dropdown">Category:</label>
+                            <select id="category-dropdown">
+                                <option value="__all">All Categories</option>
+                                <option value="Caves">Caves</option>
+                                <option value="Falls">Falls</option>
+                                <option value="Mountains">Mountains</option>
+                                <option value="Sightseeing">Sightseeing</option>
+                            </select>
+                        </div>
                     </div>
-                    <hr>
-                    <div class="table-container">
-                        <table class="activity-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Joined</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Name</td>
-                                    <td>test@gmail.com</td>
-                                    <td>Date</td>
-                                </tr>
-                            </tbody>
-                        </table>
+
+                    <div class="filter-selector">
+                        <div class="filter-group">
+                            <label for="filter-type">View By:</label>
+                            <select id="filter-type">
+                                <option value="month">Monthly</option>
+                                <option value="day">Daily</option>
+                                <option value="year">Yearly</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="month-filter" id="date-filter-label">Month</label>
+                            <input type="month" id="month-filter" />
+                        </div>
+
+                        <div>
+                            <button id="apply-filters">Apply</button>
+                        </div>
                     </div>
-                </div> -->
+                </div>
+
+                <!-- Report Sections -->
+                <div id="general-analytics" class="report-section active">
+                    <div class="content-grid">
+                        <section class="charts-container" id="general-charts-area">
+                            <!-- Charts will be inserted here by JavaScript -->
+                        </section>
+
+                        <aside class="analytics-sidebar">
+                            <div class="analytics-card">
+                                <h3 id="analytics-title">General Analytics</h3>
+                                <div id="kpi-section" class="kpi-section">
+                                    <!-- KPI cards will be inserted here -->
+                                </div>
+                            </div>
+
+                            <div class="analytics-card">
+                                <h3>Filters</h3>
+                                <p>Current selection: <span id="current-filter-display">All data</span></p>
+                                <p>Date range: <span id="date-range-display">September 2025</span></p>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
             </div>
         </section>
     </div>

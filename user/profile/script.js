@@ -1045,7 +1045,8 @@ async function openRegistrationModal(regNo) {
     const attendanceRef = collection(db, "attendance");
     const attQuery = query(
       attendanceRef,
-      where("registrationNumber", "==", regNo)
+      where("registrationNumber", "==", regNo),
+      orderBy("site", "asc")
     );
     const attSnap = await getDocs(attQuery);
 
@@ -1554,5 +1555,3 @@ async function saveGroupsToFirestore() {
     console.error("Error saving groups:", err);
   }
 }
-
-

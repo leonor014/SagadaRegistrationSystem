@@ -61,6 +61,26 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+function updateNavPadding() {
+  const nav = document.querySelector("nav");
+  if (!nav) return;
+
+  // Check if content is overflowing vertically
+  const hasVerticalScroll = nav.scrollHeight > nav.clientHeight;
+
+  if (hasVerticalScroll) {
+    nav.classList.add("has-scroll");
+  } else {
+    nav.classList.remove("has-scroll");
+  }
+}
+
+// Run once on load
+updateNavPadding();
+
+// Run again on resize (important for responsiveness)
+window.addEventListener("resize", updateNavPadding);
+
 // --- DOM Elements ---
 const siteDropdown = document.getElementById("site-dropdown");
 const monthInput = document.getElementById("month-filter");
@@ -87,22 +107,25 @@ let charts = {};
 let currentReportType = "general";
 let siteToCategoryMap = {};
 
-onSnapshot(query(collection(db, "tourist-spots"), orderBy("name", "asc")), (snap) => {
-  const touristSpots = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  
-  // Build dynamic map
-  siteToCategoryMap = {};
-  touristSpots.forEach(spot => {
-    if (spot.name && spot.category) {
-      siteToCategoryMap[spot.name] = spot.category;
-    }
-  });
+onSnapshot(
+  query(collection(db, "tourist-spots"), orderBy("name", "asc")),
+  (snap) => {
+    const touristSpots = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-  // Update dropdown if needed
-  sites = touristSpots;
-  populateSiteDropdown();
-  recomputeAndRender();
-});
+    // Build dynamic map
+    siteToCategoryMap = {};
+    touristSpots.forEach((spot) => {
+      if (spot.name && spot.category) {
+        siteToCategoryMap[spot.name] = spot.category;
+      }
+    });
+
+    // Update dropdown if needed
+    sites = touristSpots;
+    populateSiteDropdown();
+    recomputeAndRender();
+  }
+);
 
 // --- Helpers ---
 function getDateFromField(doc, field) {
@@ -327,9 +350,20 @@ function expandAttendanceDocs(docs) {
 // --- Enhanced Filter Function ---
 function filterByPeriod(docs, value, type, field) {
   if (!value) return docs;
+
   return docs.filter((doc) => {
     const dt = getDateFromField(doc, field);
     if (!dt) return false;
+
+    if (type === "day") {
+      const selectedDate = new Date(value);
+
+      return (
+        dt.getFullYear() === selectedDate.getFullYear() &&
+        dt.getMonth() === selectedDate.getMonth() &&
+        dt.getDate() === selectedDate.getDate()
+      );
+    }
 
     if (type === "month") {
       const [y, m] = value.split("-");
@@ -339,6 +373,7 @@ function filterByPeriod(docs, value, type, field) {
     if (type === "year") {
       return dt.getFullYear() === +value;
     }
+
     return true;
   });
 }
@@ -885,27 +920,81 @@ function renderSiteSummary(docs) {
   chartsArea.appendChild(container);
 }
 
-function renderGeneralAnalytics(docs) {
+function formatPeriodLabel(type, periodValue) {
+  if (type === "year") return periodValue; // 2025
+  if (type === "month") {
+    const [year, month] = periodValue.split("-");
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return `${monthNames[Number(month) - 1]} ${year}`; // e.g., Nov 2025
+  }
+  if (type === "day") {
+    const dt = new Date(periodValue);
+    const day = dt.getDate();
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return `${monthNames[dt.getMonth()]} ${day}, ${dt.getFullYear()}`; // e.g., Nov 22, 2025
+  }
+  return periodValue;
+}
+
+function renderGeneralAnalytics(docs, dateField = "dateOfRegistration") {
   clearCharts();
+
+  const chartsArea = document.getElementById("general-charts-area");
+  if (!chartsArea) return;
+
+  // Remove any existing "no data" messages
+  const oldMessage = chartsArea.querySelector(".no-data-message");
+  if (oldMessage) oldMessage.remove();
+
+  // Check if docs exist
+  if (!docs || docs.length === 0) {
+    chartsArea.innerHTML = `<div class="no-data-message show">No data available for the selected period</div>`;
+    return;
+  }
 
   const type = filterType.value;
   const periodValue = monthInput.value;
-  const isYearly = type === "year";
+  const periodLabel = formatPeriodLabel(type, periodValue);
 
-  // Visits by Day/Month based on filter type
+  const isYearly = type === "year";
+  const isMonthly = type === "month";
+  const isDaily = type === "day";
+
+  // Visits by Day/Month
   if (isYearly) {
-    // Yearly view: Show monthly totals from Jan to Dec
     const monthMap = new Map();
-    // Initialize all months
-    for (let i = 0; i < 12; i++) {
-      monthMap.set(i, 0);
-    }
+    for (let i = 0; i < 12; i++) monthMap.set(i, 0);
 
     docs.forEach((d) => {
-      const dt = getDateFromField(d, "dateOfRegistration");
+      const dt = getDateFromField(d, dateField);
       if (!dt) return;
-      const month = dt.getMonth();
-      monthMap.set(month, (monthMap.get(month) || 0) + 1);
+      monthMap.set(dt.getMonth(), (monthMap.get(dt.getMonth()) || 0) + 1);
     });
 
     const monthNames = [
@@ -922,123 +1011,130 @@ function renderGeneralAnalytics(docs) {
       "Nov",
       "Dec",
     ];
-    const months = [...monthMap.keys()].sort((a, b) => a - b);
+
+    const monthValues = [...monthMap.values()];
+    if (monthValues.every((count) => count === 0)) {
+      chartsArea.innerHTML = `<div class="no-data-message show">No visits recorded for the selected period</div>`;
+      return;
+    }
+
     drawBarChart(
       "visits-month",
-      `Monthly Visits - ${periodValue}`,
-      months.map((m) => monthNames[m]),
-      months.map((m) => monthMap.get(m)),
+      `Monthly Visits - ${periodLabel}`,
+      monthNames,
+      monthValues,
       true
     );
   } else {
-    // Monthly view: Show daily totals
     const dayMap = new Map();
     docs.forEach((d) => {
-      const dt = getDateFromField(d, "dateOfRegistration");
+      const dt = getDateFromField(d, dateField);
       if (!dt) return;
-      const day = dt.getDate();
-      dayMap.set(day, (dayMap.get(day) || 0) + 1);
+      dayMap.set(dt.getDate(), (dayMap.get(dt.getDate()) || 0) + 1);
     });
-    const days = [...dayMap.keys()].sort((a, b) => a - b);
+
+    const sortedDays = [...dayMap.keys()].sort((a, b) => a - b);
+    const dayValues = sortedDays.map((d) => dayMap.get(d));
+
+    if (dayValues.every((count) => count === 0)) {
+      chartsArea.innerHTML = `<div class="no-data-message show">No visits recorded for the selected period</div>`;
+      return;
+    }
+
     drawBarChart(
       "visits-day",
-      `Daily Visits - ${periodValue}`,
-      days.map((d) => "Day " + d),
-      days.map((d) => dayMap.get(d)),
+      `Daily Visits - ${periodLabel}`,
+      sortedDays.map((d) => "Day " + d),
+      dayValues,
       true
     );
   }
 
-  // Gender Chart (always shows totals for selected period)
+  // Gender Chart
   const genderMap = new Map();
   docs.forEach((d) => genderMap.set(d.sex, (genderMap.get(d.sex) || 0) + 1));
-  drawPieChart(
-    "gender",
-    `Gender Distribution - ${
-      isYearly ? periodValue : periodValue.split("-")[0]
-    }`,
-    [...genderMap.keys()],
-    [...genderMap.values()]
-  );
+  if ([...genderMap.values()].some((v) => v > 0)) {
+    drawPieChart(
+      "gender",
+      `Gender Distribution - ${periodLabel}`,
+      [...genderMap.keys()],
+      [...genderMap.values()]
+    );
+  }
 
-  // Region Chart (always shows totals for selected period)
+  // Region Chart
   const regionMap = new Map();
-  docs.forEach((d) =>
-    regionMap.set(
-      d.region || "Unknown",
-      (regionMap.get(d.region || "Unknown") || 0) + 1
-    )
-  );
+  docs.forEach((d) => {
+    const region = d.region || "Unknown";
+    regionMap.set(region, (regionMap.get(region) || 0) + 1);
+  });
+
   const regions = [...regionMap.entries()].sort((a, b) => b[1] - a[1]);
-
-  if (isYearly) {
-    // Show top regions for the year
-    const topRegions = regions.slice(0, 10);
-    drawBarChart(
-      "region-chart",
-      `Top Regions - ${periodValue}`,
-      topRegions.map((r) => r[0]),
-      topRegions.map((r) => r[1]),
-      true
-    );
-  } else {
-    // Show all regions for the month
-    drawBarChart(
-      "region-chart",
-      `Visits by Region - ${periodValue}`,
-      regions.map((r) => r[0]),
-      regions.map((r) => r[1]),
-      true
-    );
+  if ([...regionMap.values()].some((v) => v > 0)) {
+    if (isYearly) {
+      drawBarChart(
+        "region-chart",
+        `Top Regions - ${periodLabel}`,
+        regions.slice(0, 10).map((r) => r[0]),
+        regions.slice(0, 10).map((r) => r[1]),
+        true
+      );
+    } else {
+      drawBarChart(
+        "region-chart",
+        `Visits by Region - ${periodLabel}`,
+        regions.map((r) => r[0]),
+        regions.map((r) => r[1]),
+        true
+      );
+    }
   }
 
-  // Nationality Chart (always shows totals for selected period)
+  // Nationality Chart
   const nationalityMap = new Map();
-  docs.forEach((d) =>
-    nationalityMap.set(
-      d.nationality || "Unknown",
-      (nationalityMap.get(d.nationality || "Unknown") || 0) + 1
-    )
-  );
+  docs.forEach((d) => {
+    const nat = d.nationality || "Unknown";
+    nationalityMap.set(nat, (nationalityMap.get(nat) || 0) + 1);
+  });
 
-  if (isYearly) {
-    // Show top nationalities for the year
-    const topNationalities = [...nationalityMap.entries()].slice(0, 10);
-    drawBarChart(
-      "nationality-chart",
-      `Top Nationalities - ${periodValue}`,
-      topNationalities.map((n) => n[0]),
-      topNationalities.map((n) => n[1]),
-      true
-    );
-  } else {
-    // Show all nationalities for the month
-    drawBarChart(
-      "nationality-chart",
-      `Nationalities - ${periodValue}`,
-      [...nationalityMap.keys()],
-      [...nationalityMap.values()],
-      true
-    );
+  if ([...nationalityMap.values()].some((v) => v > 0)) {
+    if (isYearly) {
+      drawBarChart(
+        "nationality-chart",
+        `Top Nationalities - ${periodLabel}`,
+        [...nationalityMap.entries()].slice(0, 10).map((n) => n[0]),
+        [...nationalityMap.entries()].slice(0, 10).map((n) => n[1]),
+        true
+      );
+    } else {
+      drawBarChart(
+        "nationality-chart",
+        `Nationalities - ${periodLabel}`,
+        [...nationalityMap.keys()],
+        [...nationalityMap.values()],
+        true
+      );
+    }
+
+    // Top 10 Non-Filipino Nationalities
+    const nonFilipino = [...nationalityMap.entries()]
+      .filter(
+        ([nat]) =>
+          !["philippines", "filipino", "ph"].includes(nat.toLowerCase())
+      )
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    if (nonFilipino.length > 0) {
+      drawBarChart(
+        "non-filipino-summary",
+        `Top 10 Non-Filipino Nationalities - ${periodLabel}`,
+        nonFilipino.map((n) => n[0]),
+        nonFilipino.map((n) => n[1]),
+        true
+      );
+    }
   }
-
-  // Top 10 Non-Filipino Nationalities (always top 10 regardless of period)
-  const nonFilipino = [...nationalityMap.entries()]
-    .filter(
-      ([nat]) => !["philippines", "filipino", "ph"].includes(nat.toLowerCase())
-    )
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
-
-  drawBarChart(
-    "non-filipino-summary",
-    `Top 10 Non-Filipino Nationalities - ${
-      isYearly ? periodValue : periodValue.split("-")[0]
-    }`,
-    nonFilipino.map((n) => n[0]),
-    nonFilipino.map((n) => n[1]),
-    true
-  );
 }
 
 function renderTouristSpotAnalytics(selectedSite, docs) {
@@ -1047,7 +1143,6 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   );
 
   if (docs.length === 0) {
-    console.log("No documents found for the selected site and period");
     const chartsAreaId =
       currentReportType === "general"
         ? "general-charts-area"
@@ -1065,40 +1160,35 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
 
   const type = filterType.value;
   const periodValue = monthInput.value;
+  const periodLabel = formatPeriodLabel(type, periodValue);
+
   const isYearly = type === "year";
+  const isMonthly = type === "month";
+  const isDaily = type === "day";
+
   const siteLabel = selectedSite === "__all" ? "All Sites" : selectedSite;
 
-  // Filter data by selected site if not "All Sites"
   let siteData =
     selectedSite === "__all"
       ? docs
       : docs.filter((d) => d.site === selectedSite);
-
-  // Add age category to each document for easier processing
   siteData = siteData.map((d) => ({
     ...d,
     ageCategory: getAgeCategory(d.age ?? d.dateOfBirth),
   }));
 
-  // === 1. Visits per period ===
+  // 1. Visits per period
   let periodLabels = [];
   let periodData = [];
 
   if (isYearly) {
-    // Yearly view: Show monthly totals from Jan to Dec
     const monthMap = new Map();
-    // Initialize all months
-    for (let i = 0; i < 12; i++) {
-      monthMap.set(i, 0);
-    }
-
+    for (let i = 0; i < 12; i++) monthMap.set(i, 0);
     siteData.forEach((d) => {
       const dt = getDateFromField(d, "timestamp");
       if (!dt) return;
-      const month = dt.getMonth();
-      monthMap.set(month, (monthMap.get(month) || 0) + 1);
+      monthMap.set(dt.getMonth(), (monthMap.get(dt.getMonth()) || 0) + 1);
     });
-
     const monthNames = [
       "Jan",
       "Feb",
@@ -1116,30 +1206,25 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
     periodLabels = monthNames;
     periodData = [...monthMap.values()];
   } else {
-    // Monthly view: Show daily totals
     const dayMap = new Map();
     siteData.forEach((d) => {
       const dt = getDateFromField(d, "timestamp");
       if (!dt) return;
-      const day = dt.getDate();
-      dayMap.set(day, (dayMap.get(day) || 0) + 1);
+      dayMap.set(dt.getDate(), (dayMap.get(dt.getDate()) || 0) + 1);
     });
-
-    // Sort days and create labels
     const sortedDays = [...dayMap.entries()].sort((a, b) => a[0] - b[0]);
     periodLabels = sortedDays.map(([day]) => "Day " + day);
     periodData = sortedDays.map(([, count]) => count);
   }
 
-  // Draw the period visits chart
   drawBarChart(
     "periodVisits",
-    `${isYearly ? "Monthly" : "Daily"} Visits - ${siteLabel} (${periodValue})`,
+    `${isYearly ? "Monthly" : "Daily"} Visits - ${siteLabel} (${periodLabel})`,
     periodLabels,
     periodData
   );
 
-  // === 2. Age Categories ===
+  // 2. Age Categories
   const ageCounts = {
     Children: 0,
     Teenager: 0,
@@ -1150,51 +1235,42 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
   siteData.forEach((d) => {
     ageCounts[d.ageCategory] = (ageCounts[d.ageCategory] || 0) + 1;
   });
-
   drawBarChart(
     "ageCategories",
-    `Age Distribution - ${siteLabel} (${
-      isYearly ? periodValue : periodValue.split("-")[0]
-    })`,
+    `Age Distribution - ${siteLabel} (${periodLabel})`,
     Object.keys(ageCounts),
     Object.values(ageCounts)
   );
 
-  // === 3. Gender Distribution ===
+  // 3. Gender Distribution
   const genderCounts = new Map();
   siteData.forEach((d) =>
     genderCounts.set(d.sex, (genderCounts.get(d.sex) || 0) + 1)
   );
-
   drawPieChart(
     "genderDist",
-    `Gender Distribution - ${siteLabel} (${
-      isYearly ? periodValue : periodValue.split("-")[0]
-    })`,
+    `Gender Distribution - ${siteLabel} (${periodLabel})`,
     [...genderCounts.keys()],
     [...genderCounts.values()]
   );
 
-  // === 4. Regions ===
+  // 4. Regions
   const regionCounts = new Map();
   siteData.forEach((d) => {
     const region = d.region || "Unknown";
     regionCounts.set(region, (regionCounts.get(region) || 0) + 1);
   });
-
   const topRegions = [...regionCounts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
   drawBarChart(
     "regions",
-    `Top Regions - ${siteLabel} (${
-      isYearly ? periodValue : periodValue.split("-")[0]
-    })`,
+    `Top Regions - ${siteLabel} (${periodLabel})`,
     topRegions.map((r) => r[0]),
     topRegions.map((r) => r[1])
   );
 
-  // === 5. Top 10 Non-Filipino Nationalities ===
+  // 5. Top 10 Non-Filipino Nationalities
   const natCounts = new Map();
   siteData.forEach((d) => {
     const nat = (d.nationality || "Unknown").toLowerCase();
@@ -1202,15 +1278,12 @@ function renderTouristSpotAnalytics(selectedSite, docs) {
       natCounts.set(d.nationality, (natCounts.get(d.nationality) || 0) + 1);
     }
   });
-
   const topNats = [...natCounts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
   drawBarChart(
     "nonFilipino",
-    `Top 10 Non-Filipino Visitors - ${siteLabel} (${
-      isYearly ? periodValue : periodValue.split("-")[0]
-    })`,
+    `Top 10 Non-Filipino Visitors - ${siteLabel} (${periodLabel})`,
     topNats.map((n) => n[0]),
     topNats.map((n) => n[1])
   );
@@ -1241,9 +1314,14 @@ function renderCategoryAnalytics(selectedCategory, docs) {
   const chartsArea = document.getElementById("category-charts-area");
   if (!chartsArea) return;
 
-  // --- REMOVE any existing "no data" messages ---
+  // Remove any existing "no data" messages
   const oldMessage = chartsArea.querySelector(".no-data-message");
   if (oldMessage) oldMessage.remove();
+
+  // Get filter type and period value for proper labels
+  const type = filterType.value;
+  const periodValue = monthInput.value;
+  const periodLabel = formatPeriodLabel(type, periodValue);
 
   // Map sites to categories
   const siteToCategoryMap = {
@@ -1287,7 +1365,12 @@ function renderCategoryAnalytics(selectedCategory, docs) {
       return;
     }
 
-    drawBarChart("category-visits", "Visits by Category", labels, data);
+    drawBarChart(
+      "category-visits",
+      `Visits by Category - ${periodLabel}`,
+      labels,
+      data
+    );
   } else {
     const filtered = docs.filter(
       (d) => (siteToCategoryMap[d.site] || "Unknown") === selectedCategory
@@ -1308,7 +1391,7 @@ function renderCategoryAnalytics(selectedCategory, docs) {
 
     drawBarChart(
       "category-sites",
-      `Visits for ${selectedCategory} Sites`,
+      `Visits for ${selectedCategory} Sites - ${periodLabel}`,
       labels,
       data
     );
@@ -1360,15 +1443,10 @@ function recomputeAndRender() {
   clearCharts();
 
   if (currentReportType === "general") {
-    const expanded = expandRegistrationDocs(registrations);
-    const filtered = filterByPeriod(
-      expanded,
-      value,
-      type,
-      "dateOfRegistration"
-    );
+    const expanded = expandAttendanceDocs(attendance); // use attendance
+    const filtered = filterByPeriod(expanded, value, type, "timestamp"); // use timestamp instead of dateOfRegistration
     renderKPIs(filtered);
-    renderGeneralAnalytics(filtered);
+    renderGeneralAnalytics(filtered, "timestamp"); // pass timestamp field
   } else if (currentReportType === "category") {
     const expanded = expandAttendanceDocs(attendance);
     const filtered = filterByPeriod(expanded, value, type, "timestamp");
@@ -1433,7 +1511,7 @@ function recomputeAndRender() {
   );
 
   // Format month/year nicely
-  const niceDate = formatMonthYear(value);
+  const niceDate = formatPeriodLabel(filterType.value, value);
 
   // GENERAL REPORT
   if (currentReportType === "general") {
@@ -1488,13 +1566,29 @@ siteDropdown.addEventListener("change", recomputeAndRender);
 categoryDropdown.addEventListener("change", recomputeAndRender);
 
 filterType.addEventListener("change", () => {
-  dateFilterLabel.textContent = filterType.value === "month" ? "Month" : "Year";
-  monthInput.type = filterType.value === "month" ? "month" : "number";
-  if (filterType.value === "year") {
+  const type = filterType.value;
+
+  if (type === "day") {
+    dateFilterLabel.textContent = "Day";
+    monthInput.type = "date"; // HTML input type for day
+    // Optional: set default to today
+    const today = new Date();
+    monthInput.value = today.toISOString().split("T")[0]; // yyyy-mm-dd
+  } else if (type === "month") {
+    dateFilterLabel.textContent = "Month";
+    monthInput.type = "month";
+    const now = new Date();
+    monthInput.value = `${now.getFullYear()}-${String(
+      now.getMonth() + 1
+    ).padStart(2, "0")}`;
+  } else if (type === "year") {
+    dateFilterLabel.textContent = "Year";
+    monthInput.type = "number";
     monthInput.min = "2020";
     monthInput.max = "2030";
     monthInput.value = new Date().getFullYear();
   }
+
   recomputeAndRender();
 });
 

@@ -305,14 +305,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Also close notice modal when clicking the close button or outside
-  const closeBtn = document.querySelector(".close");
+  /* const closeBtn = document.querySelector(".close");
   closeBtn?.addEventListener(
     "click",
     () => (noticeModal.style.display = "none")
   );
   window.addEventListener("click", (ev) => {
     if (ev.target === noticeModal) noticeModal.style.display = "none";
-  });
+  }); */
 
   // Keep track of currently selected group object for submission
   let selectedGroupGlobal = null;

@@ -31,6 +31,26 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+function updateNavPadding() {
+  const nav = document.querySelector("nav");
+  if (!nav) return;
+
+  // Check if content is overflowing vertically
+  const hasVerticalScroll = nav.scrollHeight > nav.clientHeight;
+
+  if (hasVerticalScroll) {
+    nav.classList.add("has-scroll");
+  } else {
+    nav.classList.remove("has-scroll");
+  }
+}
+
+// Run once on load
+updateNavPadding();
+
+// Run again on resize (important for responsiveness)
+window.addEventListener("resize", updateNavPadding);
+
 const listenToUsers = () => {
   const tableBody = document.getElementById("UsersTableBody");
 
@@ -316,7 +336,7 @@ window.addEventListener("DOMContentLoaded", () => {
       link.classList.remove("active");
     }
   });
-  
+
   document.getElementById("searchInput").addEventListener("input", function () {
     const filter = this.value.toLowerCase();
     const rows = document.querySelectorAll("#UsersTableBody tr");

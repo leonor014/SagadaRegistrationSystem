@@ -112,6 +112,9 @@ nav{
     transition: var(--tran-05);
     overflow-y: auto;
 }
+nav.has-scroll {
+    padding-right: 2px;
+}
 nav.close{
     width: 73px;
 }
@@ -138,11 +141,12 @@ nav .logo-name .logo_name{
 }
 nav.close .logo_name{
     opacity: 0;
+    display: none;
     pointer-events: none;
 }
 nav .menu-items{
     margin-top: 40px;
-    height: calc(100% - 90px);
+    height: calc(100% - 110px);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -268,10 +272,12 @@ body.dark li div:hover:before{
 }
 nav.close li a .link-name{
     opacity: 0;
+    display: none;
     pointer-events: none;
 }
 nav.close li div .link-name{
     opacity: 0;
+    display: none;
     pointer-events: none;
 }
 .logout-button {
@@ -325,7 +331,7 @@ body.dark .menu-items li div:hover .link-name{
 }
 .menu-items .mode-toggle{
     position: absolute;
-    right: 14px;
+    right: 8px;
     height: 50px;
     min-width: 45px;
     display: flex;
@@ -779,6 +785,7 @@ nav.close ~ .dashboard .top{
     }
     nav.close .logo_name{
         opacity: 1;
+        display: none;
         pointer-events: auto;
     }
     nav li a .link-name{
@@ -787,6 +794,7 @@ nav.close ~ .dashboard .top{
     }
     nav.close li a .link-name{
         opacity: 1;
+        display: none;
         pointer-events: auto;
     }
     nav li div .link-name{
@@ -795,6 +803,7 @@ nav.close ~ .dashboard .top{
     }
     nav.close li div .link-name{
         opacity: 1;
+        display: none;
         pointer-events: auto;
     }
     nav ~ .dashboard{
@@ -1064,6 +1073,7 @@ nav.close ~ .dashboard .top{
     }
     nav.close .logo_name{
         opacity: 0;
+        display: none;
         pointer-events: none;
     }
     nav li a .link-name{
@@ -1072,6 +1082,7 @@ nav.close ~ .dashboard .top{
     }
     nav.close li a .link-name{
         opacity: 0;
+        display: none;
         pointer-events: none;
     }
     nav li div .link-name{
@@ -1080,6 +1091,7 @@ nav.close ~ .dashboard .top{
     }
     nav.close li div .link-name{
         opacity: 0;
+        display: none;
         pointer-events: none;
     }
     nav ~ .dashboard{
