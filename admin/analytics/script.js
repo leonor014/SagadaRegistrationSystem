@@ -962,7 +962,7 @@ function formatPeriodLabel(type, periodValue) {
   return periodValue;
 }
 
-function renderGeneralAnalytics(docs, dateField = "dateOfRegistration") {
+function renderGeneralAnalytics(docs) {
   clearCharts();
 
   const chartsArea = document.getElementById("general-charts-area");
@@ -992,7 +992,7 @@ function renderGeneralAnalytics(docs, dateField = "dateOfRegistration") {
     for (let i = 0; i < 12; i++) monthMap.set(i, 0);
 
     docs.forEach((d) => {
-      const dt = getDateFromField(d, dateField);
+      const dt = getDateFromField(d, "dateOfRegistration");
       if (!dt) return;
       monthMap.set(dt.getMonth(), (monthMap.get(dt.getMonth()) || 0) + 1);
     });
@@ -1028,7 +1028,7 @@ function renderGeneralAnalytics(docs, dateField = "dateOfRegistration") {
   } else {
     const dayMap = new Map();
     docs.forEach((d) => {
-      const dt = getDateFromField(d, dateField);
+      const dt = getDateFromField(d, "dateOfRegistration");
       if (!dt) return;
       dayMap.set(dt.getDate(), (dayMap.get(dt.getDate()) || 0) + 1);
     });
@@ -1443,10 +1443,15 @@ function recomputeAndRender() {
   clearCharts();
 
   if (currentReportType === "general") {
-    const expanded = expandAttendanceDocs(attendance); // use attendance
-    const filtered = filterByPeriod(expanded, value, type, "timestamp"); // use timestamp instead of dateOfRegistration
+    const expanded = expandRegistrationDocs(registrations);
+    const filtered = filterByPeriod(
+      expanded,
+      value,
+      type,
+      "dateOfRegistration"
+    );
     renderKPIs(filtered);
-    renderGeneralAnalytics(filtered, "timestamp"); // pass timestamp field
+    renderGeneralAnalytics(filtered);
   } else if (currentReportType === "category") {
     const expanded = expandAttendanceDocs(attendance);
     const filtered = filterByPeriod(expanded, value, type, "timestamp");

@@ -541,7 +541,7 @@
                 age: calculateAge(member.memberDOB),
                 sex: member.memberSex,
                 nationality: getNationality(member.memberCountry),
-                region: data.groupRegion || "Region not applicable"
+                region: member.memberRegion || "Region not applicable"
               }));
             }
 
