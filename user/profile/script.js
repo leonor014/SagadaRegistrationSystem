@@ -32,39 +32,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const userValidated = localStorage.getItem("userValidated") === "true";
   const userIdFromStorage = localStorage.getItem("userId");
   const userEmailFromStorage = localStorage.getItem("userEmail");
+  const userRef = doc(db, "users", userIdFromStorage);
 
-  // ===============================
-  // ACCOUNT DELETION NOTIFICATION
-  // ===============================
-  if (userEmailFromStorage) {
-    const notifQuery = query(
-      collection(db, "notifications"),
-      where("email", "==", userEmailFromStorage),
-      where("type", "==", "ACCOUNT_DELETED")
-    );
+  onSnapshot(userRef, (snap) => {
+    if (!snap.exists()) return;
 
-    onSnapshot(notifQuery, (snapshot) => {
-      if (!snapshot.empty) {
-        // Show warning once
-        Swal.fire({
-          icon: "warning",
-          title: "Account Removed",
-          text: "Your account has been deleted by the administrator. You will now be logged out.",
-          allowOutsideClick: false,
-          confirmButtonText: "OK",
-        }).then(() => {
-          // Clear session
-          localStorage.removeItem("userValidated");
-          localStorage.removeItem("userEmail");
-          localStorage.removeItem("userId");
-
-          // Redirect to login
-          window.location.href =
-            "/SagadaRegistrationSystem/user/user-auth.html";
-          });
-        }
+    if (snap.data().status === "deleted") {
+      Swal.fire({
+        icon: "warning",
+        title: "Account Removed",
+        text: "Your account has been deleted by the administrator."
+      }).then(() => {
+        localStorage.clear();
+        window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
       });
     }
+  });
 
 
   /* if (userValidated) {

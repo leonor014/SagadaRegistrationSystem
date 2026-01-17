@@ -222,35 +222,31 @@ function attachActionButtons() {
 
       if (result.isConfirmed) {
         try {
-          import { serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+          import { updateDoc, serverTimestamp, setDoc, doc, collection } 
+          from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-          const userRef = doc(db, "users", id);
-          const userSnap = await getDoc(userRef);
+          const userRef = doc(db, "users", userId);
 
-          if (!userSnap.exists()) {
-            Swal.fire("Error!", "User not found.", "error");
-            return;
-          }
-
-          const userData = userSnap.data();
-
-          // 1️⃣ Create notification FIRST
-          await setDoc(doc(collection(db, "notifications")), {
-            userId: id,
-            type: "ACCOUNT_DELETED",
-            title: "Account Deleted",
-            message: "Your account has been removed by the system administrator. If you believe this is a mistake, please contact support.",
-            email: userData.email || null,
-            phone: userData.personalDetails?.Phone || null,
-            createdAt: serverTimestamp(),
+          // 1️⃣ Soft delete the user
+          await updateDoc(userRef, {
+            status: "deleted",
+            deletedAt: serverTimestamp()
           });
 
-          // 2️⃣ Delete user document
-          await deleteDoc(userRef);
+          // 2️⃣ Create notification
+          await setDoc(doc(collection(db, "notifications")), {
+            userId: userId,
+            title: "Account Removed",
+            message: "Your account has been removed by the administrator. Please contact the tourism office if you believe this is a mistake.",
+            type: "ACCOUNT_DELETED",
+            isRead: false,
+            createdAt: serverTimestamp()
+          });
 
-          Swal.fire("Deleted!", "User deleted and notification sent.", "success");
+          Swal.fire("Success", "User soft-deleted and notified.", "success");
+          
 
-          Swal.fire("Deleted!", "User has been deleted.", "success");
+          
         } catch (error) {
           console.error("Error deleting user:", error);
           Swal.fire("Error!", "Failed to delete user.", "error");
