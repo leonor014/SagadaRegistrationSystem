@@ -33,6 +33,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const userIdFromStorage = localStorage.getItem("userId");
   const userEmailFromStorage = localStorage.getItem("userEmail");
 
+  // ===============================
+  // ACCOUNT DELETION NOTIFICATION
+  // ===============================
+  if (userEmailFromStorage) {
+    const notifQuery = query(
+      collection(db, "notifications"),
+      where("email", "==", userEmailFromStorage),
+      where("type", "==", "ACCOUNT_DELETED")
+    );
+
+    onSnapshot(notifQuery, (snapshot) => {
+      if (!snapshot.empty) {
+        // Show warning once
+        Swal.fire({
+          icon: "warning",
+          title: "Account Removed",
+          text: "Your account has been deleted by the administrator. You will now be logged out.",
+          allowOutsideClick: false,
+          confirmButtonText: "OK",
+        }).then(() => {
+          // Clear session
+          localStorage.removeItem("userValidated");
+          localStorage.removeItem("userEmail");
+          localStorage.removeItem("userId");
+
+          // Redirect to login
+          window.location.href =
+            "/SagadaRegistrationSystem/user/user-auth.html";
+          });
+        }
+      });
+    }
+
+
   /* if (userValidated) {
     authLink.textContent = "Profile";
     authLink.href = "/SagadaRegistrationSystem/user/profile/index.html";

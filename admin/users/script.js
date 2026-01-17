@@ -222,7 +222,34 @@ function attachActionButtons() {
 
       if (result.isConfirmed) {
         try {
-          await deleteDoc(doc(db, "users", id));
+          import { serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+          const userRef = doc(db, "users", id);
+          const userSnap = await getDoc(userRef);
+
+          if (!userSnap.exists()) {
+            Swal.fire("Error!", "User not found.", "error");
+            return;
+          }
+
+          const userData = userSnap.data();
+
+          // 1️⃣ Create notification FIRST
+          await setDoc(doc(collection(db, "notifications")), {
+            userId: id,
+            type: "ACCOUNT_DELETED",
+            title: "Account Deleted",
+            message: "Your account has been removed by the system administrator. If you believe this is a mistake, please contact support.",
+            email: userData.email || null,
+            phone: userData.personalDetails?.Phone || null,
+            createdAt: serverTimestamp(),
+          });
+
+          // 2️⃣ Delete user document
+          await deleteDoc(userRef);
+
+          Swal.fire("Deleted!", "User deleted and notification sent.", "success");
+
           Swal.fire("Deleted!", "User has been deleted.", "success");
         } catch (error) {
           console.error("Error deleting user:", error);
