@@ -222,9 +222,6 @@ function attachActionButtons() {
 
       if (result.isConfirmed) {
         try {
-          import { updateDoc, serverTimestamp, setDoc, doc, collection } 
-          from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-
           const userRef = doc(db, "users", userId);
 
           // 1️⃣ Soft delete the user
