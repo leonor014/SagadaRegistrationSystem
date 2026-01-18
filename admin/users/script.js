@@ -57,8 +57,6 @@ const listenToUsers = () => {
 
   const UsersQuery = query(
     collection(db, "users"), 
-    where("isDeleted", "!=", true), // Only get users not marked as deleted
-    orderBy("isDeleted"), // Firestore requires ordering by the filtered field first
     orderBy("name", "asc")
   );
 
@@ -79,6 +77,8 @@ const listenToUsers = () => {
 
     querySnapshot.forEach((docSnap) => {
       const UserId = docSnap.id;
+
+      if (User.isDeleted === true) return;
 
       if (user && UserId === user.uid) return;
 
