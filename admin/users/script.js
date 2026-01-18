@@ -78,10 +78,13 @@ const listenToUsers = () => {
     querySnapshot.forEach((docSnap) => {
       const UserId = docSnap.id;
       const User = docSnap.data();
-      
-      if (User.isDeleted === true) return;
 
-      if (user && UserId === user.uid) return;
+      if (
+        User.isDeleted === true ||
+        (user && UserId === user.uid)
+      ){
+        return;
+      }
 
       hasUsers = true;
       const tr = document.createElement("tr");
