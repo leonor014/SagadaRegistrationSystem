@@ -237,8 +237,12 @@ function attachEditDeleteListeners() {
           }
 
           const qrPreview = document.getElementById("editTouristSpotQRCodePreview");
-          qrPreview.src = data.qrCode || "";
-          qrPreview.style.display = data.qrCode ? "block" : "none";
+          if (touristSpotData.qrCode) {
+            qrPreview.src = touristSpotData.qrCode;
+            qrPreview.style.display = "block";
+          } else {
+            qrPreview.style.display = "none";
+          }
 
           document.getElementById("editModal").style.visibility = "visible";
           document.body.classList.add("modal-open");
@@ -448,7 +452,7 @@ window.addEventListener("DOMContentLoaded", () => {
         qrCode = await handleImageUpload(qrInput.files[0]);
       }
 
-      if (qrCode) updateData.qrCode = qrCode; // Add to updateData object
+    if (qrCode) updateData.qrCode = qrCode; // Add to updateData object
 
       try {
         const updateData = {
@@ -529,12 +533,23 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     });
   
-  document.getElementById(`${type}TouristSpotQRCode`).addEventListener("change", async function() {
-        if (this.files[0]) {
-            const preview = document.getElementById(`${type}TouristSpotQRCodePreview`);
-            preview.src = await handleImageUpload(this.files[0]);
-            preview.style.display = "block";
-        }
+  document
+    .getElementById("addTouristSpotQRCode")
+    .addEventListener("change", function () {
+      const file = this.files[0];
+      const preview = document.getElementById("addTouristSpotQRCodePreview");
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.src = "";
+        preview.style.display = "none";
+      }
     });
 
   document
@@ -562,7 +577,11 @@ window.addEventListener("DOMContentLoaded", () => {
         .value.trim();
       const imageInput = document.getElementById("addTouristSpotImage");
       const qrInput = document.getElementById("addTouristSpotQRCode");
+      let qrCode = null;
 
+      if (qrInput.files.length > 0) {
+        qrCode = await handleImageUpload(qrInput.files[0]);
+      }
 
       if (
         !name ||
@@ -579,17 +598,6 @@ window.addEventListener("DOMContentLoaded", () => {
       let image = null;
       if (imageInput.files.length > 0) {
         const file = imageInput.files[0];
-        image = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = (error) => reject(error);
-          reader.readAsDataURL(file);
-        });
-      }
-
-      let qrCode = null;
-      if (qrInput.files.length > 0) {
-        const file = qrInput.files[0];
         image = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
