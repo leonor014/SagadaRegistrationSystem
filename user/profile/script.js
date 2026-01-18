@@ -32,23 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const userValidated = localStorage.getItem("userValidated") === "true";
   const userIdFromStorage = localStorage.getItem("userId");
   const userEmailFromStorage = localStorage.getItem("userEmail");
-  const userRef = doc(db, "users", userIdFromStorage);
-
-  onSnapshot(userRef, (snap) => {
-    if (!snap.exists()) return;
-
-    if (snap.data().status === "deleted") {
-      Swal.fire({
-        icon: "warning",
-        title: "Account Removed",
-        text: "Your account has been deleted by the administrator."
-      }).then(() => {
-        localStorage.clear();
-        window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
-      });
-    }
-  });
-
 
   /* if (userValidated) {
     authLink.textContent = "Profile";

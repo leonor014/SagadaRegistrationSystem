@@ -222,28 +222,8 @@ function attachActionButtons() {
 
       if (result.isConfirmed) {
         try {
-          const userRef = doc(db, "users", userId);
-
-          // 1️⃣ Soft delete the user
-          await updateDoc(userRef, {
-            status: "deleted",
-            deletedAt: serverTimestamp()
-          });
-
-          // 2️⃣ Create notification
-          await setDoc(doc(collection(db, "notifications")), {
-            userId: userId,
-            title: "Account Removed",
-            message: "Your account has been removed by the administrator. Please contact the tourism office if you believe this is a mistake.",
-            type: "ACCOUNT_DELETED",
-            isRead: false,
-            createdAt: serverTimestamp()
-          });
-
-          Swal.fire("Success", "User soft-deleted and notified.", "success");
-          
-
-          
+          await deleteDoc(doc(db, "users", id));
+          Swal.fire("Deleted!", "User has been deleted.", "success");
         } catch (error) {
           console.error("Error deleting user:", error);
           Swal.fire("Error!", "Failed to delete user.", "error");
