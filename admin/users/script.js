@@ -54,7 +54,12 @@ window.addEventListener("resize", updateNavPadding);
 const listenToUsers = () => {
   const tableBody = document.getElementById("UsersTableBody");
 
-  const UsersQuery = query(collection(db, "users"), orderBy("name", "asc"));
+  const UsersQuery = query(
+    collection(db, "users"), 
+    where("isDeleted", "!=", true), // Only get users not marked as deleted
+    orderBy("isDeleted"), // Firestore requires ordering by the filtered field first
+    orderBy("name", "asc")
+  );
 
   onSnapshot(UsersQuery, (querySnapshot) => {
     tableBody.innerHTML = "";
