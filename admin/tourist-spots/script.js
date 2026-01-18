@@ -452,7 +452,7 @@ window.addEventListener("DOMContentLoaded", () => {
         qrCode = await handleImageUpload(qrInput.files[0]);
       }
 
-    if (qrCode) updateData.qrCode = qrCode; // Add to updateData object
+      const updateData = {}
 
       try {
         const updateData = {
@@ -464,6 +464,9 @@ window.addEventListener("DOMContentLoaded", () => {
         };
         if (image) {
           updateData.image = image;
+        }
+        if (qrCode) {
+          updateData.qrCode = qrCode;
         }
         await setDoc(doc(db, "tourist-spots", id), updateData, { merge: true });
         Swal.fire("Success!", "Tourist Spot updated successfully.", "success");
