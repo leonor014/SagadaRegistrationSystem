@@ -157,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // check Firestore for user
       const userDoc = await getDoc(doc(db, "users", email));
       if (!userDoc.exists()) {
         return Swal.fire({
@@ -168,6 +167,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const user = userDoc.data();
+
+      // CHECK FOR DELETED STATUS [NEW LOGIC]
+      if (user.isDeleted) {
+        return Swal.fire({
+          icon: "warning",
+          title: "Account Invalid or Expired",
+          text: `Your account has been deleted by the admin. Reason: ${user.deletionReason}`,
+          confirmButtonColor: "#2E7D32"
+        });
+      }
 
       // verify password
       const hashedPassword = await hashPassword(password);

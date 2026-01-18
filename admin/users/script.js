@@ -212,18 +212,34 @@ function attachActionButtons() {
   document.querySelectorAll(".delete-btn").forEach((button) => {
     button.addEventListener("click", async (e) => {
       const id = e.currentTarget.dataset.id;
-      const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "This user will be deleted permanently!",
-        icon: "warning",
+
+      // Use SweetAlert2 to get the reason
+      const { value: reason } = await Swal.fire({
+        title: "Delete User Account",
+        input: "select",
+        inputOptions: {
+          "Account duplication (spam)": "Account duplication (spam)",
+          "User cancels the tour": "User cancels the tour"
+        },
+        inputPlaceholder: "Select a reason",
         showCancelButton: true,
-        confirmButtonText: "Yes, delete it!",
+        confirmButtonText: "Confirm Deletion",
+        confirmButtonColor: "#F44336",
+        inputValidator: (value) => {
+          if (!value) return "You need to select a reason!";
+        }
       });
 
-      if (result.isConfirmed) {
+      if (reason) {
         try {
-          await deleteDoc(doc(db, "users", id));
-          Swal.fire("Deleted!", "User has been deleted.", "success");
+          // Instead of deleteDoc, we mark it as deleted to inform the user on next login
+          const userRef = doc(db, "users", id);
+          await setDoc(userRef, { 
+            isDeleted: true, 
+            deletionReason: reason 
+          }, { merge: true });
+
+          Swal.fire("Deleted!", "The user has been flagged for deletion.", "success");
         } catch (error) {
           console.error("Error deleting user:", error);
           Swal.fire("Error!", "Failed to delete user.", "error");
