@@ -129,6 +129,7 @@
                                     <th>Shuttle Fee</th>
                                     <th>Created At</th>
                                     <th>Image</th>
+                                    <th>QR Code</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -191,6 +192,12 @@
                     <input type="file" id="editTouristSpotImage" accept="image/*" />
                 </div>
 
+                <div class="form-group">
+                    <label for="editTouristSpotQRCode">QR Code</label>
+                    <img id="editTouristSpotQRCodePreview" alt="QR Preview" style="max-width: 150px; display: none;" />
+                    <input type="file" id="editTouristSpotQRCode" accept="image/*" />
+                </div>
+
                 <button type="submit" class="submit-button">Save Changes</button>
             </form>
         </div>
@@ -235,6 +242,12 @@
                     <label for="addTouristSpotImage">Image</label>
                     <img id="addTouristSpotImagePreview" src="" alt="Image Preview" style="display: none;" />
                     <input type="file" id="addTouristSpotImage" accept="image/*" />
+                </div>
+
+                <div class="form-group">
+                    <label for="addTouristSpotQRCode"> QR Code</label>
+                    <img id="addTouristSpotQRCodePreview" src="" alt="QR Preview" style="display: none;" />
+                    <input type="file" id="addTouristSpotQRCode" accept="image/*" />
                 </div>
 
                 <button type="submit" class="submit-button">Add Spot</button>

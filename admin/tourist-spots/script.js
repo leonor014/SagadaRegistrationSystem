@@ -31,6 +31,17 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Helper function to convert file to Base64
+const handleImageUpload = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
+
+
 function updateNavPadding() {
   const nav = document.querySelector("nav");
   if (!nav) return;
@@ -138,6 +149,7 @@ const loadTouristSpots = async () => {
         const createdAt =
           touristSpot.createdAt?.toDate().toLocaleString() || "—";
         const image = touristSpot.image || "";
+        const qrCode = touristSpot.qrCode || "";
 
         tr.innerHTML = `
           <td>${name}</td>
@@ -149,6 +161,11 @@ const loadTouristSpots = async () => {
           <td>${
             image
               ? `<img src="${image}" alt="Tourist Spot Image" style="max-width: 100px; max-height: 100px;">`
+              : "—"
+          }</td>
+          <td>${
+            qrCode 
+              ? `<img src="${qrCode}" style="max-width: 60px;">` 
               : "—"
           }</td>
           <td>
@@ -217,6 +234,14 @@ function attachEditDeleteListeners() {
           } else {
             imagePreview.src = "";
             imagePreview.style.display = "none";
+          }
+
+          const qrPreview = document.getElementById("editTouristSpotQRCodePreview");
+          if (touristSpotData.qrCode) {
+            qrPreview.src = touristSpotData.qrCode;
+            qrPreview.style.display = "block";
+          } else {
+            qrPreview.style.display = "none";
           }
 
           document.getElementById("editModal").style.visibility = "visible";
@@ -420,6 +445,15 @@ window.addEventListener("DOMContentLoaded", () => {
         });
       }
 
+      const qrInput = document.getElementById("editTouristSpotQRCode");
+      let qrCode = null;
+
+      if (qrInput.files.length > 0) {
+        qrCode = await handleImageUpload(qrInput.files[0]);
+      }
+
+      if (qrCode) updateData.qrCode = qrCode; // Add to updateData object
+
       try {
         const updateData = {
           name,
@@ -498,6 +532,25 @@ window.addEventListener("DOMContentLoaded", () => {
         preview.style.display = "none";
       }
     });
+  
+  document
+    .getElementById("addTouristSpotQRCode")
+    .addEventListener("change", function () {
+      const file = this.files[0];
+      const preview = document.getElementById("addTouristSpotQRCodePreview");
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.src = "";
+        preview.style.display = "none";
+      }
+    });
 
   document
     .getElementById("addTouristSpotForm")
@@ -523,6 +576,12 @@ window.addEventListener("DOMContentLoaded", () => {
         .getElementById("addTouristSpotShuttleFee")
         .value.trim();
       const imageInput = document.getElementById("addTouristSpotImage");
+      const qrInput = document.getElementById("addTouristSpotQRCode");
+      let qrCode = null;
+
+      if (qrInput.files.length > 0) {
+        qrCode = await handleImageUpload(qrInput.files[0]);
+      }
 
       if (
         !name ||
@@ -563,6 +622,7 @@ window.addEventListener("DOMContentLoaded", () => {
           guideFee,
           shuttleFee,
           image: image || null,
+          qrCode: qrCode || null,
           createdAt: new Date(),
         });
 

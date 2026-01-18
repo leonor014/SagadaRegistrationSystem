@@ -553,6 +553,21 @@ nav.close ~ .dashboard .top{
 .activity-table tbody tr:hover {
   background-color: var(--table-row-hover);
 }
+.activity-table img {
+    max-width: 60px;
+    max-height: 60px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+#editTouristSpotQRCodePreview, 
+#addTouristSpotQRCodePreview {
+    display: block;
+    margin: 10px auto;
+    border: 1px solid var(--border-color);
+    padding: 5px;
+    background: white;
+}
 #tourist-spotsTableBody {
     table-layout: fixed;
     width: 100%;
