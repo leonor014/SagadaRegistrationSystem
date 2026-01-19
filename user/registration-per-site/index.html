@@ -194,7 +194,7 @@
         regSelect.innerHTML = '<option value="">User not logged in</option>';
         return;
       }
-      
+
       regSelect.innerHTML = '<option value="">Loading...</option>';
 
       const today = new Date();
@@ -202,30 +202,33 @@
 
       try {
         const q = query(
-          collection(db, "registrations"), 
+          collection(db, "registrations"),
           where("userId", "==", userId)
         );
 
         const querySnapshot = await getDocs(q);
-        regSelect.innerHTML = '<option value="">-- Select Registration --</option>';
 
+        regSelect.innerHTML = '<option value="">-- Select Registration --</option>';
         let validCount = 0;
 
-        snapshot.forEach(docSnap => {
+        querySnapshot.forEach(docSnap => {
           const data = docSnap.data();
           if (!data.dateOfRegistration || !data.registrationNumber) return;
 
           const regDate = data.dateOfRegistration.toDate
-          regDate.setHours(0, 0, 0, 0);
-            
-          const expiryDate = new Date(regDate);
-          expiryDate.setDate(expiryDate.getDate() + 7); // 7-day validity
+            ? data.dateOfRegistration.toDate()
+            : new Date(data.dateOfRegistration);
 
-          // Only show registrations that are not in the future and not expired
+          regDate.setHours(0, 0, 0, 0);
+
+          const expiryDate = new Date(regDate);
+          expiryDate.setDate(expiryDate.getDate() + 7);
+
           if (today >= regDate && today <= expiryDate) {
             const option = document.createElement("option");
             option.value = data.registrationNumber;
-            option.textContent = `${data.registrationNumber} (Valid until ${expiryDate.toLocaleDateString()})`;
+            option.textContent =
+              `${data.registrationNumber} (Valid until ${expiryDate.toLocaleDateString()})`;
             regSelect.appendChild(option);
             validCount++;
           }
@@ -233,12 +236,13 @@
 
         if (validCount === 0) {
           regSelect.innerHTML = '<option value="">No valid registrations found</option>';
-          fetchBtn.disabled = true; 
-          showRegistrationPrompt(); // Trigger pop-up if archive is empty
+          fetchBtn.disabled = true;
+          showRegistrationPrompt();
         } else {
-          fetchBtn.disabled = false;
           regSelect.disabled = false;
+          fetchBtn.disabled = false;
         }
+
       } catch (err) {
         console.error("Error loading registrations:", err);
         regSelect.innerHTML = '<option value="">Error loading list</option>';
@@ -613,16 +617,6 @@
       }
   
       
-
-        // ✅ Only render if a valid (non-expired) registration was found
-        if (foundValid && allTourists.length > 0) {
-          renderTablePage(1);
-          document.getElementById("touristDetails").style.display = "block";
-        } else {
-          document.getElementById("touristDetails").style.display = "none";
-        }
-      }
-
 
     let isSubmittingAttendance = false;
     // --- Firestore Save ---
