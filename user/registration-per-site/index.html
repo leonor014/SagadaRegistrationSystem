@@ -195,40 +195,42 @@
       try {
         const q = query(collection(db, "registrations"), where("userId", "==", userId));
         const querySnapshot = await getDocs(q);
-        regSelect.innerHTML = '';
+        regSelect.innerHTML = '<option value="">-- Select Registration --</option>';
 
-        if (querySnapshot.empty) {
-            regSelect.innerHTML = '<option value="">No registrations found</option>';
-            showRegistrationPrompt();
-            return;
-        }
+        let validRegistrations = [];
 
-        let validCount = 0;
+        
         querySnapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            const regDate = new Date(data.dateOfRegistration);
-            regDate.setHours(0, 0, 0, 0);
+          const data = docSnap.data();
+          const regDate = new Date(data.dateOfRegistration);
+          regDate.setHours(0, 0, 0, 0);
             
-            const expiryDate = new Date(regDate);
-            expiryDate.setDate(expiryDate.getDate() + 7); // 7-day validity
+          const expiryDate = new Date(regDate);
+          expiryDate.setDate(expiryDate.getDate() + 7); // 7-day validity
 
-            // Only show registrations that are not in the future and not expired
-            if (regDate <= today && today <= expiryDate) {
-                const option = document.createElement("option");
-                option.value = data.registrationNumber;
-                option.textContent = `${data.registrationNumber} (Valid until ${expiryDate.toLocaleDateString()})`;
-                regSelect.appendChild(option);
-                validCount++;
-            }
+          // Only show registrations that are not in the future and not expired
+          if (regDate <= today && today <= expiryDate) {
+            validRegistrations.push({
+              id: data.registrationNumber,
+              expiry: expiryDate.toLocaleDateString()
+            });
+          }
         });
 
-        if (validCount === 0) {
-            regSelect.innerHTML = '<option value="">All registrations expired</option>';
-            showRegistrationPrompt();
+        if (validRegistrations.length === 0) {
+          regSelect.innerHTML = '<option value="">No valid registrations found</option>';
+          showRegistrationPrompt();
+        } else {
+          validRegistrations.forEach(reg => {
+            const option = document.createElement("option");
+            option.value = reg.id;
+            option.textContent = `${reg.id} (Valid until ${reg.expiry})`;
+            regSelect.appendChild(option);
+          });
         }
       } catch (err) {
-          console.error("Error loading archives:", err);
-          regSelect.innerHTML = '<option value="">Error loading list</option>';
+        console.error("Error loading registrations:", err);
+        regSelect.innerHTML = '<option value="">Error loading list</option>';
       }
     }
 
@@ -545,122 +547,122 @@
     async function fetchDetails() {
       document.getElementById("error").textContent = "";
       document.getElementById("touristList").innerHTML = "";
-      allTourists = [];
-      selectedTourists.clear(); // Clear previous selections
-      let regNumber = document.getElementById("registrationNumber").value.trim();
 
-      if (!regNumber || regNumber.includes("expired") || regNumber.includes("No")) {
-        showRegistrationPrompt();
+      const regNumber = document.getElementById("registrationNumber").value;
+      if (!regNumber) {
+        Swal.fire("Note", "Please select a registration number first.", "info");
         return;
       }
+
+      allTourists = [];
+      selectedTourists.clear(); // Clear previous selections
 
       try {
         const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
         const querySnapshot = await getDocs(q);
 
-        if (!querySnapshot.empty) {
-          querySnapshot.forEach(docSnap => {
-            let data = docSnap.data();
-            let tourists = [];
-                
-            if (data.fullName) {
-              tourists.push({
-                name: data.fullName,
-                age: calculateAge(data.dateOfBirth),
-                sex: data.sex,
-                nationality: getNationality(data.country),
-                region: data.region || "Region not applicable"
-              });
-            } else if (data.groupMembers) {
-              tourists = data.groupMembers.map(m => ({
-              name: m.memberName,
-              age: calculateAge(m.memberDOB),
-              sex: m.memberSex,
-              nationality: getNationality(m.memberCountry),
-              region: m.memberRegion || "Region not applicable"
-            }));
-          }
-          allTourists.push(...tourists);
-        });
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+        let tourists = [];
+        
+        if (data.fullName) {
+          tourists.push({
+            name: data.fullName,
+            age: calculateAge(data.dateOfBirth),
+            sex: data.sex,
+            nationality: getNationality(data.country),
+            region: data.region || "N/A"
+          });
+        } else if (data.groupMembers) {
+          tourists = data.groupMembers.map(m => ({
+            name: m.memberName,
+            age: calculateAge(m.memberDOB),
+            sex: m.memberSex,
+            nationality: getNationality(m.memberCountry),
+            region: m.memberRegion || "N/A"
+          }));
+        }
+        allTourists.push(...tourists);
+      });
+
         renderTablePage(1);
-          document.getElementById("touristDetails").style.display = "block";
+        document.getElementById("touristDetails").style.display = "block";
+      } catch (error) {
+        console.error(error);
+        document.getElementById("error").textContent = "Error fetching details." + error.message;
       }
-    } catch (error) {
-      document.getElementById("error").textContent = "Error: " + error.message;
-    }
-  }
+  
 
-          let foundValid = false;
+      let foundValid = false;
 
-          querySnapshot.forEach(docSnap => {
-            let data = docSnap.data();
+      querySnapshot.forEach(docSnap => {
+        let data = docSnap.data();
 
-            if (data.dateOfRegistration) {
-              const regDate = new Date(data.dateOfRegistration);
-              regDate.setHours(0, 0, 0, 0);
-              const today = new Date();
-              today.setHours(0, 0, 0, 0); // normalize time to midnight for fair comparison
+        if (data.dateOfRegistration) {
+          const regDate = new Date(data.dateOfRegistration);
+          regDate.setHours(0, 0, 0, 0);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0); // normalize time to midnight for fair comparison
 
-              // 7-day expiry
-              const expiryDate = new Date(regDate);
-              expiryDate.setDate(expiryDate.getDate() + 7);
+          // 7-day expiry
+          const expiryDate = new Date(regDate);
+          expiryDate.setDate(expiryDate.getDate() + 7);
 
-              // Future date check
-              if (regDate > today) {
-                document.getElementById("error").textContent =
-                  "This registration is not yet valid. The registration date is in the future.";
-                document.getElementById("touristDetails").style.display = "none";
-                foundValid = false;
-                return;
-              }
+          // Future date check
+          if (regDate > today) {
+            document.getElementById("error").textContent =
+              "This registration is not yet valid. The registration date is in the future.";
+            document.getElementById("touristDetails").style.display = "none";
+            foundValid = false;
+            return;
+          }
 
-              // Expired check
-              if (today > expiryDate) {
-                document.getElementById("error").textContent =
-                  "This registration has expired (valid for 7 days only).";
-                document.getElementById("touristDetails").style.display = "none";
-                foundValid = false;
-                return;
-              }
-            } else {
-              document.getElementById("error").textContent = "Invalid registration date.";
+            // Expired check
+            if (today > expiryDate) {
+              document.getElementById("error").textContent =
+                "This registration has expired (valid for 7 days only).";
               document.getElementById("touristDetails").style.display = "none";
               foundValid = false;
               return;
             }
-
-
-            let tourists = [];
-            if (data.fullName) {
-              tourists.push({
-                name: data.fullName,
-                age: calculateAge(data.dateOfBirth),
-                sex: data.sex,
-                nationality: getNationality(data.country),
-                region: data.region || "Region not applicable"
-              });
-            } else if (data.groupMembers && Array.isArray(data.groupMembers)) {
-              tourists = data.groupMembers.map(member => ({
-                name: member.memberName,
-                age: calculateAge(member.memberDOB),
-                sex: member.memberSex,
-                nationality: getNationality(member.memberCountry),
-                region: member.memberRegion || "Region not applicable"
-              }));
-            }
-
-            allTourists.push(...tourists);
-            foundValid = true;
-          });
-
-          // ✅ Only render if a valid (non-expired) registration was found
-          if (foundValid && allTourists.length > 0) {
-            renderTablePage(1);
-            document.getElementById("touristDetails").style.display = "block";
           } else {
+            document.getElementById("error").textContent = "Invalid registration date.";
             document.getElementById("touristDetails").style.display = "none";
+            foundValid = false;
+            return;
           }
-    
+
+          let tourists = [];
+          if (data.fullName) {
+            tourists.push({
+              name: data.fullName,
+              age: calculateAge(data.dateOfBirth),
+              sex: data.sex,
+              nationality: getNationality(data.country),
+              region: data.region || "Region not applicable"
+            });
+          } else if (data.groupMembers && Array.isArray(data.groupMembers)) {
+            tourists = data.groupMembers.map(member => ({
+              name: member.memberName,
+              age: calculateAge(member.memberDOB),
+              sex: member.memberSex,
+              nationality: getNationality(member.memberCountry),
+              region: member.memberRegion || "Region not applicable"
+            }));
+          }
+
+          allTourists.push(...tourists);
+          foundValid = true;
+        });
+
+        // ✅ Only render if a valid (non-expired) registration was found
+        if (foundValid && allTourists.length > 0) {
+          renderTablePage(1);
+          document.getElementById("touristDetails").style.display = "block";
+        } else {
+          document.getElementById("touristDetails").style.display = "none";
+        }
+      }
 
 
     let isSubmittingAttendance = false;
