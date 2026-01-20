@@ -542,6 +542,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Default load: Daily
   listenToRegistrations('daily');
+
+  // Add this at the very bottom of script.js
+  window.listenToRegistrations = listenToRegistrations;
 });
-// Add this at the very bottom of script.js
-window.listenToRegistrations = listenToRegistrations;
