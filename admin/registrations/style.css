@@ -725,6 +725,38 @@ input[readonly] {
     height: 500px; /* Fixed height for consistent look */
 }
 
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    margin-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.pagination-btn:disabled {
+    background-color: var(--border-color);
+    cursor: not-allowed;
+    color: var(--black-light-color);
+}
+
+.page-numbers {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
 @media (max-width: 1000px) {
     nav{
         width: 73px;

@@ -32,6 +32,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+let currentPage = 1;
+const recordsPerPage = 10;
+let allRegistrations = [];
+
 const getDateRange = (period) => {
     const now = new Date();
     let start = new Date();
@@ -120,6 +124,14 @@ const listenToRegistrations = (period = 'all') => {
   `;
 
   currentListener = onSnapshot(registrationsQuery, async (querySnapshot) => {
+    allRegistrations = [];
+    querySnapshot.forEach(doc => {
+      allRegistrations.push({ id: doc.id, ...doc.data() });
+    });
+
+    currentPage = 1; // Reset to page 1 on new data/filter
+        renderTablePage();
+
     tableBody.innerHTML = "";
 
     if (querySnapshot.empty) {
@@ -225,6 +237,43 @@ const listenToRegistrations = (period = 'all') => {
     attachActionButtons();
   });
 };
+
+// New function to handle the actual rendering of the current 10 items
+function renderTablePage() {
+    const tableBody = document.getElementById("registrationsTableBody");
+    tableBody.innerHTML = "";
+    
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    const paginatedItems = allRegistrations.slice(startIndex, endIndex);
+
+    if (paginatedItems.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">No registrations found.</td></tr>`;
+        updatePaginationControls(0);
+        return;
+    }
+
+    paginatedItems.forEach(reg => {
+        const tr = document.createElement("tr");
+        // ... [Use your existing TR innerHTML logic here for rendering the row] ...
+        tableBody.appendChild(tr);
+    });
+
+    updatePaginationControls(allRegistrations.length);
+    attachActionButtons();
+}
+
+function updatePaginationControls(totalItems) {
+    const totalPages = Math.ceil(totalItems / recordsPerPage);
+    const prevBtn = document.getElementById("prevPage");
+    const nextBtn = document.getElementById("nextPage");
+    const pageNums = document.getElementById("pageNumbers");
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    pageNums.innerHTML = `Page ${currentPage} of ${totalPages || 1}`;
+}
 
 function attachActionButtons() {
   // VIEW Button
@@ -552,4 +601,18 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Add this at the very bottom of script.js
   window.listenToRegistrations = listenToRegistrations;
+
+  document.getElementById("prevPage").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTablePage();
+    }
+  });
+
+  document.getElementById("nextPage").addEventListener("click", () => {
+    if (currentPage < Math.ceil(allRegistrations.length / recordsPerPage)) {
+      currentPage++;
+      renderTablePage();
+    }
+  });
 });
