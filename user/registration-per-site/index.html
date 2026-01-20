@@ -164,41 +164,35 @@
     let totalPages = 0;
 
     // --- New Helper Function for Registration Check ---
-    function showRegistrationPrompt() {
+    function showRegistrationPrompt(reason = "not_registered") {
+      let title = "Registration Required";
+      let text = "You need to complete your profile and register first.";
+
+      if (reason === "expired") {
+        title = "Registration Expired";
+        text = "Your registration has expired. Please register again.";
+      }
+
       Swal.fire({
-        title: "Are you already registered?",
-        text: "To check-in, you must have a valid registration number and have paid the registration fee.",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Yes, I'm Registered",
-        cancelButtonText: "Register Now",
-        confirmButtonColor: "#2e7d32",
-        cancelButtonColor: "#ff6b35",
-        reverseButtons: true
-      }).then((result) => {
-        if (result.dismiss === Swal.DismissReason.cancel) {
-          // Redirect to the registration page
-          window.location.href = "/SagadaRegistrationSystem/user/register/index.html";
-        }
+        title,
+        text,
+        icon: "info",
+        confirmButtonText: "Go to Profile",
+        confirmButtonColor: "#2e7d32"
+      }).then(() => {
+        window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
       });
     }
+
 
     // --- ARCHIVE FETCHING: Load user's valid registration numbers ---
     async function loadUserRegistrations() {
       const regSelect = document.getElementById("registrationNumber");
-      const fetchBtn = document.getElementById("fetchDetailsBtn");
       const userId = localStorage.getItem("userId");
-
-      if (!userId) {
-        console.error("No userId found in localStorage");
-        regSelect.innerHTML = '<option value="">User not logged in</option>';
-        return;
-      }
-
-      regSelect.innerHTML = '<option value="">Loading...</option>';
-
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+
+      regSelect.innerHTML = '<option value="">Loading...</option>';
 
       try {
         const q = query(
@@ -213,12 +207,7 @@
 
         querySnapshot.forEach(docSnap => {
           const data = docSnap.data();
-          if (!data.dateOfRegistration || !data.registrationNumber) return;
-
-          const regDate = data.dateOfRegistration.toDate
-            ? data.dateOfRegistration.toDate()
-            : new Date(data.dateOfRegistration);
-
+          const regDate = data.dateOfRegistration?.toDate ? data.dateOfRegistration.toDate() : new Date(data.dateOfRegistration);
           regDate.setHours(0, 0, 0, 0);
 
           const expiryDate = new Date(regDate);
@@ -227,25 +216,22 @@
           if (today >= regDate && today <= expiryDate) {
             const option = document.createElement("option");
             option.value = data.registrationNumber;
-            option.textContent =
-              `${data.registrationNumber} (Valid until ${expiryDate.toLocaleDateString()})`;
+            option.textContent = `${data.registrationNumber} (Expires: ${expiryDate.toLocaleDateString()})`;
             regSelect.appendChild(option);
             validCount++;
           }
         });
 
         if (validCount === 0) {
-          regSelect.innerHTML = '<option value="">No valid registrations found</option>';
+          regSelect.innerHTML = '<option value="">No valid registrations</option>';
           fetchBtn.disabled = true;
-          showRegistrationPrompt();
+          showRegistrationPrompt("expired");
         } else {
-          regSelect.disabled = false;
           fetchBtn.disabled = false;
         }
-
       } catch (err) {
         console.error("Error loading registrations:", err);
-        regSelect.innerHTML = '<option value="">Error loading list</option>';
+        return false;
       }
     }
 
@@ -562,6 +548,7 @@
     async function fetchDetails() {
       document.getElementById("error").textContent = "";
       document.getElementById("touristList").innerHTML = "";
+      document.getElementById("submitAttendanceBtn").disabled = false;
 
       const regNumber = document.getElementById("registrationNumber").value;
       if (!regNumber) {
@@ -887,9 +874,9 @@
               // Valid site
               siteSelect.value = foundOption.value;
               siteSelect.disabled = true;
-              submitBtn.disabled = false;
+              submitBtn.disabled = true;
               regNumberInput.disabled = false; // enable input
-              fetchDetailsBtn.disabled = false; // enable fetch
+              fetchDetailsBtn.disabled = true; // enable fetch
               console.log("Site pre-selected from QR:", foundOption.value);
             } else {
               // Invalid QR site
