@@ -84,7 +84,10 @@ window.addEventListener("resize", updateNavPadding);
 
 let currentListener = null;
 
-const listenToRegistrations = () => {
+const listenToRegistrations = (period = 'all') => {
+
+  const range = getDateRange(period);
+
   // Unsubscribe from previous listener to prevent memory leaks
   if (currentListener) currentListener();
 
@@ -100,11 +103,15 @@ const listenToRegistrations = () => {
       registrationsCol,
       where("createdAt", ">=", range.start),
       where("createdAt", "<=", range.end),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt")
     );
   } else {
-    registrationsQuery = query(registrationsCol, orderBy("createdAt", "desc"));
+    registrationsQuery = query(
+      registrationsCol,
+      orderBy("createdAt", "desc")
+    );
   }
+
 
   tableBody.innerHTML = `
     <tr>
@@ -394,7 +401,7 @@ onAuthStateChanged(auth, async (user) => {
         console.log("User document not found");
       }
 
-      listenToRegistrations();
+      listenToRegistrations('all');
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
