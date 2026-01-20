@@ -165,22 +165,18 @@
 
     // --- New Helper Function for Registration Check ---
     function showRegistrationPrompt(reason = "not_registered") {
-      let title = "Registration Required";
-      let text = "You need to complete your profile and register first.";
-
-      if (reason === "expired") {
-        title = "Registration Expired";
-        text = "Your registration has expired. Please register again.";
-      }
-
       Swal.fire({
-        title,
-        text,
+        title: "Registration Required",
+        text: "No active 7-day registration found. Please register to proceed with check-in.",
         icon: "info",
-        confirmButtonText: "Go to Profile",
+        showCancelButton: true,
+        confirmButtonText: "Go to Registration",
+        cancelButtonText: "Close",
         confirmButtonColor: "#2e7d32"
-      }).then(() => {
-        window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/SagadaRegistrationSystem/user/register/index.html";
+        }
       });
     }
 
@@ -188,11 +184,10 @@
     // --- ARCHIVE FETCHING: Load user's valid registration numbers ---
     async function loadUserRegistrations() {
       const regSelect = document.getElementById("registrationNumber");
+      const fetchBtn = document.getElementById("fetchDetailsBtn");
       const userId = localStorage.getItem("userId");
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
-      regSelect.innerHTML = '<option value="">Loading...</option>';
 
       try {
         const q = query(
@@ -546,9 +541,9 @@
     }
 
     async function fetchDetails() {
-      document.getElementById("error").textContent = "";
-      document.getElementById("touristList").innerHTML = "";
-      document.getElementById("submitAttendanceBtn").disabled = false;
+      //document.getElementById("error").textContent = "";
+      //document.getElementById("touristList").innerHTML = "";
+      //document.getElementById("submitAttendanceBtn").disabled = false;
 
       const regNumber = document.getElementById("registrationNumber").value;
       if (!regNumber) {
@@ -559,50 +554,31 @@
       allTourists = [];
       selectedTourists.clear(); // Clear previous selections
 
-      try {
-        const q = query(
-          collection(db, "registrations"), 
-          where("registrationNumber", "==", regNumber),
-          where("userId", "==", localStorage.getItem("userId"))
-        );
-        const querySnapshot = await getDocs(q);
+      const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
+      const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-          document.getElementById("error").textContent = "Registration not found.";
-          return;
-        }
-
-        querySnapshot.forEach(docSnap => {
-          const data = docSnap.data();
-        let tourists = [];
-        
-        if (data.fullName) {
-          tourists.push({
-            name: data.fullName,
-            age: calculateAge(data.dateOfBirth),
-            sex: data.sex,
-            nationality: getNationality(data.country),
-            region: data.region || "N/A"
-          });
-        } else if (Array.isArray(data.groupMembers)) {
-          tourists = data.groupMembers.map(m => ({
-            name: m.memberName,
-            age: calculateAge(m.memberDOB),
-            sex: m.memberSex,
-            nationality: getNationality(m.memberCountry),
-            region: m.memberRegion || "N/A"
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.groupMembers) {
+          allTourists = data.groupMembers.map(m => ({
+            name: m.memberName, 
+            age: calculateAge(m.memberDOB), 
+            sex: m.memberSex, 
+            nationality: m.memberCountry
           }));
+        } else {
+          allTourists.push({
+            name: data.fullName, 
+            age: calculateAge(data.dateOfBirth), 
+            sex: data.sex, 
+            nationality: data.country
+          });
         }
-        allTourists.push(...tourists);
       });
-
-        renderTablePage(1);
-        document.getElementById("touristDetails").style.display = "block";
-      } catch (error) {
-        console.error(error);
-        document.getElementById("error").textContent = "Error fetching details." + error.message;
-      }
-  
+      document.getElementById("touristDetails").style.display = "block";
+      renderTablePage(1);
+    }
+      
       
 
     let isSubmittingAttendance = false;
@@ -676,7 +652,9 @@
 
     async function populateTouristSites() {
       const siteSelect = document.getElementById("siteSelect");
-      if (!siteSelect) return;
+      const urlParams = new URLSearchParams(window.location.search);
+      const siteFromQR = urlParams.get("site");
+
 
       try {
         const spotsSnapshot = await getDocs(collection(db, "tourist-spots"));
@@ -689,6 +667,15 @@
           option.textContent = spot.name;
           siteSelect.appendChild(option);
         });
+
+        if (siteFromQR) {
+          const found = Array.from(siteSelect.options).find(opt => opt.value.toLowerCase() === siteFromQR.toLowerCase());
+          if (found) {
+            siteSelect.value = found.value;
+            siteSelect.disabled = true;
+            document.getElementById("submitAttendanceBtn").disabled = false;
+          }
+        }
 
         // Enable the select after loading
         siteSelect.disabled = false;
@@ -912,7 +899,7 @@
       });
     }
   }
-)};
+);
   
 
   </script>
