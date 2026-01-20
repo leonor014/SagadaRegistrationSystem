@@ -55,11 +55,27 @@ const getDateRange = (period) => {
         case 'yearly':
             start = new Date(now.getFullYear(), 0, 1);
             break;
-        case 'custom':
-            start = new Date(document.getElementById('startDate').value);
-            end = new Date(document.getElementById('endDate').value);
-            end.setHours(23, 59, 59, 999);
-            return { start, end };
+        case 'custom': {
+          const startInput = document.getElementById('startDate')?.value;
+          const endInput = document.getElementById('endDate')?.value;
+
+          // Do NOT return a range until both dates are selected
+          if (!startInput || !endInput) {
+            return null;
+          }
+
+          start = new Date(startInput);
+          end = new Date(endInput);
+
+          // Extra safety check
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return null;
+          }
+
+          end.setHours(23, 59, 59, 999);
+          return { start, end };
+        }
+
         default:
             return null; // For 'all'
     }
@@ -91,6 +107,10 @@ let currentListener = null;
 const listenToRegistrations = (period = 'all') => {
 
   const range = getDateRange(period);
+  // If custom range is incomplete, do nothing
+  if (period === 'custom' && !range) {
+    return;
+  }
 
   // Unsubscribe from previous listener to prevent memory leaks
   if (currentListener) currentListener();
@@ -593,9 +613,18 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Trigger for custom date inputs
-  document.getElementById('startDate').addEventListener('change', () => listenToRegistrations('custom'));
-  document.getElementById('endDate').addEventListener('change', () => listenToRegistrations('custom'));
+  document.getElementById('startDate').addEventListener('change', () => {
+    if (document.getElementById('endDate').value) {
+      listenToRegistrations('custom');
+    }
+  });
 
+  document.getElementById('endDate').addEventListener('change', () => {
+    if (document.getElementById('startDate').value) {
+      listenToRegistrations('custom');
+    }
+  });
+  
   // Default load: Daily
   listenToRegistrations('daily');
 
