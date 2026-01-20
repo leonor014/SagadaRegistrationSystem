@@ -100,11 +100,27 @@
 
 
                         <!-- Search Bar -->
-                        <div class="search-box">
-                            <input type="text" id="searchInput" placeholder="Search by Registration No.">
-                            <button id="searchBtn">
-                                <i class="uil uil-search"></i>
-                            </button>
+                        <div class="registration-controls">
+                            <div class="filter-group">
+                                <select id="periodFilter">
+                                    <option value="daily">Daily (Today)</option>
+                                    <option value="weekly">This Week</option>
+                                    <option value="monthly">This Month</option>
+                                    <option value="yearly">This Year</option>
+                                    <option value="custom">Custom Range</option>
+                                    <option value="all">All (Archive)</option>
+                                </select>
+                                <div id="customDateGroup" style="display: none; align-items: center; gap: 5px;">
+                                    <input type="date" id="startDate">
+                                    <span>to</span>
+                                    <input type="date" id="endDate">
+                                </div>
+                            </div>
+
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="Search Registration No.">
+                                <button id="searchBtn"><i class="uil uil-search"></i></button>
+                            </div>
                         </div>
                     </div>
                     <hr>

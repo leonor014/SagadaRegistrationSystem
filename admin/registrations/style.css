@@ -697,6 +697,34 @@ input[readonly] {
   padding: 0.3rem 0.5rem;
 }
 
+.registration-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-group select, .filter-group input {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--panel-color);
+    color: var(--text-color);
+}
+
+/* Ensure table height is consistent with pagination */
+.activity-table tbody {
+    height: 500px; /* Fixed height for consistent look */
+}
+
 @media (max-width: 1000px) {
     nav{
         width: 73px;
