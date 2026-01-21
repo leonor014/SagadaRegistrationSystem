@@ -152,11 +152,7 @@ const listenToRegistrations = (period = 'daily') => {
 
   window.listenToRegistrations = listenToRegistrations;
 
-  tableBody.innerHTML = `
-    <tr>
-      <td colspan="7" style="text-align: center;">Loading...</td>
-    </tr>
-  `;
+  
 
   onSnapshot(registrationsQuery, async (querySnapshot) => {
     tableBody.innerHTML = "";
