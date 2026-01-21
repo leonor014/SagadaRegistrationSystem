@@ -44,7 +44,10 @@ const getDateRange = (period) => {
 
     switch (period) {
         case 'daily':
-            start.setHours(0,0,0,0);
+            // Start of today (00:00:00)
+            start = new Date(now.setHours(0, 0, 0, 0));
+            // End of today (23:59:59)
+            end = new Date(now.setHours(23, 59, 59, 999));
             break;
         case 'weekly':
             start.setDate(now.getDate() - now.getDay());
@@ -553,7 +556,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Default load: Daily
-  listenToRegistrations('daily');
+  //listenToRegistrations('daily');
 
   // Add this at the very bottom of script.js
   window.listenToRegistrations = listenToRegistrations;
