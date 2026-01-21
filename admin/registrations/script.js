@@ -153,17 +153,6 @@ const listenToRegistrations = (period = 'daily') => {
   window.listenToRegistrations = listenToRegistrations;
 
 
-  onSnapshot(registrationsQuery, async (querySnapshot) => {
-    tableBody.innerHTML = "";
-
-    if (querySnapshot.empty) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align: center;">No registrations found.</td>
-        </tr>
-      `;
-      return;
-    }
 
     let hasRegistrations = false;
 
@@ -257,7 +246,7 @@ const listenToRegistrations = (period = 'daily') => {
     }
 
     attachActionButtons();
-  });
+  
 
 function attachActionButtons() {
   // VIEW Button
