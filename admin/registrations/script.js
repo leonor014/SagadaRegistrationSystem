@@ -32,62 +32,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let currentPage = 1;
-const recordsPerPage = 5;
-let allRegistrations = [];
-let currentListener = null;
-
-const getDateRange = (period) => {
-    const now = new Date();
-    let start = new Date();
-    let end = new Date();
-
-    switch (period) {
-        case 'daily':
-            // Start of today (00:00:00)
-            start = new Date(now.setHours(0, 0, 0, 0));
-            // End of today (23:59:59)
-            end = new Date(now.setHours(23, 59, 59, 999));
-            break;
-        case 'weekly':
-            start.setDate(now.getDate() - now.getDay());
-            start.setHours(0,0,0,0);
-            break;
-        case 'monthly':
-            start = new Date(now.getFullYear(), now.getMonth(), 1);
-            break;
-        case 'yearly':
-            start = new Date(now.getFullYear(), 0, 1);
-            break;
-        case 'custom': {
-          const startInput = document.getElementById('startDate')?.value;
-          const endInput = document.getElementById('endDate')?.value;
-
-          // Do NOT return a range until both dates are selected
-          if (!startInput || !endInput) {
-            return null;
-          }
-
-          start = new Date(startInput);
-          end = new Date(endInput);
-          end.setHours(23, 59, 59, 999);
-          return { start, end };
-
-          // Extra safety check
-          //if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            //return null;
-          //}
-
-          //end.setHours(23, 59, 59, 999);
-          //return { start, end };
-        }
-
-        default:
-            return null; // For 'all'
-    }
-    return { start, end};
-};
-
 function updateNavPadding() {
   const nav = document.querySelector("nav");
   if (!nav) return;
@@ -108,118 +52,128 @@ updateNavPadding();
 // Run again on resize (important for responsiveness)
 window.addEventListener("resize", updateNavPadding);
 
+const listenToRegistrations = () => {
+  const tableBody = document.getElementById("registrationsTableBody");
 
-const listenToRegistrations = (period = 'all') => {
-  const range = getDateRange(period);
-  
-  // If custom range is incomplete, do nothing
-  if (period === 'custom' && !range) {
-    return;
-  }
+  const user = auth.currentUser;
 
-  // Unsubscribe from previous listener to prevent memory leaks
-  if (currentListener) currentListener();
+  const registrationsQuery = query(
+    collection(db, "registrations"),
+    orderBy("createdAt", "desc")
+  );
 
-  const col = collection(db, "registrations");
-  let q;
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="7" style="text-align: center;">Loading...</td>
+    </tr>
+  `;
 
-  // Determine the query based on the range
-  if (range && period !== 'all') {
-    q = query(
-      col,
-      where("createdAt", ">=", range.start),
-      where("createdAt", "<=", range.end),
-      orderBy("createdAt", "desc")
-    );
-  } else {
-    q = query(col, orderBy("createdAt", "desc"));
-  }
+  onSnapshot(registrationsQuery, async (querySnapshot) => {
+    tableBody.innerHTML = "";
 
-  // Set up the real-time listener using the variable 'q'
-  currentListener = onSnapshot(q, (snapshot) => {
-    allRegistrations = [];
-    snapshot.forEach((docSnap) => {
-      allRegistrations.push({
-        id: docSnap.id,
-        ...docSnap.data(),
-      });
-    });
+    if (querySnapshot.empty) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center;">No registrations found.</td>
+        </tr>
+      `;
+      return;
+    }
 
-    currentPage = 1;
-    renderTablePage();
-  }, (error) => {
-    console.error("Listener failed:", error);
-  });
-};
+    let hasRegistrations = false;
 
-// New function to handle the actual rendering of the current 10 items
-const renderTablePage = () => {
-  const tableBody = document.getElementById('registrationsTableBody');
-  
-  // Safety check (prevents crash if DOM not ready)
-  if (!tableBody) {
-    console.error("registrationsTableBody not found in DOM");
-    return;
-  }
-  
-  tableBody.innerHTML = '';
+    querySnapshot.forEach((docSnap) => {
+      const registrationId = docSnap.id;
 
-  const startIndex = (currentPage - 1) * recordsPerPage;
-  const endIndex = startIndex + recordsPerPage;
-  const paginatedData = allRegistrations.slice(startIndex, endIndex);
+      if (user && registrationId === user.uid) return;
 
-  paginatedData.forEach((reg) => {
-    // Check if it's a group registration (has a members array)
-    if (reg.regType === 'Group' && Array.isArray(reg.members)) {
-      reg.members.forEach((member, index) => {
-        const row = document.createElement('tr');
-        // We show the Group ID and Type only on the first row of the group for clarity
-          row.innerHTML = `
-            <td>${index === 0 ? reg.id : ''}</td>
-            <td>${member.name || 'N/A'}</td>
-            <td>${member.dob || 'N/A'}</td>
-            <td>${member.region || 'N/A'}</td>
-            <td>${member.country || 'N/A'}</td>
-            <td>${reg.regType} ${index === 0 ? '(Group)' : ''}</td>
-            <td>${reg.createdAt ? new Date(reg.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
-              <td>
-                <button class="action-btn view-btn" onclick="viewDetails('${reg.id}')">View</button>
-                <button class="action-btn delete-btn" onclick="deleteRegistration('${reg.id}')">Delete</button>
-              </td>
-            `;
-            tableBody.appendChild(row);
-          });
-    } else {
-      // Standard individual registration rendering
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${reg.id}</td>
-        <td>${reg.name || 'N/A'}</td>
-        <td>${reg.dob || 'N/A'}</td>
-        <td>${reg.region || 'N/A'}</td>
-        <td>${reg.country || 'N/A'}</td>
-        <td>${reg.regType || 'Individual'}</td>
-        <td>${reg.createdAt ? new Date(reg.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
+      hasRegistrations = true;
+      const reg = docSnap.data();
+      const regId = docSnap.id;
+      const tr = document.createElement("tr");
+
+      const regNo = reg.registrationNumber || "—";
+      const type = reg.registrationType || "—";
+      const regDate = reg.dateOfRegistration || "—";
+      const createdAt = reg.createdAt?.toDate().toLocaleString() || "—";
+
+      let nameOrGroup = "—";
+      let details = "";
+
+      if (type === "individual") {
+        nameOrGroup = reg.fullName || "—";
+        details = `
+          <div><strong>DOB:</strong> ${reg.dateOfBirth || "—"}</div>
+          <div><strong>Sex:</strong> ${reg.sex || "—"}</div>
+          <div><strong>Country:</strong> ${reg.country || "—"}</div>
+          <div><strong>Region:</strong> ${reg.region || "—"}</div>
+          <div><strong>Contact:</strong> ${reg.contactNumber || "—"}</div>
+          <div><strong>Email:</strong> ${reg.email || "—"}</div>
+        `;
+      } else if (type === "group") {
+        nameOrGroup = reg.groupName || "—";
+        details = `
+          <div><strong>Size:</strong> ${reg.groupSize || 0}</div>
+          <div><strong>Contact:</strong> ${reg.groupContact || "—"}</div>
+          <div><strong>Email:</strong> ${reg.groupEmail || "—"}</div>
+          <hr>
+          <div><strong>Members:</strong></div>
+          <ul style="margin-top: 5px; padding-left: 15px;">
+            ${
+              Array.isArray(reg.groupMembers)
+                ? reg.groupMembers
+                    .map(
+                      (m) => `
+                      <li>
+                        <strong>${m.memberName || "—"}</strong><br>
+                        DOB: ${m.memberDOB || "—"}<br>
+                        Sex: ${m.memberSex || "—"}<br>
+                        Country: ${m.memberCountry || "—"}<br>
+                        Region: ${m.memberRegion || "—"}
+                      </li>
+                    `
+                    )
+                    .join("")
+                : "<li>No members</li>"
+            }
+          </ul>
+        `;
+      }
+
+      tr.innerHTML = `
+        <td>${regNo}</td>
+        <td>${type}</td>
+        <td>${nameOrGroup}</td>
+        <td>${details}</td>
+        <td>${regDate}</td>
+        <td>${createdAt}</td>
         <td>
-          <button class="action-btn view-btn" onclick="viewDetails('${reg.id}')">View</button>
-          <button class="action-btn delete-btn" onclick="deleteRegistration('${reg.id}')">Delete</button>
+          <button class="action-btn view-btn" title="View Attendance" data-reg="${regNo}">
+            <i class="uil uil-eye"></i>
+          </button>
+          <button class="action-btn edit-btn" title="Edit" data-id="${regId}">
+              <i class="uil uil-edit-alt"></i>
+            </button>
+          <button class="action-btn delete-btn" title="Delete" data-id="${regId}">
+            <i class="uil uil-trash-alt"></i>
+          </button>
         </td>
       `;
-      tableBody.appendChild(row);
+
+      tableBody.appendChild(tr);
+    });
+
+    if (!hasRegistrations) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center;">No registrations found.</td>
+        </tr>
+      `;
     }
+
+    attachActionButtons();
   });
-  updatePaginationControls(allRegistrations.length);
 };
-
-function updatePaginationControls(total) {
-  const totalPages = Math.ceil(total / recordsPerPage);
-  document.getElementById("pageNumbers").textContent =
-    `Page ${currentPage} of ${totalPages || 1}`;
-
-  document.getElementById("prevPage").disabled = currentPage === 1;
-  document.getElementById("nextPage").disabled =
-    currentPage === totalPages || totalPages === 0;
-}
 
 function attachActionButtons() {
   // VIEW Button
@@ -396,7 +350,7 @@ onAuthStateChanged(auth, async (user) => {
         console.log("User document not found");
       }
 
-      listenToRegistrations('all');
+      listenToRegistrations();
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
@@ -524,48 +478,5 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("editModalClose").addEventListener("click", () => {
     document.getElementById("editModal").style.visibility = "hidden";
     document.body.classList.remove("modal-open");
-  });
-
-  const periodFilter = document.getElementById('periodFilter');
-  const customDateGroup = document.getElementById('customDateGroup');
-
-  periodFilter.addEventListener('change', (e) => {
-    if (e.target.value === 'custom') {
-        customDateGroup.style.display = 'flex';
-    } else {
-        customDateGroup.style.display = 'none';
-        listenToRegistrations(e.target.value);
-    }
-  });
-
-  // Trigger for custom date inputs
-  document.getElementById('startDate').addEventListener('change', () => {
-    if (document.getElementById('endDate').value) {
-      listenToRegistrations('custom');
-    }
-  });
-
-  document.getElementById('endDate').addEventListener('change', () => {
-    if (document.getElementById('startDate').value) {
-      listenToRegistrations('custom');
-    }
-  });
-
-  
-  // Add this at the very bottom of script.js
-  window.listenToRegistrations = listenToRegistrations;
-
-  document.getElementById("prevPage").addEventListener("click", () => {
-    if (currentPage > 1) {
-      currentPage--;
-      renderTablePage();
-    }
-  });
-
-  document.getElementById("nextPage").addEventListener("click", () => {
-    if (currentPage < Math.ceil(allRegistrations.length / recordsPerPage)) {
-      currentPage++;
-      renderTablePage();
-    }
   });
 });
