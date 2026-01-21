@@ -56,12 +56,24 @@ const getDateRange = (period) => {
       start = new Date(now.getFullYear(), 0, 1);
       break;
     case 'custom':
-      start = new Date(document.getElementById('startDate').value);
-      end = new Date(document.getElementById('endDate').value);
+      const startVal = document.getElementById('startDate').value;
+      const endVal = document.getElementById('endDate').value;
+
+      // FIX: If either date is missing, return null to prevent the crash
+      if (!startVal || !endVal) return null;
+
+      start = new Date(startVal);
+      end = new Date(endVal);
+      
+      // Ensure the end date covers the entire day
       end.setHours(23, 59, 59, 999);
+      
+      // Check if the resulting dates are actually valid numbers
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+
       return { start, end };
     default:
-      return null; // For 'all'
+      return null;
   }
   return { start, end: new Date() };
 };
@@ -176,6 +188,13 @@ const listenToRegistrations = (period = 'daily') => {
   let q = query(collection(db, "registrations"), orderBy("createdAt", "desc"));
   const registrationsCol = collection(db, "registrations");
 
+  // If user selected custom but dates are empty, show a message instead of querying
+  if (period === 'custom' && !range) {
+    const tableBody = document.getElementById("registrationsTableBody");
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Please select both a Start and End date.</td></tr>`;
+    return;
+  }
+  
   if (range && period !== 'all') {
     q = query(collection(db, "registrations"), 
       where("createdAt", ">=", range.start), 
