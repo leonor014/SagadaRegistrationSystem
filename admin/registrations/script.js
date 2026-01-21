@@ -110,26 +110,45 @@ window.addEventListener("resize", updateNavPadding);
 
 //let currentListener = null;
 
-const listenToRegistrations = () => {
-  //if (currentListener) currentListener();
+const listenToRegistrations = (period = 'daily') => {
   const tableBody = document.getElementById("registrationsTableBody");
   const range = getDateRange(period);
   const user = auth.currentUser;
 
+  // Show loading state immediately
+  tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Loading...</td></tr>`;
+
   let q = query(collection(db, "registrations"), orderBy("createdAt", "desc"));
+  const registrationsCol = collection(db, "registrations");
 
   if (range && period !== 'all') {
     q = query(collection(db, "registrations"), 
       where("createdAt", ">=", range.start), 
       where("createdAt", "<=", range.end), 
       orderBy("createdAt", "desc"));
+  } else {
+    q = query(registrationsCol, orderBy("createdAt", "desc"));
   }
 
   onSnapshot(q, (snapshot) => {
-    filteredData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Fill the array for pagination
+    filteredData = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      // Optional: Filter out current user if they are in this collection
+      .filter(reg => !(user && reg.id === user.uid));
+
     currentPage = 1;
     renderTable();
+
+    }, (error) => {
+    console.error("Firestore Error:", error);
+    if (error.code === 'failed-precondition') {
+        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">
+            Error: This query requires a Firestore Index. Check console for the link.
+        </td></tr>`;
+    }
   });
+};
 
   window.listenToRegistrations = listenToRegistrations;
 
