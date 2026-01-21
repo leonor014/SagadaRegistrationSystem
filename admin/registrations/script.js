@@ -107,53 +107,65 @@ const renderTable = () => {
     if (type === "individual") {
       nameOrGroup = reg.fullName || "—";
       details = `
+        <div><strong>DOB:</strong> ${reg.dateOfBirth || "—"}</div>
         <div><strong>Sex:</strong> ${reg.sex || "—"}</div>
+        <div><strong>Country:</strong> ${reg.country || "—"}</div>
+        <div><strong>Region:</strong> ${reg.region || "—"}</div>
         <div><strong>Contact:</strong> ${reg.contactNumber || "—"}</div>
         <div><strong>Email:</strong> ${reg.email || "—"}</div>
-        <div><strong>Region:</strong> ${reg.region || "—"}</div>
-        <div><strong>Country:</strong> ${reg.country || "—"}</div>
       `;
     } else if (type === "group") {
       nameOrGroup = reg.groupName || "—";
-
-      // Format Member Details
-      let memberDetails = "—";
-      if (reg.members && Array.isArray(reg.members)) {
-        memberDetails = reg.members.map(m => 
-          `<div class="member-item">• ${m.name} (${m.dateOfBirth || 'N/A'}) - ${m.region || 'N/A'}, ${m.country || 'N/A'}</div>`
-        ).join("");
-      }
-
       details = `
-        <div><strong>Members:</strong><div class="members-list">${memberDetails}</div></div>
-        <div style="margin-top: 5px;"><strong>Group Contact:</strong> ${reg.groupContact || "—"}</div>
-        <div><strong>Group Email:</strong> ${reg.groupEmail || "—"}</div>
+        <div><strong>Size:</strong> ${reg.groupSize || 0}</div>
+        <div><strong>Contact:</strong> ${reg.groupContact || "—"}</div>
+        <div><strong>Email:</strong> ${reg.groupEmail || "—"}</div>
+        <hr>
+        <div><strong>Members:</strong></div>
+        <ul style="margin-top: 5px; padding-left: 15px;">
+          ${
+            Array.isArray(reg.groupMembers)
+              ? reg.groupMembers
+                .map(
+                  (m) => `
+                  <li>
+                    <strong>${m.memberName || "—"}</strong><br>
+                    DOB: ${m.memberDOB || "—"}<br>
+                    Sex: ${m.memberSex || "—"}<br>
+                    Country: ${m.memberCountry || "—"}<br>
+                    Region: ${m.memberRegion || "—"}
+                  </li>
+                `
+                )
+                .join("")
+            : "<li>No members</li>"
+          }
+        </ul>
       `;
     }
 
     tr.innerHTML = `
       <td>${regNo}</td>
-      <td><span class="badge ${type}">${type}</span></td>
+      <td>${type}</td>
       <td>${nameOrGroup}</td>
-      <td class="details-cell">${details}</td>
+      <td>${details}</td>
       <td>${regDate}</td>
       <td>${createdAt}</td>
       <td>
-        <div class="action-buttons">
-          <button class="action-btn view-btn" title="View Attendance" data-reg="${regNo}">
-            <i class="uil uil-eye"></i>
-          </button>
-          <button class="action-btn edit-btn" title="Edit" data-id="${reg.id}">
-            <i class="uil uil-edit-alt"></i>
-          </button>
-          <button class="action-btn delete-btn" title="Delete" data-id="${reg.id}">
-            <i class="uil uil-trash-alt"></i>
-          </button>
-        </div>
+        <button class="action-btn view-btn" title="View Attendance" data-reg="${regNo}">
+          <i class="uil uil-eye"></i>
+        </button>
+        <button class="action-btn edit-btn" title="Edit" data-id="${reg.id}">
+          <i class="uil uil-edit-alt"></i>
+        </button>
+        <button class="action-btn delete-btn" title="Delete" data-id="${reg.id}">
+          <i class="uil uil-trash-alt"></i>
+        </button>
       </td>
     `;
     tableBody.appendChild(tr);
   });
+  
 
   // Update UI
   const pageIndicator = document.getElementById("pageIndicator");
