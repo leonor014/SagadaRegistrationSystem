@@ -32,6 +32,62 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+let currentPage = 1;
+const entriesPerPage = 5;
+let filteredData = [];
+
+const getDateRange = (period) => {
+  const now = new Date();
+  let start = new Date();
+  let end = new Date();
+
+  switch (period) {
+    case 'daily':
+      start.setHours(0,0,0,0);
+      break;
+    case 'weekly':
+      start.setDate(now.getDate() - now.getDay());
+      start.setHours(0,0,0,0);
+      break;
+    case 'monthly':
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      break;
+    case 'yearly':
+      start = new Date(now.getFullYear(), 0, 1);
+      break;
+    case 'custom':
+      start = new Date(document.getElementById('startDate').value);
+      end = new Date(document.getElementById('endDate').value);
+      end.setHours(23, 59, 59, 999);
+      return { start, end };
+    default:
+      return null; // For 'all'
+  }
+  return { start, end: new Date() };
+};
+
+const renderTable = () => {
+    const tableBody = document.getElementById("registrationsTableBody");
+    tableBody.innerHTML = "";
+
+    const start = (currentPage - 1) * entriesPerPage;
+    const end = start + entriesPerPage;
+    const pageItems = filteredData.slice(start, end);
+
+    pageItems.forEach(data => {
+        const tr = document.createElement("tr");
+        // ... (Use your existing logic to build the TR rows here) ...
+        tableBody.appendChild(tr);
+    });
+
+    // Update UI
+    document.getElementById("pageIndicator").innerText = `Page ${currentPage} of ${Math.ceil(filteredData.length / entriesPerPage) || 1}`;
+    document.getElementById("prevPage").disabled = currentPage === 1;
+    document.getElementById("nextPage").disabled = end >= filteredData.length;
+    
+    attachActionButtons(); // Re-attach listeners for Edit/Delete/Attendance
+};
+
 function updateNavPadding() {
   const nav = document.querySelector("nav");
   if (!nav) return;
@@ -52,15 +108,30 @@ updateNavPadding();
 // Run again on resize (important for responsiveness)
 window.addEventListener("resize", updateNavPadding);
 
-const listenToRegistrations = () => {
-  const tableBody = document.getElementById("registrationsTableBody");
+//let currentListener = null;
 
+const listenToRegistrations = () => {
+  //if (currentListener) currentListener();
+  const tableBody = document.getElementById("registrationsTableBody");
+  const range = getDateRange(period);
   const user = auth.currentUser;
 
-  const registrationsQuery = query(
-    collection(db, "registrations"),
-    orderBy("createdAt", "desc")
-  );
+  let q = query(collection(db, "registrations"), orderBy("createdAt", "desc"));
+
+  if (range && period !== 'all') {
+    q = query(collection(db, "registrations"), 
+      where("createdAt", ">=", range.start), 
+      where("createdAt", "<=", range.end), 
+      orderBy("createdAt", "desc"));
+  }
+
+  onSnapshot(q, (snapshot) => {
+    filteredData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    currentPage = 1;
+    renderTable();
+  });
+
+  window.listenToRegistrations = listenToRegistrations;
 
   tableBody.innerHTML = `
     <tr>
@@ -364,6 +435,25 @@ window.addEventListener("DOMContentLoaded", () => {
   const sidebarToggle = body.querySelector(".sidebar-toggle");
   const logoutBtn = document.getElementById("logoutBtn");
   const logoutIcon = document.getElementById("logoutIcon");
+
+  const periodFilter = document.getElementById('periodFilter');
+  const customDateGroup = document.getElementById('customDateGroup');
+
+  periodFilter.addEventListener('change', (e) => {
+    if (e.target.value === 'custom') {
+        customDateGroup.style.display = 'flex';
+    } else {
+        customDateGroup.style.display = 'none';
+        listenToRegistrations(e.target.value);
+    }
+  });
+
+  // Trigger for custom date inputs
+  document.getElementById('startDate').addEventListener('change', () => listenToRegistrations('custom'));
+  document.getElementById('endDate').addEventListener('change', () => listenToRegistrations('custom'));
+
+  // Default load: Daily
+  listenToRegistrations('daily');
 
   let getMode = localStorage.getItem("mode");
   if (getMode === "dark") {
