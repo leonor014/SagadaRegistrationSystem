@@ -67,38 +67,80 @@ const getDateRange = (period) => {
 };
 
 const renderTable = () => {
-    const tableBody = document.getElementById("registrationsTableBody");
-    tableBody.innerHTML = "";
+  const tableBody = document.getElementById("registrationsTableBody");
+  if (!tableBody) return;
+  tableBody.innerHTML = "";
 
-    const start = (currentPage - 1) * entriesPerPage;
-    const end = start + entriesPerPage;
-    const pageItems = filteredData.slice(start, end);
+  const start = (currentPage - 1) * entriesPerPage;
+  const end = start + entriesPerPage;
+  const pageItems = filteredData.slice(start, end);
 
-    pageItems.forEach(data => {
-        const tr = document.createElement("tr");
-        // ... (Use your existing logic to build the TR rows here) ...
-        tableBody.appendChild(tr);
-    });
+  if (pageItems.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">No registrations found for this period.</td></tr>`;
+  }
 
-    // Update UI
-    const pageIndicator = document.getElementById("pageIndicator");
-    const prevBtn = document.getElementById("prevPage");
-    const nextBtn = document.getElementById("nextPage");
+  pageItems.forEach(reg => {
+    const tr = document.createElement("tr");
 
-    if (pageIndicator) {
-      pageIndicator.innerText =
-        `Page ${currentPage} of ${Math.ceil(filteredData.length / entriesPerPage) || 1}`;
+    // Format data for display
+    const regNo = reg.registrationNumber || "—";
+    const type = reg.registrationType || "—";
+    const regDate = reg.dateOfRegistration || "—";
+    const createdAt = reg.createdAt?.toDate ? reg.createdAt.toDate().toLocaleString() : "—";
+
+    let nameOrGroup = "—";
+    let details = "";
+
+    // logic for Individual vs Group display
+    if (type === "individual") {
+      nameOrGroup = reg.fullName || "—";
+      details = `
+        <div><strong>Sex:</strong> ${reg.sex || "—"}</div>
+        <div><strong>Contact:</strong> ${reg.contactNumber || "—"}</div>
+        <div><strong>Region:</strong> ${reg.region || "—"}</div>
+      `;
+    } else if (type === "group") {
+      nameOrGroup = reg.groupName || "—";
+      details = `
+        <div><strong>Size:</strong> ${reg.groupSize || 0}</div>
+        <div><strong>Contact:</strong> ${reg.groupContact || "—"}</div>
+      `;
     }
 
-    if (prevBtn) {
-      prevBtn.disabled = currentPage === 1;
-    }
+    tr.innerHTML = `
+      <td>${regNo}</td>
+      <td><span class="badge ${type}">${type}</span></td>
+      <td>${nameOrGroup}</td>
+      <td class="details-cell">${details}</td>
+      <td>${regDate}</td>
+      <td>${createdAt}</td>
+      <td>
+        <div class="action-buttons">
+          <button class="action-btn view-btn" title="View Attendance" data-reg="${regNo}">
+            <i class="uil uil-eye"></i>
+          </button>
+          <button class="action-btn edit-btn" title="Edit" data-id="${reg.id}">
+            <i class="uil uil-edit-alt"></i>
+          </button>
+          <button class="action-btn delete-btn" title="Delete" data-id="${reg.id}">
+            <i class="uil uil-trash-alt"></i>
+          </button>
+        </div>
+      </td>
+    `;
+    tableBody.appendChild(tr);
+  });
 
-    if (nextBtn) {
-      nextBtn.disabled = end >= filteredData.length;
-    }
-
-    attachActionButtons(); // Re-attach listeners for Edit/Delete/Attendance
+  // Update UI
+  const pageIndicator = document.getElementById("pageIndicator");
+  if (pageIndicator) {
+    pageIndicator.innerText = `Page ${currentPage} of ${Math.ceil(filteredData.length / entriesPerPage) || 1}`;
+  }
+    
+  document.getElementById("prevPage").disabled = currentPage === 1;
+  document.getElementById("nextPage").disabled = end >= filteredData.length;
+    
+  attachActionButtons();
 };
 
 function updateNavPadding() {
