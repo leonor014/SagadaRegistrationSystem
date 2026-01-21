@@ -184,10 +184,15 @@
     // --- ARCHIVE FETCHING: Load user's valid registration numbers ---
     async function loadUserRegistrations() {
       const regSelect = document.getElementById("registrationNumber");
-      const fetchBtn = document.getElementById("fetchDetailsBtn");
+      //const fetchBtn = document.getElementById("fetchDetailsBtn");
       const userId = localStorage.getItem("userId");
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+
+      if (!userId) {
+        console.error("No user logged in.");
+        return;
+      }
 
       try {
         const q = query(
@@ -198,11 +203,11 @@
         const querySnapshot = await getDocs(q);
 
         regSelect.innerHTML = '<option value="">-- Select Registration --</option>';
-        let validCount = 0;
+        let validFound = false;
 
         querySnapshot.forEach(docSnap => {
           const data = docSnap.data();
-          const regDate = data.dateOfRegistration?.toDate ? data.dateOfRegistration.toDate() : new Date(data.dateOfRegistration);
+          const regDate = new Date(data.dateOfRegistration);
           regDate.setHours(0, 0, 0, 0);
 
           const expiryDate = new Date(regDate);
@@ -211,22 +216,22 @@
           if (today >= regDate && today <= expiryDate) {
             const option = document.createElement("option");
             option.value = data.registrationNumber;
-            option.textContent = `${data.registrationNumber} (Expires: ${expiryDate.toLocaleDateString()})`;
+            option.textContent = `${data.registrationNumber} (Valid until ${expiryDate.toLocaleDateString()})`;
             regSelect.appendChild(option);
-            validCount++;
+            validFound = true;
           }
         });
 
-        if (validCount === 0) {
+        if (!validFound) {
           regSelect.innerHTML = '<option value="">No valid registrations</option>';
-          fetchBtn.disabled = true;
-          showRegistrationPrompt("expired");
-        } else {
-          fetchBtn.disabled = false;
+          //fetchBtn.disabled = true;
+          showRegistrationPrompt();
+        //} else {
+          //fetchBtn.disabled = false;
         }
-      } catch (err) {
-        console.error("Error loading registrations:", err);
-        return false;
+      } catch (error) {
+        console.error("Error loading registrations:", error);
+        //return false;
       }
     }
 

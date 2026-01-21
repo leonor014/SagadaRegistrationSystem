@@ -33,7 +33,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentPage = 1;
-const recordsPerPage = 10;
+const recordsPerPage = 5;
 let allRegistrations = [];
 
 const getDateRange = (period) => {
@@ -624,7 +624,7 @@ window.addEventListener("DOMContentLoaded", () => {
       listenToRegistrations('custom');
     }
   });
-  
+
   // Default load: Daily
   listenToRegistrations('daily');
 
