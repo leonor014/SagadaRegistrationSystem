@@ -81,10 +81,23 @@ const renderTable = () => {
     });
 
     // Update UI
-    document.getElementById("pageIndicator").innerText = `Page ${currentPage} of ${Math.ceil(filteredData.length / entriesPerPage) || 1}`;
-    document.getElementById("prevPage").disabled = currentPage === 1;
-    document.getElementById("nextPage").disabled = end >= filteredData.length;
-    
+    const pageIndicator = document.getElementById("pageIndicator");
+    const prevBtn = document.getElementById("prevPage");
+    const nextBtn = document.getElementById("nextPage");
+
+    if (pageIndicator) {
+      pageIndicator.innerText =
+        `Page ${currentPage} of ${Math.ceil(filteredData.length / entriesPerPage) || 1}`;
+    }
+
+    if (prevBtn) {
+      prevBtn.disabled = currentPage === 1;
+    }
+
+    if (nextBtn) {
+      nextBtn.disabled = end >= filteredData.length;
+    }
+
     attachActionButtons(); // Re-attach listeners for Edit/Delete/Attendance
 };
 
@@ -361,8 +374,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById('startDate').addEventListener('change', () => listenToRegistrations('custom'));
   document.getElementById('endDate').addEventListener('change', () => listenToRegistrations('custom'));
 
-  // Default load: Daily
-  listenToRegistrations('daily');
+  
 
   let getMode = localStorage.getItem("mode");
   if (getMode === "dark") {
