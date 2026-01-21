@@ -153,67 +153,56 @@ const listenToRegistrations = (period = 'all') => {
 };
 
 // New function to handle the actual rendering of the current 10 items
-function renderTablePage() {
-    const tableBody = document.getElementById("registrationsTableBody");
-    tableBody.innerHTML = "";
-    
-    const start = (currentPage - 1) * recordsPerPage;
-    const end = start + recordsPerPage;
-    const pageData = allRegistrations.slice(start, end);
+const renderTablePage = () => {
+  const tableBody = document.getElementById('registrationTableBody');
+  tableBody.innerHTML = '';
 
-    if (pageData.length === 0) {
-      tableBody.innerHTML = `
-        <tr><td colspan="7" style="text-align:center;">No registrations found.</td></tr>`;
-      updatePaginationControls(0);
-      return;
-    }
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedData = allRegistrations.slice(startIndex, endIndex);
 
-    pageData.forEach((reg) => {
-      const tr = document.createElement("tr");
-
-      const createdAt = reg.createdAt?.toDate().toLocaleString() || "—";
-      const regNo = reg.registrationNumber || "—";
-      const type = reg.registrationType || "—";
-
-      let name = "—";
-      let details = "";
-
-      if (type === "individual") {
-        name = reg.fullName || "—";
-        details = `
-          <div>DOB: ${reg.dateOfBirth || "—"}</div>
-          <div>Sex: ${reg.sex || "—"}</div>
-          <div>Country: ${reg.country || "—"}</div>
-          <div>Region: ${reg.region || "—"}</div>
-        `;
-      } else {
-        name = reg.groupName || "—";
-        details = `
-          <div>Size: ${reg.groupSize || 0}</div>
-          <div>Contact: ${reg.groupContact || "—"}</div>
-        `;
-      }
-
-      tr.innerHTML = `
-        <td>${regNo}</td>
-        <td>${type}</td>
-        <td>${name}</td>
-        <td>${details}</td>
-        <td>${reg.dateOfRegistration || "—"}</td>
-        <td>${createdAt}</td>
+  paginatedData.forEach((reg) => {
+    // Check if it's a group registration (has a members array)
+    if (reg.regType === 'Group' && Array.isArray(reg.members)) {
+      reg.members.forEach((member, index) => {
+        const row = document.createElement('tr');
+        // We show the Group ID and Type only on the first row of the group for clarity
+          row.innerHTML = `
+            <td>${index === 0 ? reg.id : ''}</td>
+            <td>${member.name || 'N/A'}</td>
+            <td>${member.dob || 'N/A'}</td>
+            <td>${member.region || 'N/A'}</td>
+            <td>${member.country || 'N/A'}</td>
+            <td>${reg.regType} ${index === 0 ? '(Group)' : ''}</td>
+            <td>${reg.createdAt ? new Date(reg.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
+              <td>
+                <button class="action-btn view-btn" onclick="viewDetails('${reg.id}')">View</button>
+                <button class="action-btn delete-btn" onclick="deleteRegistration('${reg.id}')">Delete</button>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+    } else {
+      // Standard individual registration rendering
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${reg.id}</td>
+        <td>${reg.name || 'N/A'}</td>
+        <td>${reg.dob || 'N/A'}</td>
+        <td>${reg.region || 'N/A'}</td>
+        <td>${reg.country || 'N/A'}</td>
+        <td>${reg.regType || 'Individual'}</td>
+        <td>${reg.createdAt ? new Date(reg.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
         <td>
-          <button class="view-btn" data-reg="${regNo}">View</button>
-          <button class="edit-btn" data-id="${reg.id}">Edit</button>
-          <button class="delete-btn" data-id="${reg.id}">Delete</button>
+          <button class="action-btn view-btn" onclick="viewDetails('${reg.id}')">View</button>
+          <button class="action-btn delete-btn" onclick="deleteRegistration('${reg.id}')">Delete</button>
         </td>
       `;
-
-      tableBody.appendChild(tr);
-    });
-
-    updatePaginationControls(allRegistrations.length);
-    attachActionButtons();
-  }
+      tableBody.appendChild(row);
+    }
+  });
+  updatePaginationControls();
+};
 
 function updatePaginationControls(total) {
   const totalPages = Math.ceil(total / recordsPerPage);
