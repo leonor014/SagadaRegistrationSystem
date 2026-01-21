@@ -108,6 +108,7 @@ window.addEventListener("resize", updateNavPadding);
 
 const listenToRegistrations = (period = 'all') => {
   const range = getDateRange(period);
+  
   // If custom range is incomplete, do nothing
   if (period === 'custom' && !range) {
     return;
@@ -119,6 +120,7 @@ const listenToRegistrations = (period = 'all') => {
   let q;
   const col = collection(db, "registrations");
 
+  // Determine the query based on the range
   if (range && period !== 'all') {
     q = query(
       col,
@@ -130,31 +132,20 @@ const listenToRegistrations = (period = 'all') => {
     q = query(col, orderBy("createdAt", "desc"));
   }
 
-
-  //tableBody.innerHTML = `
-    //<tr>
-      //<td colspan="7" style="text-align: center;">Loading...</td>
-    //</tr>
-  //`;
-
-  currentListener = onSnapshot(registrationsQuery, async (querySnapshot) => {
+  // Set up the real-time listener using the variable 'q'
+  currentListener = onSnapshot(q, (snapshot) => {
     allRegistrations = [];
-    querySnapshot.forEach(doc => {
-      allRegistrations.push({ id: doc.id, ...doc.data() });
-    });
-
-    currentListener = onSnapshot(q, (snapshot) => {
-      allRegistrations = [];
-      snapshot.forEach((docSnap) => {
-        allRegistrations.push({
-          id: docSnap.id,
-          ...docSnap.data(),
-        });
+    snapshot.forEach((docSnap) => {
+      allRegistrations.push({
+        id: docSnap.id,
+        ...docSnap.data(),
       });
-
-      currentPage = 1;
-      renderTablePage();
     });
+
+    currentPage = 1;
+    renderTablePage();
+  }, (error) => {
+    console.error("Listener failed:", error);
   });
 };
 
