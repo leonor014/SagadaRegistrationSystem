@@ -263,7 +263,6 @@ const listenToRegistrations = (period = 'daily') => {
 
     attachActionButtons();
   });
-};
 
 function attachActionButtons() {
   // VIEW Button
