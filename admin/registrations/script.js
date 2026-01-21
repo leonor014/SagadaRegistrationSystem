@@ -109,13 +109,25 @@ const renderTable = () => {
       details = `
         <div><strong>Sex:</strong> ${reg.sex || "—"}</div>
         <div><strong>Contact:</strong> ${reg.contactNumber || "—"}</div>
+        <div><strong>Email:</strong> ${reg.email || "—"}</div>
         <div><strong>Region:</strong> ${reg.region || "—"}</div>
+        <div><strong>Country:</strong> ${reg.country || "—"}</div>
       `;
     } else if (type === "group") {
       nameOrGroup = reg.groupName || "—";
+
+      // Format Member Details
+      let memberDetails = "—";
+      if (reg.members && Array.isArray(reg.members)) {
+        memberDetails = reg.members.map(m => 
+          `<div class="member-item">• ${m.name} (${m.dateOfBirth || 'N/A'}) - ${m.region || 'N/A'}, ${m.country || 'N/A'}</div>`
+        ).join("");
+      }
+
       details = `
-        <div><strong>Size:</strong> ${reg.groupSize || 0}</div>
-        <div><strong>Contact:</strong> ${reg.groupContact || "—"}</div>
+        <div><strong>Members:</strong><div class="members-list">${memberDetails}</div></div>
+        <div style="margin-top: 5px;"><strong>Group Contact:</strong> ${reg.groupContact || "—"}</div>
+        <div><strong>Group Email:</strong> ${reg.groupEmail || "—"}</div>
       `;
     }
 
@@ -194,7 +206,7 @@ const listenToRegistrations = (period = 'daily') => {
     tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Please select both a Start and End date.</td></tr>`;
     return;
   }
-  
+
   if (range && period !== 'all') {
     q = query(collection(db, "registrations"), 
       where("createdAt", ">=", range.start), 
@@ -435,7 +447,20 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById('startDate').addEventListener('change', () => listenToRegistrations('custom'));
   document.getElementById('endDate').addEventListener('change', () => listenToRegistrations('custom'));
 
-  
+  document.getElementById("prevPage").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTable();
+    }
+  });
+
+  document.getElementById("nextPage").addEventListener("click", () => {
+    const maxPage = Math.ceil(filteredData.length / entriesPerPage);
+    if (currentPage < maxPage) {
+      currentPage++;
+      renderTable();
+    }
+  });  
 
   let getMode = localStorage.getItem("mode");
   if (getMode === "dark") {
