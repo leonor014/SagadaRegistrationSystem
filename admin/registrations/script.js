@@ -154,11 +154,18 @@ const listenToRegistrations = (period = 'all') => {
 
 // New function to handle the actual rendering of the current 10 items
 const renderTablePage = () => {
-  const tableBody = document.getElementById('registrationTableBody');
+  const tableBody = document.getElementById('registrationsTableBody');
+  
+  // Safety check (prevents crash if DOM not ready)
+  if (!tableBody) {
+    console.error("registrationsTableBody not found in DOM");
+    return;
+  }
+  
   tableBody.innerHTML = '';
 
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
   const paginatedData = allRegistrations.slice(startIndex, endIndex);
 
   paginatedData.forEach((reg) => {
@@ -201,7 +208,7 @@ const renderTablePage = () => {
       tableBody.appendChild(row);
     }
   });
-  updatePaginationControls();
+  updatePaginationControls(allRegistrations.length);
 };
 
 function updatePaginationControls(total) {
