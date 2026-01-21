@@ -35,6 +35,7 @@ const db = getFirestore(app);
 let currentPage = 1;
 const recordsPerPage = 5;
 let allRegistrations = [];
+let currentListener = null;
 
 const getDateRange = (period) => {
     const now = new Date();
@@ -66,20 +67,22 @@ const getDateRange = (period) => {
 
           start = new Date(startInput);
           end = new Date(endInput);
-
-          // Extra safety check
-          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            return null;
-          }
-
           end.setHours(23, 59, 59, 999);
           return { start, end };
+
+          // Extra safety check
+          //if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            //return null;
+          //}
+
+          //end.setHours(23, 59, 59, 999);
+          //return { start, end };
         }
 
         default:
             return null; // For 'all'
     }
-    return { start, end: new Date() };
+    return { start, end};
 };
 
 function updateNavPadding() {
@@ -102,10 +105,8 @@ updateNavPadding();
 // Run again on resize (important for responsiveness)
 window.addEventListener("resize", updateNavPadding);
 
-let currentListener = null;
 
 const listenToRegistrations = (period = 'all') => {
-
   const range = getDateRange(period);
   // If custom range is incomplete, do nothing
   if (period === 'custom' && !range) {
@@ -115,33 +116,26 @@ const listenToRegistrations = (period = 'all') => {
   // Unsubscribe from previous listener to prevent memory leaks
   if (currentListener) currentListener();
 
-  const tableBody = document.getElementById("registrationsTableBody");
-
-  const user = auth.currentUser;
-
-  let registrationsQuery;
-  const registrationsCol = collection(db, "registrations");
+  let q;
+  const col = collection(db, "registrations");
 
   if (range && period !== 'all') {
-    registrationsQuery = query(
-      registrationsCol,
+    q = query(
+      col,
       where("createdAt", ">=", range.start),
       where("createdAt", "<=", range.end),
-      orderBy("createdAt")
-    );
-  } else {
-    registrationsQuery = query(
-      registrationsCol,
       orderBy("createdAt", "desc")
     );
+  } else {
+    q = query(col, orderBy("createdAt", "desc"));
   }
 
 
-  tableBody.innerHTML = `
-    <tr>
-      <td colspan="7" style="text-align: center;">Loading...</td>
-    </tr>
-  `;
+  //tableBody.innerHTML = `
+    //<tr>
+      //<td colspan="7" style="text-align: center;">Loading...</td>
+    //</tr>
+  //`;
 
   currentListener = onSnapshot(registrationsQuery, async (querySnapshot) => {
     allRegistrations = [];
@@ -149,112 +143,18 @@ const listenToRegistrations = (period = 'all') => {
       allRegistrations.push({ id: doc.id, ...doc.data() });
     });
 
-    currentPage = 1; // Reset to page 1 on new data/filter
-        renderTablePage();
+    currentListener = onSnapshot(q, (snapshot) => {
+      allRegistrations = [];
+      snapshot.forEach((docSnap) => {
+        allRegistrations.push({
+          id: docSnap.id,
+          ...docSnap.data(),
+        });
+      });
 
-    tableBody.innerHTML = "";
-
-    if (querySnapshot.empty) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align: center;">No registrations found.</td>
-        </tr>
-      `;
-      return;
-    }
-
-    let hasRegistrations = false;
-
-    querySnapshot.forEach((docSnap) => {
-      const registrationId = docSnap.id;
-
-      if (user && registrationId === user.uid) return;
-
-      hasRegistrations = true;
-      const reg = docSnap.data();
-      const regId = docSnap.id;
-      const tr = document.createElement("tr");
-
-      const regNo = reg.registrationNumber || "—";
-      const type = reg.registrationType || "—";
-      const regDate = reg.dateOfRegistration || "—";
-      const createdAt = reg.createdAt?.toDate().toLocaleString() || "—";
-
-      let nameOrGroup = "—";
-      let details = "";
-
-      if (type === "individual") {
-        nameOrGroup = reg.fullName || "—";
-        details = `
-          <div><strong>DOB:</strong> ${reg.dateOfBirth || "—"}</div>
-          <div><strong>Sex:</strong> ${reg.sex || "—"}</div>
-          <div><strong>Country:</strong> ${reg.country || "—"}</div>
-          <div><strong>Region:</strong> ${reg.region || "—"}</div>
-          <div><strong>Contact:</strong> ${reg.contactNumber || "—"}</div>
-          <div><strong>Email:</strong> ${reg.email || "—"}</div>
-        `;
-      } else if (type === "group") {
-        nameOrGroup = reg.groupName || "—";
-        details = `
-          <div><strong>Size:</strong> ${reg.groupSize || 0}</div>
-          <div><strong>Contact:</strong> ${reg.groupContact || "—"}</div>
-          <div><strong>Email:</strong> ${reg.groupEmail || "—"}</div>
-          <hr>
-          <div><strong>Members:</strong></div>
-          <ul style="margin-top: 5px; padding-left: 15px;">
-            ${
-              Array.isArray(reg.groupMembers)
-                ? reg.groupMembers
-                    .map(
-                      (m) => `
-                      <li>
-                        <strong>${m.memberName || "—"}</strong><br>
-                        DOB: ${m.memberDOB || "—"}<br>
-                        Sex: ${m.memberSex || "—"}<br>
-                        Country: ${m.memberCountry || "—"}<br>
-                        Region: ${m.memberRegion || "—"}
-                      </li>
-                    `
-                    )
-                    .join("")
-                : "<li>No members</li>"
-            }
-          </ul>
-        `;
-      }
-
-      tr.innerHTML = `
-        <td>${regNo}</td>
-        <td>${type}</td>
-        <td>${nameOrGroup}</td>
-        <td>${details}</td>
-        <td>${regDate}</td>
-        <td>${createdAt}</td>
-        <td>
-          <button class="action-btn view-btn" title="View Attendance" data-reg="${regNo}">
-            <i class="uil uil-eye"></i>
-          </button>
-          <button class="action-btn edit-btn" title="Edit" data-id="${regId}">
-              <i class="uil uil-edit-alt"></i>
-            </button>
-          <button class="action-btn delete-btn" title="Delete" data-id="${regId}">
-            <i class="uil uil-trash-alt"></i>
-          </button>
-        </td>
-      `;
-
-      tableBody.appendChild(tr);
+      currentPage = 1;
+      renderTablePage();
     });
-
-    if (!hasRegistrations) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align: center;">No registrations found.</td>
-        </tr>
-      `;
-    }
-
-    attachActionButtons();
   });
 };
 
@@ -263,36 +163,72 @@ function renderTablePage() {
     const tableBody = document.getElementById("registrationsTableBody");
     tableBody.innerHTML = "";
     
-    const startIndex = (currentPage - 1) * recordsPerPage;
-    const endIndex = startIndex + recordsPerPage;
-    const paginatedItems = allRegistrations.slice(startIndex, endIndex);
+    const start = (currentPage - 1) * recordsPerPage;
+    const end = start + recordsPerPage;
+    const pageData = allRegistrations.slice(start, end);
 
-    if (paginatedItems.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">No registrations found.</td></tr>`;
-        updatePaginationControls(0);
-        return;
+    if (pageData.length === 0) {
+      tableBody.innerHTML = `
+        <tr><td colspan="7" style="text-align:center;">No registrations found.</td></tr>`;
+      updatePaginationControls(0);
+      return;
     }
 
-    paginatedItems.forEach(reg => {
-        const tr = document.createElement("tr");
-        // ... [Use your existing TR innerHTML logic here for rendering the row] ...
-        tableBody.appendChild(tr);
+    pageData.forEach((reg) => {
+      const tr = document.createElement("tr");
+
+      const createdAt = reg.createdAt?.toDate().toLocaleString() || "—";
+      const regNo = reg.registrationNumber || "—";
+      const type = reg.registrationType || "—";
+
+      let name = "—";
+      let details = "";
+
+      if (type === "individual") {
+        name = reg.fullName || "—";
+        details = `
+          <div>DOB: ${reg.dateOfBirth || "—"}</div>
+          <div>Sex: ${reg.sex || "—"}</div>
+          <div>Country: ${reg.country || "—"}</div>
+          <div>Region: ${reg.region || "—"}</div>
+        `;
+      } else {
+        name = reg.groupName || "—";
+        details = `
+          <div>Size: ${reg.groupSize || 0}</div>
+          <div>Contact: ${reg.groupContact || "—"}</div>
+        `;
+      }
+
+      tr.innerHTML = `
+        <td>${regNo}</td>
+        <td>${type}</td>
+        <td>${name}</td>
+        <td>${details}</td>
+        <td>${reg.dateOfRegistration || "—"}</td>
+        <td>${createdAt}</td>
+        <td>
+          <button class="view-btn" data-reg="${regNo}">View</button>
+          <button class="edit-btn" data-id="${reg.id}">Edit</button>
+          <button class="delete-btn" data-id="${reg.id}">Delete</button>
+        </td>
+      `;
+
+      tableBody.appendChild(tr);
     });
 
     updatePaginationControls(allRegistrations.length);
     attachActionButtons();
-}
+  }
 
-function updatePaginationControls(totalItems) {
-    const totalPages = Math.ceil(totalItems / recordsPerPage);
-    const prevBtn = document.getElementById("prevPage");
-    const nextBtn = document.getElementById("nextPage");
-    const pageNums = document.getElementById("pageNumbers");
+function updatePaginationControls(total) {
+  const totalPages = Math.ceil(total / recordsPerPage);
+  document.getElementById("pageNumbers").textContent =
+    `Page ${currentPage} of ${totalPages || 1}`;
 
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
-
-    pageNums.innerHTML = `Page ${currentPage} of ${totalPages || 1}`;
+  document.getElementById("prevPage").disabled = currentPage === 1;
+  document.getElementById("nextPage").disabled =
+    currentPage === totalPages || totalPages === 0;
 }
 
 function attachActionButtons() {
