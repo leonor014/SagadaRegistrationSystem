@@ -207,7 +207,16 @@
 
         querySnapshot.forEach(docSnap => {
           const data = docSnap.data();
-          const regDate = new Date(data.dateOfRegistration);
+
+          let regDate;
+
+          if (data.dateOfRegistration?.toDate) {
+            //Firestore Timestamp
+            regDate = data.dateOfRegistration.toDate ();
+          } else {
+            // Fallback if already string/date
+            regDate = new Date(data.dateOfRegistration); 
+          }
           regDate.setHours(0, 0, 0, 0);
 
           const expiryDate = new Date(regDate);
@@ -225,7 +234,7 @@
         if (!validFound) {
           regSelect.innerHTML = '<option value="">No valid registrations</option>';
           //fetchBtn.disabled = true;
-          showRegistrationPrompt();
+          //showRegistrationPrompt();
         //} else {
           //fetchBtn.disabled = false;
         }
@@ -551,6 +560,13 @@
       //document.getElementById("submitAttendanceBtn").disabled = false;
 
       const regNumber = document.getElementById("registrationNumber").value;
+
+      if (!regNumber || regNumber === "No valid registrations") {
+        showRegistrationPrompt();
+        return;
+      }
+
+
       if (!regNumber) {
         Swal.fire("Note", "Please select a registration number first.", "info");
         return;
