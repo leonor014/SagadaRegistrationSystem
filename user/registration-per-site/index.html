@@ -207,16 +207,7 @@
 
         querySnapshot.forEach(docSnap => {
           const data = docSnap.data();
-
-          let regDate;
-
-          if (data.dateOfRegistration?.toDate) {
-            //Firestore Timestamp
-            regDate = data.dateOfRegistration.toDate ();
-          } else {
-            // Fallback if already string/date
-            regDate = new Date(data.dateOfRegistration); 
-          }
+          const regDate = new Date(data.dateOfRegistration);
           regDate.setHours(0, 0, 0, 0);
 
           const expiryDate = new Date(regDate);
@@ -233,11 +224,11 @@
 
         if (!validFound) {
           regSelect.innerHTML = '<option value="">No valid registrations</option>';
-          //fetchBtn.disabled = true;
-          //showRegistrationPrompt();
-        //} else {
-          //fetchBtn.disabled = false;
+          showRegistrationPrompt();
+          return false;
+
         }
+        return true;
       } catch (error) {
         console.error("Error loading registrations:", error);
         //return false;
@@ -560,13 +551,6 @@
       //document.getElementById("submitAttendanceBtn").disabled = false;
 
       const regNumber = document.getElementById("registrationNumber").value;
-
-      if (!regNumber || regNumber === "No valid registrations") {
-        showRegistrationPrompt();
-        return;
-      }
-
-
       if (!regNumber) {
         Swal.fire("Note", "Please select a registration number first.", "info");
         return;
@@ -712,7 +696,7 @@
 
 
     // --- Event Listeners ---
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       const hamburger = document.getElementById("hamburger");
       const navLinks = document.getElementById("nav-links");
 
@@ -839,28 +823,42 @@
       if (submitBtn) submitBtn.disabled = true;
       regNumberInput.disabled = false; // disable input while validating
       if (fetchDetailsBtn) fetchDetailsBtn.disabled = true; // disable fetch button
-      if (userValidated) {
-        document.getElementById("body").style.visibility = "visible";
+      
+      // --- Event Listeners ---
+document.addEventListener("DOMContentLoaded", async () => {
+  // ... (Keep your Auth check and Navbar logic here) ...
 
-        // Load registrations first
-        loadUserRegistrations() .then (() => {
-          // 2. Only after checking validity, process the QR site
-          populateTouristSites().then(() => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const siteFromQR = urlParams.get("site");
+  if (userValidated) {
+    document.getElementById("body").style.visibility = "visible";
 
-            if (siteFromQR && siteSelect) {
-              const foundOption = Array.from(siteSelect.options).find(
-                opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
-              );
-              if (foundOption) {
-                siteSelect.value = foundOption.value;
-                siteSelect.disabled = true;
-                console.log("Site locked from QR:", foundOption.value);
-              }
-          }
-        });
-      });
+    // 1. Load registrations and wait for result
+    const hasValidReg = await loadUserRegistrations();
+
+    // 2. Populate sites
+    await populateTouristSites();
+
+    // 3. Handle QR Code Site locking
+    const urlParams = new URLSearchParams(window.location.search);
+    const siteFromQR = urlParams.get("site");
+    const siteSelect = document.getElementById("siteSelect");
+
+    if (siteFromQR && siteSelect) {
+      const foundOption = Array.from(siteSelect.options).find(
+        opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
+      );
+
+      if (foundOption) {
+        siteSelect.value = foundOption.value;
+        siteSelect.disabled = true;
+        // Only enable fetch if registration exists
+        if (hasValidReg) {
+          document.getElementById("fetchDetailsBtn").disabled = false;
+        }
+      } else {
+        Swal.fire({ icon: "error", title: "Invalid Site", text: "Site not recognized." });
+      }
+    }
+  }
 
       document.getElementById("fetchDetailsBtn").addEventListener("click", fetchDetails);
       document.getElementById("submitAttendanceBtn").addEventListener("click", submitAttendance);
@@ -918,9 +916,10 @@
           }
         }
       });
-    }
-  }
-);
+    });
+  });
+
+
   
 
   </script>
