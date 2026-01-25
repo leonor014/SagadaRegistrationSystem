@@ -75,6 +75,12 @@
         </button>
       </div>
 
+      <div id="quickSelectContainer" style="margin-bottom: 20px; display: none;">
+        <label>Your Active Registrations (Click to use):</label>
+        <div id="registrationList" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
+          </div>
+      </div>
+
     </div>
   </nav>
 
@@ -711,6 +717,7 @@
           if (mobileLogoutBtn) mobileLogoutBtn.style.display = isMobile ? "block" : "none";
           if (desktopLoginBtn) desktopLoginBtn.style.display = "none";
           if (mobileLoginBtn) mobileLoginBtn.style.display = "none";
+          loadUserRegistrations(userName);
         } else {
           // USER IS NOT LOGGED IN
           if (desktopLoginBtn) desktopLoginBtn.style.display = isMobile ? "none" : "block";
@@ -718,6 +725,7 @@
           if (mobileLogoutBtn) mobileLogoutBtn.style.display = "none";
           if (mobileProfile) mobileProfile.style.display = "none";
           if (desktopProfile) desktopProfile.style.display = "none";
+          showUnregisteredPopup();
         }
       }
 
@@ -848,7 +856,79 @@
         }
       });
 
-    });
+      // Add this inside your script module
+      async function loadUserRegistrations(userName) {
+        const regListContainer = document.getElementById("registrationList");
+        const quickSelectContainer = document.getElementById("quickSelectContainer");
+        const regInput = document.getElementById("registrationNumber");
+
+        try {
+          // Query registrations for the logged-in user
+          const q = query(collection(db, "registrations"), where("fullName", "==", userName));
+          const querySnapshot = await getDocs(q);
+
+          if (querySnapshot.empty) {
+            showUnregisteredPopup();
+            return;
+          }
+
+          let hasActiveReg = false;
+          regListContainer.innerHTML = "";
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const regDate = new Date(data.dateOfRegistration);
+            regDate.setHours(0, 0, 0, 0);
+
+            // 7-day expiry logic
+            const expiryDate = new Date(regDate);
+            expiryDate.setDate(expiryDate.getDate() + 7);
+
+            // Only show if registration is today/past AND not expired
+            if (regDate <= today && today <= expiryDate) {
+              hasActiveReg = true;
+              const btn = document.createElement("button");
+              btn.className = "button";
+              btn.style.cssText = "width: auto; background-color: #2e7d32; margin-right: 5px;";
+              btn.textContent = data.registrationNumber;
+                
+              btn.onclick = () => {
+                regInput.value = data.registrationNumber;
+                fetchDetails(); // Automatically trigger the fetch
+              };
+              regListContainer.appendChild(btn);
+            }
+        });
+
+        if (hasActiveReg) {
+          quickSelectContainer.style.display = "block";
+        } else {
+          showUnregisteredPopup(); // Show popup if they have records but all are expired
+        }
+      } catch (error) {
+        console.error("Error loading registrations:", error);
+      }
+    }
+    
+    function showUnregisteredPopup() {
+      Swal.fire({
+        title: "Not Registered?",
+        text: "Please go to the profile section first and fill out all required details for registration. Then go to 'Book a Visit' to register and pay your registration fee at the Tourism Office.",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonText: "Go to Profile",
+        cancelButtonText: "Close",
+        confirmButtonColor: "#2e7d32",
+      }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
+        }
+      });
+    }
+
+  });
 
   </script>
 </body>

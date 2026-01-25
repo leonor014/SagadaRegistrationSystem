@@ -511,6 +511,17 @@ footer {
   display: flex;
 }
 
+#registrationList .button {
+    background-color: var(--primary);
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    border: 1px solid var(--primary-dark);
+}
+
+#registrationList .button:hover {
+    background-color: var(--primary-light);
+}
+
 /* === Responsive Styles === */
 @media (max-width: 1024px) {
   .nav-links {
