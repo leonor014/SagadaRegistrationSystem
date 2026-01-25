@@ -756,31 +756,41 @@
       // === EVENT BINDINGS ===
       if (isUserValid) {
         document.getElementById("body").style.visibility = "visible";
-        // --- DESKTOP DROPDOWN ---
-        const desktopDropdown = document.createElement("li");
-        desktopDropdown.classList.add("dropdown-nav");
-        desktopDropdown.id = "profileDesktop";
-        desktopDropdown.innerHTML = `
-        <a href="#">${userName} ▾</a>
-        <ul class="dropdown-menu">
-            <li><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
-            <li><button class="logout-btn desktop-logout" id="logoutLink">Logout</button></li>
-        </ul>
-    `;
 
-        document.querySelector(".nav-right").prepend(desktopDropdown);
+        // 1. Load registrations FIRST
+        const hasValidReg = await loadUserRegistrations();
 
-        document.getElementById("logoutLink")?.addEventListener("click", logoutHandler);
-        document.getElementById("logoutLinkMobile")?.addEventListener("click", logoutHandler);
-      } else {
-        window.location.href = "/SagadaRegistrationSystem/user/user-auth.html";
-        desktopLoginBtn?.addEventListener("click", goToLogin);
-        mobileLoginBtn?.addEventListener("click", goToLogin);
+        // 2. Load sites SECOND
+        await populateTouristSites();
+
+        const siteSelect = document.getElementById("siteSelect");
+        const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
+        const urlParams = new URLSearchParams(window.location.search);
+        const siteFromQR = urlParams.get("site");
+
+        // 3. Logic for QR Code behavior
+        if (siteFromQR) {
+          const foundOption = Array.from(siteSelect.options).find(
+            opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
+          );
+
+          if (foundOption) {
+            siteSelect.value = foundOption.value;
+            siteSelect.disabled = true; // Lock the site from QR
+            
+            // IMPORTANT: Only enable fetch if a registration was actually found
+            if (hasValidReg) {
+              fetchDetailsBtn.disabled = false;
+            }
+          } else {
+            Swal.fire({ icon: "error", title: "Invalid Site", text: "QR site not recognized." });
+          }
+        } else {
+            // If no QR site, redirect or show warning as you intended
+            Swal.fire({ icon: "warning", title: "Missing Site", text: "Please scan a valid site QR." });
+        }
       }
-
-      // Run once on load
-      updateVisibility();
-
+      
       // === HAMBURGER MENU TOGGLE ===
       hamburger.addEventListener("click", () => {
         hamburger.classList.toggle("active");
@@ -823,42 +833,28 @@
       if (submitBtn) submitBtn.disabled = true;
       regNumberInput.disabled = false; // disable input while validating
       if (fetchDetailsBtn) fetchDetailsBtn.disabled = true; // disable fetch button
-      
-      // --- Event Listeners ---
-document.addEventListener("DOMContentLoaded", async () => {
-  // ... (Keep your Auth check and Navbar logic here) ...
+      if (userValidated) {
+        document.getElementById("body").style.visibility = "visible";
 
-  if (userValidated) {
-    document.getElementById("body").style.visibility = "visible";
+        // Load registrations first
+        loadUserRegistrations() .then (() => {
+          // 2. Only after checking validity, process the QR site
+          populateTouristSites().then(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const siteFromQR = urlParams.get("site");
 
-    // 1. Load registrations and wait for result
-    const hasValidReg = await loadUserRegistrations();
-
-    // 2. Populate sites
-    await populateTouristSites();
-
-    // 3. Handle QR Code Site locking
-    const urlParams = new URLSearchParams(window.location.search);
-    const siteFromQR = urlParams.get("site");
-    const siteSelect = document.getElementById("siteSelect");
-
-    if (siteFromQR && siteSelect) {
-      const foundOption = Array.from(siteSelect.options).find(
-        opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
-      );
-
-      if (foundOption) {
-        siteSelect.value = foundOption.value;
-        siteSelect.disabled = true;
-        // Only enable fetch if registration exists
-        if (hasValidReg) {
-          document.getElementById("fetchDetailsBtn").disabled = false;
-        }
-      } else {
-        Swal.fire({ icon: "error", title: "Invalid Site", text: "Site not recognized." });
-      }
-    }
-  }
+            if (siteFromQR && siteSelect) {
+              const foundOption = Array.from(siteSelect.options).find(
+                opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
+              );
+              if (foundOption) {
+                siteSelect.value = foundOption.value;
+                siteSelect.disabled = true;
+                console.log("Site locked from QR:", foundOption.value);
+              }
+          }
+        });
+      });
 
       document.getElementById("fetchDetailsBtn").addEventListener("click", fetchDetails);
       document.getElementById("submitAttendanceBtn").addEventListener("click", submitAttendance);
@@ -916,10 +912,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
       });
-    });
-  });
-
-
+    }
+  }
+);
   
 
   </script>
