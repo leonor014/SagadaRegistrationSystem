@@ -159,6 +159,25 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // --- Constants & Config ---
+    const CACHE_KEY = "user_registrations_cache";
+    const SYNC_INTERVAL = 15000; // 15 seconds
+
+    // 1. Storage Manager
+    const StorageManager = {
+      save: (data) => {
+        const payload = {
+            timestamp: Date.now(),
+            data: data
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+      },
+      get: () => {
+        const cached = localStorage.getItem(CACHE_KEY);
+        return cached ? JSON.parse(cached) : null;
+      }
+    };
+
     let allTourists = [];
     let selectedTourists = new Set();
     let currentPage = 1;
@@ -478,9 +497,25 @@
     async function fetchDetails() {
       document.getElementById("error").textContent = "";
       document.getElementById("touristList").innerHTML = "";
+
+      const regNumber = forcedRegNum || document.getElementById("registrationNumber").value.trim();
+      const cache = StorageManager.get();
+
       allTourists = [];
       selectedTourists.clear(); // Clear previous selections
-      let regNumber = document.getElementById("registrationNumber").value.trim();
+
+      // Check Cache First
+      if (cache && cache.data) {
+        const found = cache.data.find(r => r.registrationNumber === regNumber);
+        if (found) {
+            processRegistrationData(found);
+            return;
+          }
+        }
+
+        // Fallback to Database if not in cache or forced
+        await syncDataFromDatabase(regNumber);
+      
 
       if (!regNumber) {
         document.getElementById("error").textContent = "Please enter a registration number.";
@@ -573,6 +608,91 @@
       }
     }
 
+    // 3. Background Sync & Archive Creation
+    async function syncDataFromDatabase(targetRegToLoad = null) {
+      const userName = localStorage.getItem("userName");
+      if (!userName) return;
+
+      try {
+        const q = query(collection(db, "registrations"), where("fullName", "==", userName));
+        const querySnapshot = await getDocs(q);
+        const registrations = [];
+
+        querySnapshot.forEach(doc => {
+            registrations.push(doc.data());
+        });
+
+        StorageManager.save(registrations);
+        renderArchive(registrations);
+
+        if (targetRegToLoad) {
+            const match = registrations.find(r => r.registrationNumber === targetRegToLoad);
+            if (match) processRegistrationData(match);
+        }
+      } catch (error) {
+        console.error("Sync failed:", error);
+      }
+    }
+
+    // 4. Archive UI (As requested in image sample)
+    function renderArchive(registrations) {
+      const container = document.getElementById("registrationList");
+      const quickSelect = document.getElementById("quickSelectContainer");
+    
+      if (registrations.length > 0) {
+        quickSelect.style.display = "block";
+        container.innerHTML = "";
+        
+        // Filter: Only show last 7 days (Weekly Archive)
+        const now = new Date();
+        const weeklyRegs = registrations.filter(reg => {
+            const regDate = new Date(reg.dateOfRegistration);
+            const diff = (now - regDate) / (1000 * 60 * 60 * 24);
+            return diff <= 7;
+        });
+
+        weeklyRegs.forEach(reg => {
+            const btn = document.createElement("button");
+            btn.className = "button archive-btn";
+            btn.innerHTML = `<strong>${reg.registrationNumber}</strong><br><small>${reg.dateOfRegistration}</small>`;
+            btn.onclick = () => {
+                document.getElementById("registrationNumber").value = reg.registrationNumber;
+                processRegistrationData(reg);
+            };
+            container.appendChild(btn);
+        });
+      }
+    }
+
+    // 5. Data Processor (Separated from Fetching)
+    function processRegistrationData(data) {
+      allTourists = [];
+      selectedTourists.clear();
+
+      // Re-using your existing logic for age/nationality
+      let tourists = [];
+      if (data.fullName) {
+        tourists.push({
+          name: data.fullName,
+          age: calculateAge(data.dateOfBirth),
+          sex: data.sex,
+          nationality: getNationality(data.country),
+          region: data.region || "N/A"
+        });
+      } else if (data.groupMembers) {
+        tourists = data.groupMembers.map(m => ({
+          name: m.memberName,
+          age: calculateAge(m.memberDOB),
+          sex: m.memberSex,
+          nationality: getNationality(m.memberCountry),
+          region: m.memberRegion || "N/A"
+        }));
+      }
+
+      allTourists = tourists;
+      renderTablePage(1);
+      document.getElementById("touristDetails").style.display = "block";
+    }
 
     let isSubmittingAttendance = false;
     // --- Firestore Save ---
@@ -809,8 +929,20 @@
         const siteFromQR = urlParams.get("site");
 
         if (siteSelect && submitBtn && regNumberInput && fetchDetailsBtn) {
+          // Set 15-second timeout for background sync
+          setTimeout(() => {
+            syncDataFromDatabase();
+          }, 15000);
+
           if (siteFromQR) {
             // QR site parameter exists
+            const cache = StorageManager.get();
+            if (cache) {
+                renderArchive(cache.data);
+            } else {
+                syncDataFromDatabase(); // Initial fetch
+            }
+            
             const foundOption = Array.from(siteSelect.options).find(
               opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
             );
