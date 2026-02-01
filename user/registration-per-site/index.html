@@ -177,15 +177,13 @@
     }
 
     function validateQR(siteFromQR) {
-      const cachedSites = JSON.parse(
-        localStorage.getItem(CACHE_KEYS.SITES) || "[]"
-      );
+      const siteSelect = document.getElementById("siteSelect");
+      if (!siteSelect) return false;
 
-      return cachedSites.some(
-        site => site.toLowerCase() === siteFromQR.toLowerCase()
+      return Array.from(siteSelect.options).some(
+        opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
       );
     }
-
 
 
     let allTourists = [];
@@ -869,8 +867,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const siteFromQR = urlParams.get("site");
 
-        if (siteSelect && submitBtn && regNumberInput && fetchDetailsBtn) {
-          if (!siteFromQR || !validateQR(siteFromQR)) {
+        //if (siteSelect && submitBtn && regNumberInput && fetchDetailsBtn) {
+          if (!siteFromQR) {
             // QR site parameter exists
             Swal.fire({
               icon: "error",
@@ -882,49 +880,43 @@
               window.location.href = "/SagadaRegistrationSystem/index.html";
             });
             return;
+          }
 
-            if (foundOption) {
-              // Valid site
-              siteSelect.value = foundOption.value;
-              siteSelect.disabled = true;
-              submitBtn.disabled = false;
-              regNumberInput.disabled = false; // enable input
-              fetchDetailsBtn.disabled = false; // enable fetch
-              console.log("Site pre-selected from QR:", foundOption.value);
-            } else {
-              // Invalid QR site
-              Swal.fire({
-                icon: "error",
-                title: "Invalid QR Code",
-                text: `The site "${siteFromQR}" is not recognized. Redirecting to home...`,
-                timer: 15000,
-                showConfirmButton: false
-              }).then(() => {
-                window.location.href = "https://leonor014.github.io/SagadaRegistrationSystem/index.html";
-              });
-              submitBtn.disabled = true;
-              regNumberInput.disabled = true;
-              fetchDetailsBtn.disabled = true;
-            }
-          } else {
-            // No site parameter in QR
+          if (!validateQR(siteFromQR)) {
             Swal.fire({
-              icon: "warning",
-              title: "Missing Site Information",
-              text: "No tourist site detected in this QR link. Redirecting to home...",
-              timer: 2500,
+              icon: "error",
+              title: "Invalid QR Code",
+              text: `The site "${siteFromQR}" is not recognized.`,
+              timer: 15000,
               showConfirmButton: false
             }).then(() => {
-              window.location.href = "https://leonor014.github.io/SagadaRegistrationSystem/index.html";
+              window.location.href = "/SagadaRegistrationSystem/index.html";
             });
-            submitBtn.disabled = true;
-            regNumberInput.disabled = true;
-            fetchDetailsBtn.disabled = true;
+            return;
           }
-        }
-      });
 
-    });
+          // ✅ VALID QR
+          const siteSelect = document.getElementById("siteSelect");
+          const submitBtn = document.getElementById("submitAttendanceBtn");
+          const regNumberInput = document.getElementById("registrationNumber");
+          const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
+
+          const foundOption = Array.from(siteSelect.options).find(
+            opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
+          );
+
+          if (foundOption) {
+            siteSelect.value = foundOption.value;
+            siteSelect.disabled = true;
+
+            submitBtn.disabled = false;
+            regNumberInput.disabled = false;
+            fetchDetailsBtn.disabled = false;
+
+            console.log("✅ QR validated for site:", foundOption.value);
+          }     
+        });
+      });
 
   </script>
 </body>
