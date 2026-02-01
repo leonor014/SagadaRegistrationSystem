@@ -153,62 +153,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const CACHE_KEYS = {
-      SITES: "cachedTouristSites",
-      SITES_TS: "cachedTouristSitesTS",
-    };
-
-    const CACHE_TTL = 15 * 1000; // 15 seconds
-
-    // ===== Registration Cache =====
-    const REG_CACHE_PREFIX = "cachedRegistration_";
-
-    function getRegistrationCache(regNumber) {
-      const raw = localStorage.getItem(REG_CACHE_PREFIX + regNumber);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    }
-
-    function setRegistrationCache(regNumber, data) {
-      localStorage.setItem(
-        REG_CACHE_PREFIX + regNumber,
-        JSON.stringify({
-          timestamp: Date.now(),
-          data
-        })
-      );
-    }
-
-    function isRegistrationCacheFresh(cache) {
-      return Date.now() - cache.timestamp < CACHE_TTL;
-    }
-
-    function getCache(key, tsKey) {
-      const data = localStorage.getItem(key);
-      const ts = localStorage.getItem(tsKey);
-
-      if (!data || !ts) return null;
-
-      if (Date.now() - Number(ts) > CACHE_TTL) return null;
-
-      return JSON.parse(data);
-    }
-
-    function setCache(key, tsKey, data) {
-      localStorage.setItem(key, JSON.stringify(data));
-      localStorage.setItem(tsKey, Date.now().toString());
-    }
-
-    function validateQR(siteFromQR) {
-      const siteSelect = document.getElementById("siteSelect");
-      if (!siteSelect) return false;
-
-      return Array.from(siteSelect.options).some(
-        opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
-      );
-    }
-
-
     let allTourists = [];
     let selectedTourists = new Set();
     let currentPage = 1;
@@ -438,12 +382,12 @@
         let isChecked = selectedTourists.has(tourist.name);
         let row = document.createElement("tr");
         row.innerHTML = `
-                <td><input type="checkbox" class="touristCheckbox" data-name="${tourist.name}" ${isChecked ? "checked" : ""}></td>
-                <td>${tourist.name}</td>
-                <td>${tourist.age}</td>
-                <td>${tourist.sex}</td>
-                <td>${tourist.nationality}</td>
-            `;
+               <td><input type="checkbox" class="touristCheckbox" data-name="${tourist.name}" ${isChecked ? "checked" : ""}></td>
+               <td>${tourist.name}</td>
+               <td>${tourist.age}</td>
+               <td>${tourist.sex}</td>
+               <td>${tourist.nationality}</td>
+           `;
         tbody.appendChild(row);
 
         // Handle checkbox
@@ -525,128 +469,7 @@
       renderTablePage(currentPage); // Refresh the current page to show updated checkboxes
     }
 
-    async function fetchRegistrationFromFirestore(regNumber) {
-      const q = query(
-        collection(db, "registrations"),
-        where("registrationNumber", "==", regNumber)
-      );
-
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) return null;
-
-      let tourists = [];
-      let foundValid = false;
-
-      querySnapshot.forEach(docSnap => {
-        const data = docSnap.data();
-
-        if (!data.dateOfRegistration) return;
-
-        const regDate = new Date(data.dateOfRegistration);
-        regDate.setHours(0, 0, 0, 0);
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const expiryDate = new Date(regDate);
-        expiryDate.setDate(expiryDate.getDate() + 7);
-
-        if (regDate > today || today > expiryDate) return;
-
-        if (data.fullName) {
-          tourists.push({
-            name: data.fullName,
-            age: calculateAge(data.dateOfBirth),
-            sex: data.sex,
-            nationality: getNationality(data.country),
-            region: data.region || "Region not applicable"
-          });
-        } else if (Array.isArray(data.groupMembers)) {
-          tourists.push(
-            ...data.groupMembers.map(m => ({
-              name: m.memberName,
-              age: calculateAge(m.memberDOB),
-              sex: m.memberSex,
-              nationality: getNationality(m.memberCountry),
-              region: m.memberRegion || "Region not applicable"
-            }))
-          );
-        }
-
-        foundValid = true;
-      });
-
-      if (!foundValid || tourists.length === 0) return null;
-      return tourists;
-    }
-
-    function renderTourists(tourists) {
-      allTourists = tourists;
-      selectedTourists.clear();
-      currentPage = 1;
-      renderTablePage(1);
-      document.getElementById("touristDetails").style.display = "block";
-    }
-
-    function refreshRegistrationInBackground(regNumber) {
-      setTimeout(async () => {
-        try {
-          const freshData = await fetchRegistrationFromFirestore(regNumber);
-          if (!freshData) return;
-
-          setRegistrationCache(regNumber, freshData);
-          renderTourists(freshData);
-
-          console.log("🔄 Registration cache refreshed");
-        } catch (e) {
-          console.warn("Background refresh failed");
-        }
-      }, 15000);
-    }
-
     async function fetchDetails() {
-      document.getElementById("error").textContent = "";
-      document.getElementById("touristList").innerHTML = "";
-      document.getElementById("touristDetails").style.display = "none";
-
-      const regNumber = document.getElementById("registrationNumber").value.trim();
-      if (!regNumber) {
-        document.getElementById("error").textContent =
-          "Please enter a registration number.";
-        return;
-      }
-
-      // 1️⃣ Try cache first
-      const cached = getRegistrationCache(regNumber);
-      if (cached) {
-        renderTourists(cached.data);
-
-        // 2️⃣ Refresh in background if stale
-        if (!isRegistrationCacheFresh(cached)) {
-          refreshRegistrationInBackground(regNumber);
-        }
-        return;
-      }
-
-      // 3️⃣ No cache → Firestore
-      try {
-        const tourists = await fetchRegistrationFromFirestore(regNumber);
-
-        if (!tourists) {
-          document.getElementById("error").textContent =
-            "Registration number not found or expired.";
-          return;
-        }
-
-        setRegistrationCache(regNumber, tourists);
-        renderTourists(tourists);
-      } catch (err) {
-        document.getElementById("error").textContent =
-          "Error fetching data: " + err.message;
-      }
-    }
-
-    /* async function fetchDetails() {
       document.getElementById("error").textContent = "";
       document.getElementById("touristList").innerHTML = "";
       allTourists = [];
@@ -743,7 +566,7 @@
         document.getElementById("touristDetails").style.display = "none";
       }
     }
- */
+
 
     let isSubmittingAttendance = false;
     // --- Firestore Save ---
@@ -814,66 +637,32 @@
       }
     }
 
-    function renderSites(select, sites) {
-      select.innerHTML = '<option value="">Select a site</option>';
-      sites.forEach(name => {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        select.appendChild(opt);
-      });
-      select.disabled = false;
-    }
-
     async function populateTouristSites() {
       const siteSelect = document.getElementById("siteSelect");
       if (!siteSelect) return;
 
-      // 1️⃣ Try localStorage first
-      const cachedSites = getCache(CACHE_KEYS.SITES, CACHE_KEYS.SITES_TS);
-
-      if (cachedSites) {
-        renderSites(siteSelect, cachedSites);
-        refreshSitesInBackground(); // 🔁 silent refresh
-        return;
-      }
-
-      // 2️⃣ Fallback to Firestore
-      await fetchSitesFromFirestore(siteSelect);
-
-
-    }
-
-    async function fetchSitesFromFirestore(select) {
       try {
-        const snapshot = await getDocs(collection(db, "tourist-spots"));
-        const sites = [];
+        const spotsSnapshot = await getDocs(collection(db, "tourist-spots"));
+        siteSelect.innerHTML = '<option value="">Select a site</option>'; // reset options
 
-        snapshot.forEach(doc => sites.push(doc.data().name));
+        spotsSnapshot.forEach(docSnap => {
+          const spot = docSnap.data();
+          const option = document.createElement("option");
+          option.value = spot.name;
+          option.textContent = spot.name;
+          siteSelect.appendChild(option);
+        });
 
-        setCache(CACHE_KEYS.SITES, CACHE_KEYS.SITES_TS, sites);
-        renderSites(select, sites);
-
-      } catch (err) {
-        console.error("Site fetch failed:", err);
-        Swal.fire("Error", "Failed to load tourist sites.", "error");
+        // Enable the select after loading
+        siteSelect.disabled = false;
+      } catch (error) {
+        console.error("Error fetching tourist spots:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to load tourist sites. Please try again later"
+        });
       }
-    }
-
-    function refreshSitesInBackground() {
-      setTimeout(async () => {
-        try {
-          const snapshot = await getDocs(collection(db, "tourist-spots"));
-          const sites = [];
-
-          snapshot.forEach(doc => sites.push(doc.data().name));
-          setCache(CACHE_KEYS.SITES, CACHE_KEYS.SITES_TS, sites);
-
-          console.log("Tourist sites cache refreshed");
-        } catch (e) {
-          console.warn("Background refresh failed");
-        }
-      }, 15000);
     }
 
 
@@ -943,12 +732,12 @@
         desktopDropdown.classList.add("dropdown-nav");
         desktopDropdown.id = "profileDesktop";
         desktopDropdown.innerHTML = `
-        <a href="#">${userName} ▾</a>
-        <ul class="dropdown-menu">
-            <li><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
-            <li><button class="logout-btn desktop-logout" id="logoutLink">Logout</button></li>
-        </ul>
-    `;
+       <a href="#">${userName} ▾</a>
+       <ul class="dropdown-menu">
+           <li><a href="/SagadaRegistrationSystem/user/profile/index.html">Profile</a></li>
+           <li><button class="logout-btn desktop-logout" id="logoutLink">Logout</button></li>
+       </ul>
+   `;
 
         document.querySelector(".nav-right").prepend(desktopDropdown);
 
@@ -1011,58 +800,55 @@
         const urlParams = new URLSearchParams(window.location.search);
         const siteFromQR = urlParams.get("site");
 
-        //if (siteSelect && submitBtn && regNumberInput && fetchDetailsBtn) {
-        if (!siteFromQR) {
-          // QR site parameter exists
-          Swal.fire({
-            icon: "error",
-            title: "Invalid QR Code",
-            text: "This QR code is not recognized.",
-            timer: 15000,
-            showConfirmButton: false
-          }).then(() => {
-            window.location.href = "/SagadaRegistrationSystem/index.html";
-          });
-          return;
-        }
+        if (siteSelect && submitBtn && regNumberInput && fetchDetailsBtn) {
+          if (siteFromQR) {
+            // QR site parameter exists
+            const foundOption = Array.from(siteSelect.options).find(
+              opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
+            );
 
-        if (!validateQR(siteFromQR)) {
-          Swal.fire({
-            icon: "error",
-            title: "Invalid QR Code",
-            text: `The site "${siteFromQR}" is not recognized.`,
-            timer: 15000,
-            showConfirmButton: false
-          }).then(() => {
-            window.location.href = "/SagadaRegistrationSystem/index.html";
-          });
-          return;
-        }
-
-        // ✅ VALID QR
-        const siteSelect = document.getElementById("siteSelect");
-        const submitBtn = document.getElementById("submitAttendanceBtn");
-        const regNumberInput = document.getElementById("registrationNumber");
-        const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
-
-        const foundOption = Array.from(siteSelect.options).find(
-          opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
-        );
-
-        if (foundOption) {
-          siteSelect.value = foundOption.value;
-          siteSelect.disabled = true;
-
-          submitBtn.disabled = false;
-          regNumberInput.disabled = false;
-          fetchDetailsBtn.disabled = false;
-
-          console.log("✅ QR validated for site:", foundOption.value);
+            if (foundOption) {
+              // Valid site
+              siteSelect.value = foundOption.value;
+              siteSelect.disabled = true;
+              submitBtn.disabled = false;
+              regNumberInput.disabled = false; // enable input
+              fetchDetailsBtn.disabled = false; // enable fetch
+              console.log("Site pre-selected from QR:", foundOption.value);
+            } else {
+              // Invalid QR site
+              Swal.fire({
+                icon: "error",
+                title: "Invalid QR Code",
+                text: `The site "${siteFromQR}" is not recognized. Redirecting to home...`,
+                timer: 2500,
+                showConfirmButton: false
+              }).then(() => {
+                window.location.href = "https://leonor014.github.io/SagadaRegistrationSystem/index.html";
+              });
+              submitBtn.disabled = true;
+              regNumberInput.disabled = true;
+              fetchDetailsBtn.disabled = true;
+            }
+          } else {
+            // No site parameter in QR
+            Swal.fire({
+              icon: "warning",
+              title: "Missing Site Information",
+              text: "No tourist site detected in this QR link. Redirecting to home...",
+              timer: 2500,
+              showConfirmButton: false
+            }).then(() => {
+              window.location.href = "https://leonor014.github.io/SagadaRegistrationSystem/index.html";
+            });
+            submitBtn.disabled = true;
+            regNumberInput.disabled = true;
+            fetchDetailsBtn.disabled = true;
+          }
         }
       });
+
     });
 
   </script>
 </body>
-
-</html>
