@@ -176,6 +176,17 @@
       localStorage.setItem(tsKey, Date.now().toString());
     }
 
+    function validateQR(siteFromQR) {
+      const cachedSites = JSON.parse(
+        localStorage.getItem(CACHE_KEYS.SITES) || "[]"
+      );
+
+      return cachedSites.some(
+        site => site.toLowerCase() === siteFromQR.toLowerCase()
+      );
+    }
+
+
 
     let allTourists = [];
     let selectedTourists = new Set();
@@ -661,6 +672,17 @@
       }
     }
 
+    function renderSites(select, sites) {
+      select.innerHTML = '<option value="">Select a site</option>';
+      sites.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+      select.disabled = false;
+    }
+
     async function populateTouristSites() {
       const siteSelect = document.getElementById("siteSelect");
       if (!siteSelect) return;
@@ -677,16 +699,7 @@
       // 2️⃣ Fallback to Firestore
       await fetchSitesFromFirestore(siteSelect);
 
-      function renderSites(select, sites) {
-        select.innerHTML = '<option value="">Select a site</option>';
-        sites.forEach(name => {
-          const opt = document.createElement("option");
-          opt.value = name;
-          opt.textContent = name;
-          select.appendChild(opt);
-        });
-        select.disabled = false;
-      }
+      
     }
 
     async function fetchSitesFromFirestore(select) {
