@@ -81,7 +81,10 @@
   <div class="container">
     <h2>Tourist Site Registration</h2>
     <label for="registrationNumber">Enter Registration Number:</label>
-    <input type="text" id="registrationNumber" value="REG-">
+    <!--<input type="text" id="registrationNumber" value="REG-">-->
+    <select id="registrationNumber">
+      <option value="">Loading registrations...</option>
+    </select>
     <button id="fetchDetailsBtn" class="button">Fetch Details</button>
 
     <p id="error" class="error"></p>
@@ -364,11 +367,11 @@
     }
 
     // --- Utility Functions ---
-    function enforcePrefix(input) {
+    /* function enforcePrefix(input) {
       if (!input.value.startsWith("REG-")) {
         input.value = "REG-";
       }
-    }
+    } */
 
     // --- Table Rendering ---
     function renderTablePage(page) {
@@ -467,6 +470,132 @@
         selectedTourists.clear();
       }
       renderTablePage(currentPage); // Refresh the current page to show updated checkboxes
+    }
+
+    /* async function populateRegistrationDropdown(userEmail) {
+      const select = document.getElementById("registrationNumber");
+      if (!select) return;
+
+      select.innerHTML = `<option value="">Select a registration</option>`;
+
+      try {
+        const regRef = collection(db, "registrations");
+
+        // Build two queries
+        const emailQuery = query(regRef, where("email", "==", userEmail));
+        const groupEmailQuery = query(regRef, where("groupEmail", "==", userEmail));
+
+        const [emailSnap, groupEmailSnap] = await Promise.all([
+          getDocs(emailQuery),
+          getDocs(groupEmailQuery),
+        ]);
+
+        const registrations = [];
+
+        emailSnap.forEach(doc =>
+          registrations.push({ id: doc.id, ...doc.data() })
+        );
+        groupEmailSnap.forEach(doc =>
+          registrations.push({ id: doc.id, ...doc.data() })
+        );
+
+        // Sort locally by dateOfRegistration (latest first)
+        registrations.sort(
+          (a, b) =>
+            new Date(b.dateOfRegistration) - new Date(a.dateOfRegistration)
+        );
+
+        if (registrations.length === 0) {
+          select.innerHTML =
+            `<option value="">No registrations found</option>`;
+          return;
+        }
+
+        registrations.forEach(reg => {
+          const option = document.createElement("option");
+          option.value = reg.registrationNumber;
+          option.textContent = `${reg.registrationNumber} (${reg.dateOfRegistration})`;
+          select.appendChild(option);
+        });
+
+        select.disabled = false;
+
+      } catch (error) {
+        console.error("Error loading registrations:", error);
+        select.innerHTML =
+          `<option value="">Failed to load registrations</option>`;
+      }
+    }*/
+
+    async function populateRegistrationDropdown(userEmail) {
+      const select = document.getElementById("registrationNumber");
+      if (!select) return;
+
+      select.innerHTML = `<option value="">Select a registration</option>`;
+
+      try {
+        const regRef = collection(db, "registrations");
+
+        // Build two queries
+        const emailQuery = query(regRef, where("email", "==", userEmail));
+        const groupEmailQuery = query(regRef, where("groupEmail", "==", userEmail));
+
+        const [emailSnap, groupEmailSnap] = await Promise.all([
+          getDocs(emailQuery),
+          getDocs(groupEmailQuery),
+        ]);
+
+        const registrations = [];
+
+        // Combine and filter by valid date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const processDocs = (snap) => {
+          snap.forEach(doc => {
+            const data = doc.data();
+            if (!data.dateOfRegistration) return;
+
+            const regDate = new Date(data.dateOfRegistration);
+            regDate.setHours(0, 0, 0, 0);
+
+            // 7-day expiry
+            const expiryDate = new Date(regDate);
+            expiryDate.setDate(expiryDate.getDate() + 7);
+
+            // Only include registrations that are currently valid
+            if (regDate <= today && today <= expiryDate) {
+              registrations.push({ id: doc.id, ...data });
+            }
+          });
+        };
+
+        processDocs(emailSnap);
+        processDocs(groupEmailSnap);
+
+        // Sort by dateOfRegistration (latest first)
+        registrations.sort(
+          (a, b) => new Date(b.dateOfRegistration) - new Date(a.dateOfRegistration)
+        );
+
+        if (registrations.length === 0) {
+          select.innerHTML = `<option value="">No valid registrations found</option>`;
+          return;
+        }
+
+        registrations.forEach(reg => {
+          const option = document.createElement("option");
+          option.value = reg.registrationNumber;
+          option.textContent = `${reg.registrationNumber} (${reg.dateOfRegistration})`;
+          select.appendChild(option);
+        });
+
+        select.disabled = false;
+
+      } catch (error) {
+        console.error("Error loading registrations:", error);
+        select.innerHTML = `<option value="">Failed to load registrations</option>`;
+      }
     }
 
     async function fetchDetails() {
@@ -617,7 +746,8 @@
           text: "Attendance recorded successfully!",
         });
         document.getElementById("touristDetails").style.display = "none";
-        document.getElementById("registrationNumber").value = "REG-";
+        //document.getElementById("registrationNumber").value = "REG-";
+        document.getElementById("registrationNumber").value = "";
         document.getElementById("touristList").innerHTML = "";
         selectedTourists.clear(); // ✅ Clear after submission
 
@@ -637,12 +767,85 @@
       }
     }
 
+    /* async function loadTouristSitesWithCache(userEmail) {
+      const siteSelect = document.getElementById("siteSelect");
+      if (!siteSelect) return;
+
+      // Return a promise so we can await completion
+      return new Promise((resolve, reject) => {
+        // Check localStorage first
+        let cachedSites = localStorage.getItem("touristSites");
+        if (cachedSites) {
+          try {
+            cachedSites = JSON.parse(cachedSites);
+            populateSiteSelect(siteSelect, cachedSites);
+            resolve(); // resolve immediately if cache exists
+          } catch (err) {
+            console.error("Error parsing cached tourist sites", err);
+            cachedSites = null;
+          }
+        }
+
+        // Fetch from Firestore after delay (or immediately if no cache)
+        const fetchDelay = cachedSites ? 15000 : 0;
+        setTimeout(async () => {
+          try {
+            const snapshot = await getDocs(collection(db, "tourist-spots"));
+            const spots = [];
+            snapshot.forEach(doc => spots.push(doc.data().name));
+            populateSiteSelect(siteSelect, spots);
+
+            // Update localStorage
+            localStorage.setItem("touristSites", JSON.stringify(spots));
+            resolve(); // resolve after fetch completes
+          } catch (error) {
+            console.error("Error fetching tourist spots:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "Failed to load tourist sites. Please try again later"
+            });
+            reject(error);
+          }
+        }, fetchDelay);
+      });
+    } */
+
+    let isQrValid = false;
+    let areRegistrationsFetched = false;
+
+    function enableControlsIfReady() {
+      const siteSelect = document.getElementById("siteSelect");
+      const submitBtn = document.getElementById("submitAttendanceBtn");
+      const regNumberInput = document.getElementById("registrationNumber");
+      const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
+
+      if (isQrValid && areRegistrationsFetched && siteSelect.options.length > 1) {
+        if (siteSelect) siteSelect.disabled = false;
+        if (submitBtn) submitBtn.disabled = false;
+        if (regNumberInput) regNumberInput.disabled = false;
+        if (fetchDetailsBtn) fetchDetailsBtn.disabled = false;
+      }
+    }
+
+
+    // Helper to populate the select
+    function populateSiteSelect(selectElement, spots) {
+      selectElement.innerHTML = '<option value="">Select a site</option>';
+      spots.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        selectElement.appendChild(option);
+      });
+    }
+
     async function populateTouristSites() {
       const siteSelect = document.getElementById("siteSelect");
       if (!siteSelect) return;
 
       try {
-        const spotsSnapshot = await getDocs(collection(db, "tourist-spots"));
+        const spotsSnapshot = await getDocs(collection(db, "tourist-spots-name"));
         siteSelect.innerHTML = '<option value="">Select a site</option>'; // reset options
 
         spotsSnapshot.forEach(docSnap => {
@@ -779,7 +982,7 @@
         }
       });
 
-      document.getElementById("registrationNumber").addEventListener("input", (e) => enforcePrefix(e.target));
+      //document.getElementById("registrationNumber").addEventListener("input", (e) => enforcePrefix(e.target));
       document.getElementById("fetchDetailsBtn").addEventListener("click", fetchDetails);
       document.getElementById("submitAttendanceBtn").addEventListener("click", submitAttendance);
       document.getElementById("selectAll").addEventListener("change", handleSelectAll);
@@ -795,7 +998,6 @@
       if (regNumberInput) regNumberInput.disabled = true; // disable input while validating
       if (fetchDetailsBtn) fetchDetailsBtn.disabled = true; // disable fetch button
 
-      // --- Populate sites then handle QR ---
       populateTouristSites().then(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const siteFromQR = urlParams.get("site");
@@ -810,13 +1012,18 @@
             if (foundOption) {
               // Valid site
               siteSelect.value = foundOption.value;
-              siteSelect.disabled = true;
-              submitBtn.disabled = false;
-              regNumberInput.disabled = false; // enable input
-              fetchDetailsBtn.disabled = false; // enable fetch
+              isQrValid = true; // mark QR valid
+
+              // Fetch registrations for user
+              populateRegistrationDropdown(userEmail).then(() => {
+                areRegistrationsFetched = true; // mark registrations fetched
+                enableControlsIfReady(); // only now enable buttons
+              });
+
               console.log("Site pre-selected from QR:", foundOption.value);
+
             } else {
-              // Invalid QR site
+              // Invalid QR
               Swal.fire({
                 icon: "error",
                 title: "Invalid QR Code",
@@ -826,9 +1033,6 @@
               }).then(() => {
                 window.location.href = "https://leonor014.github.io/SagadaRegistrationSystem/index.html";
               });
-              submitBtn.disabled = true;
-              regNumberInput.disabled = true;
-              fetchDetailsBtn.disabled = true;
             }
           } else {
             // No site parameter in QR
@@ -847,7 +1051,6 @@
           }
         }
       });
-
     });
 
   </script>
