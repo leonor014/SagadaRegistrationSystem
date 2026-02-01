@@ -75,12 +75,6 @@
         </button>
       </div>
 
-      <div id="quickSelectContainer" style="margin-bottom: 20px; display: none;">
-        <label>Your Active Registrations (Click to use):</label>
-        <div id="registrationList" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
-          </div>
-      </div>
-
     </div>
   </nav>
 
@@ -159,24 +153,29 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- Constants & Config ---
-    const CACHE_KEY = "user_registrations_cache";
-    const SYNC_INTERVAL = 15000; // 15 seconds
-
-    // 1. Storage Manager
-    const StorageManager = {
-      save: (data) => {
-        const payload = {
-            timestamp: Date.now(),
-            data: data
-        };
-        localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
-      },
-      get: () => {
-        const cached = localStorage.getItem(CACHE_KEY);
-        return cached ? JSON.parse(cached) : null;
-      }
+    const CACHE_KEYS = {
+      SITES: "cachedTouristSites",
+      SITES_TS: "cachedTouristSitesTS",
     };
+
+    const CACHE_TTL = 15 * 1000; // 15 seconds
+
+    function getCache(key, tsKey) {
+      const data = localStorage.getItem(key);
+      const ts = localStorage.getItem(tsKey);
+
+      if (!data || !ts) return null;
+
+      if (Date.now() - Number(ts) > CACHE_TTL) return null;
+
+      return JSON.parse(data);
+    }
+
+    function setCache(key, tsKey, data) {
+      localStorage.setItem(key, JSON.stringify(data));
+      localStorage.setItem(tsKey, Date.now().toString());
+    }
+
 
     let allTourists = [];
     let selectedTourists = new Set();
@@ -497,25 +496,9 @@
     async function fetchDetails() {
       document.getElementById("error").textContent = "";
       document.getElementById("touristList").innerHTML = "";
-
-      const regNumber = forcedRegNum || document.getElementById("registrationNumber").value.trim();
-      const cache = StorageManager.get();
-
       allTourists = [];
       selectedTourists.clear(); // Clear previous selections
-
-      // Check Cache First
-      if (cache && cache.data) {
-        const found = cache.data.find(r => r.registrationNumber === regNumber);
-        if (found) {
-            processRegistrationData(found);
-            return;
-          }
-        }
-
-        // Fallback to Database if not in cache or forced
-        await syncDataFromDatabase(regNumber);
-      
+      let regNumber = document.getElementById("registrationNumber").value.trim();
 
       if (!regNumber) {
         document.getElementById("error").textContent = "Please enter a registration number.";
@@ -608,91 +591,6 @@
       }
     }
 
-    // 3. Background Sync & Archive Creation
-    async function syncDataFromDatabase(targetRegToLoad = null) {
-      const userName = localStorage.getItem("userName");
-      if (!userName) return;
-
-      try {
-        const q = query(collection(db, "registrations"), where("fullName", "==", userName));
-        const querySnapshot = await getDocs(q);
-        const registrations = [];
-
-        querySnapshot.forEach(doc => {
-            registrations.push(doc.data());
-        });
-
-        StorageManager.save(registrations);
-        renderArchive(registrations);
-
-        if (targetRegToLoad) {
-            const match = registrations.find(r => r.registrationNumber === targetRegToLoad);
-            if (match) processRegistrationData(match);
-        }
-      } catch (error) {
-        console.error("Sync failed:", error);
-      }
-    }
-
-    // 4. Archive UI (As requested in image sample)
-    function renderArchive(registrations) {
-      const container = document.getElementById("registrationList");
-      const quickSelect = document.getElementById("quickSelectContainer");
-    
-      if (registrations.length > 0) {
-        quickSelect.style.display = "block";
-        container.innerHTML = "";
-        
-        // Filter: Only show last 7 days (Weekly Archive)
-        const now = new Date();
-        const weeklyRegs = registrations.filter(reg => {
-            const regDate = new Date(reg.dateOfRegistration);
-            const diff = (now - regDate) / (1000 * 60 * 60 * 24);
-            return diff <= 7;
-        });
-
-        weeklyRegs.forEach(reg => {
-            const btn = document.createElement("button");
-            btn.className = "button archive-btn";
-            btn.innerHTML = `<strong>${reg.registrationNumber}</strong><br><small>${reg.dateOfRegistration}</small>`;
-            btn.onclick = () => {
-                document.getElementById("registrationNumber").value = reg.registrationNumber;
-                processRegistrationData(reg);
-            };
-            container.appendChild(btn);
-        });
-      }
-    }
-
-    // 5. Data Processor (Separated from Fetching)
-    function processRegistrationData(data) {
-      allTourists = [];
-      selectedTourists.clear();
-
-      // Re-using your existing logic for age/nationality
-      let tourists = [];
-      if (data.fullName) {
-        tourists.push({
-          name: data.fullName,
-          age: calculateAge(data.dateOfBirth),
-          sex: data.sex,
-          nationality: getNationality(data.country),
-          region: data.region || "N/A"
-        });
-      } else if (data.groupMembers) {
-        tourists = data.groupMembers.map(m => ({
-          name: m.memberName,
-          age: calculateAge(m.memberDOB),
-          sex: m.memberSex,
-          nationality: getNationality(m.memberCountry),
-          region: m.memberRegion || "N/A"
-        }));
-      }
-
-      allTourists = tourists;
-      renderTablePage(1);
-      document.getElementById("touristDetails").style.display = "block";
-    }
 
     let isSubmittingAttendance = false;
     // --- Firestore Save ---
@@ -767,29 +665,61 @@
       const siteSelect = document.getElementById("siteSelect");
       if (!siteSelect) return;
 
-      try {
-        const spotsSnapshot = await getDocs(collection(db, "tourist-spots"));
-        siteSelect.innerHTML = '<option value="">Select a site</option>'; // reset options
+      // 1️⃣ Try localStorage first
+      const cachedSites = getCache(CACHE_KEYS.SITES, CACHE_KEYS.SITES_TS);
 
-        spotsSnapshot.forEach(docSnap => {
-          const spot = docSnap.data();
-          const option = document.createElement("option");
-          option.value = spot.name;
-          option.textContent = spot.name;
-          siteSelect.appendChild(option);
-        });
+      if (cachedSites) {
+        renderSites(siteSelect, cachedSites);
+        refreshSitesInBackground(); // 🔁 silent refresh
+        return;
+      }
 
-        // Enable the select after loading
-        siteSelect.disabled = false;
-      } catch (error) {
-        console.error("Error fetching tourist spots:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Failed to load tourist sites. Please try again later"
+      // 2️⃣ Fallback to Firestore
+      await fetchSitesFromFirestore(siteSelect);
+
+      function renderSites(select, sites) {
+        select.innerHTML = '<option value="">Select a site</option>';
+        sites.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
         });
+        select.disabled = false;
       }
     }
+
+    async function fetchSitesFromFirestore(select) {
+      try {
+        const snapshot = await getDocs(collection(db, "tourist-spots"));
+        const sites = [];
+
+        snapshot.forEach(doc => sites.push(doc.data().name));
+
+        setCache(CACHE_KEYS.SITES, CACHE_KEYS.SITES_TS, sites);
+        renderSites(select, sites);
+
+        } catch (err) {
+          console.error("Site fetch failed:", err);
+          Swal.fire("Error", "Failed to load tourist sites.", "error");
+        }
+      }
+
+      function refreshSitesInBackground() {
+        setTimeout(async () => {
+          try {
+            const snapshot = await getDocs(collection(db, "tourist-spots"));
+            const sites = [];
+
+            snapshot.forEach(doc => sites.push(doc.data().name));
+            setCache(CACHE_KEYS.SITES, CACHE_KEYS.SITES_TS, sites);
+
+            console.log("Tourist sites cache refreshed");
+          } catch (e) {
+            console.warn("Background refresh failed");
+          }
+        }, 15000);
+      }
 
 
     // --- Event Listeners ---
@@ -837,7 +767,6 @@
           if (mobileLogoutBtn) mobileLogoutBtn.style.display = isMobile ? "block" : "none";
           if (desktopLoginBtn) desktopLoginBtn.style.display = "none";
           if (mobileLoginBtn) mobileLoginBtn.style.display = "none";
-          loadUserRegistrations(userName);
         } else {
           // USER IS NOT LOGGED IN
           if (desktopLoginBtn) desktopLoginBtn.style.display = isMobile ? "none" : "block";
@@ -845,7 +774,6 @@
           if (mobileLogoutBtn) mobileLogoutBtn.style.display = "none";
           if (mobileProfile) mobileProfile.style.display = "none";
           if (desktopProfile) desktopProfile.style.display = "none";
-          showUnregisteredPopup();
         }
       }
 
@@ -929,23 +857,18 @@
         const siteFromQR = urlParams.get("site");
 
         if (siteSelect && submitBtn && regNumberInput && fetchDetailsBtn) {
-          // Set 15-second timeout for background sync
-          setTimeout(() => {
-            syncDataFromDatabase();
-          }, 15000);
-
-          if (siteFromQR) {
+          if (!siteFromQR || !validateQR(siteFromQR)) {
             // QR site parameter exists
-            const cache = StorageManager.get();
-            if (cache) {
-                renderArchive(cache.data);
-            } else {
-                syncDataFromDatabase(); // Initial fetch
-            }
-            
-            const foundOption = Array.from(siteSelect.options).find(
-              opt => opt.value.toLowerCase() === siteFromQR.toLowerCase()
-            );
+            Swal.fire({
+              icon: "error",
+              title: "Invalid QR Code",
+              text: "This QR code is not recognized.",
+              timer: 15000,
+              showConfirmButton: false
+            }).then(() => {
+              window.location.href = "/SagadaRegistrationSystem/index.html";
+            });
+            return;
 
             if (foundOption) {
               // Valid site
@@ -988,69 +911,7 @@
         }
       });
 
-      // Add this inside your script module
-    async function loadUserRegistrations(userName) {
-      const regListContainer = document.getElementById("registrationList");
-      const quickSelectContainer = document.getElementById("quickSelectContainer");
-      const regInput = document.getElementById("registrationNumber");
-
-      try {
-        // Query registrations where fullName matches current user OR created by user
-        const q = query(collection(db, "registrations"), where("fullName", "==", userName));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            showUnregisteredPopup();
-            return;
-        }
-
-        quickSelectContainer.style.display = "block";
-        regListContainer.innerHTML = "";
-
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const btn = document.createElement("button");
-          btn.className = "button";
-          btn.style.width = "auto";
-          btn.style.backgroundColor = "#2e7d32";
-          btn.textContent = data.registrationNumber;
-            
-          btn.onclick = () => {
-            regInput.value = data.registrationNumber;
-            Swal.fire({
-              toast: true,
-              position: 'top-end',
-              icon: 'success',
-              title: 'Number Copied to Input',
-              showConfirmButton: false,
-              timer: 1500
-            });
-            fetchDetails(); // Auto-fetch details once selected
-          };
-            regListContainer.appendChild(btn);
-        });
-      } catch (error) {
-        console.error("Error loading registrations:", error);
-      }
-    }
-
-    function showUnregisteredPopup() {
-      Swal.fire({
-        title: "Not Registered?",
-        text: "Please go to the profile section first and fill out all required details for registration. Then go to 'Book a Visit' to register and pay your registration fee at the Tourism Office.",
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonText: "Go to Profile",
-        cancelButtonText: "Close",
-        confirmButtonColor: "#2e7d32",
-      }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
-        }
-      });
-    }
-
-  });
+    });
 
   </script>
 </body>
