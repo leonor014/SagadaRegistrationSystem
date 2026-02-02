@@ -522,10 +522,7 @@ footer {
     background-color: var(--primary-light);
 }
 
-#goToProfileWrapper {
-    margin-top: 10px;
-    width: 100%;
-}
+
 
 #goToProfileBtn {
     background-color: #28a745 !important; /* Success Green matching your image */
