@@ -608,7 +608,28 @@
     }
 
     function showProfileRedirect() {
-      document.getElementById("goToProfileWrapper").style.display = "block";
+      // 1. Show the inline button (like in your image)
+      const wrapper = document.getElementById("goToProfileWrapper");
+      if (wrapper) {
+        wrapper.style.display = "block";
+        wrapper.style.textAlign = "center";
+      }
+
+      // 2. Trigger the Pop-up
+      Swal.fire({
+        title: "Registration Required",
+        text: "You don't have an active or paid registration for this week. Would you like to go to your profile to register now?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Go to Profile",
+        cancelButtonText: "Not now"
+      }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
+        }
+      });
     }
 
     function hideProfileRedirect() {
@@ -649,11 +670,10 @@
         const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
         const querySnapshot = await getDocs(q);
 
-        if (!querySnapshot.empty) {
-          // SCENARIO: Not registered or hasn't paid
+        if (querySnapshot.empty) {
           document.getElementById("error").textContent = 
-            "Registration not found. Please complete your profile and settle the fee to book a visit.";
-          showProfileRedirect();
+            "No active registration found. You must register and pay before checking in.";
+          showProfileRedirect(); // This triggers both the button and the pop-up
           return;
         }
 

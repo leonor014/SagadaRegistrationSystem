@@ -522,6 +522,28 @@ footer {
     background-color: var(--primary-light);
 }
 
+#goToProfileBtn {
+    background-color: #28a745; /* Success Green */
+    color: white;
+    padding: 12px 24px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%; /* Makes it span like the Fetch button */
+    max-width: 400px;
+    margin: 10px auto;
+    display: block;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+#goToProfileBtn:hover {
+    background-color: #218838;
+    transform: scale(1.02);
+}
+
 /* === Responsive Styles === */
 @media (max-width: 1024px) {
   .nav-links {
