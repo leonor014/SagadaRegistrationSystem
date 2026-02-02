@@ -115,7 +115,7 @@ const loadTouristSpots = async () => {
   try {
     const user = auth.currentUser;
     const touristSpotsQuery = query(
-      collection(db, "tourist-spots"),
+      collection(db, "tourist-spots-name"),
       orderBy("name", "asc")
     );
 
