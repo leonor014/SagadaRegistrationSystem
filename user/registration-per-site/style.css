@@ -523,8 +523,9 @@ footer {
 }
 
 #goToProfileWrapper {
-  width: 100%;
   display: none;
+  margin-top: 15px;
+  width: 100%;
   text-align: center;
 }
 

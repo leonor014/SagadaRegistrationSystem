@@ -208,7 +208,7 @@ function attachEditDeleteListeners() {
     button.addEventListener("click", async (e) => {
       const id = e.currentTarget.dataset.id;
       try {
-        const touristSpotRef = doc(db, "tourist-spots", id);
+        const touristSpotRef = doc(db, "tourist-spots-name", id);
         const touristSpotSnap = await getDoc(touristSpotRef);
 
         if (touristSpotSnap.exists()) {
@@ -268,7 +268,7 @@ function attachEditDeleteListeners() {
 
       if (result.isConfirmed) {
         try {
-          await deleteDoc(doc(db, "tourist-spots", id));
+          await deleteDoc(doc(db, "tourist-spots-name", id));
           Swal.fire("Deleted!", "Tourist Spot has been deleted.", "success");
         } catch (error) {
           console.error("Error deleting tourist spot:", error);
@@ -468,7 +468,7 @@ window.addEventListener("DOMContentLoaded", () => {
         if (qrCode) {
           updateData.qrCode = qrCode;
         }
-        await setDoc(doc(db, "tourist-spots", id), updateData, { merge: true });
+        await setDoc(doc(db, "tourist-spots-name", id), updateData, { merge: true });
         Swal.fire("Success!", "Tourist Spot updated successfully.", "success");
         document.getElementById("editModal").style.visibility = "hidden";
         document.body.classList.remove("modal-open");
@@ -617,7 +617,7 @@ window.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        const newSpotRef = doc(collection(db, "tourist-spots"));
+        const newSpotRef = doc(collection(db, "tourist-spots-name"));
         await setDoc(newSpotRef, {
           name,
           description,
