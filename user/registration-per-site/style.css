@@ -522,26 +522,26 @@ footer {
     background-color: var(--primary-light);
 }
 
+#goToProfileWrapper {
+    margin-top: 10px;
+    width: 100%;
+}
+
 #goToProfileBtn {
-    background-color: #28a745; /* Success Green */
+    background-color: #28a745 !important; /* Success Green matching your image */
     color: white;
-    padding: 12px 24px;
-    font-size: 1.2rem;
     font-weight: bold;
+    font-size: 1.1rem;
+    padding: 12px;
+    border-radius: 5px;
     border: none;
-    border-radius: 8px;
     cursor: pointer;
-    width: 100%; /* Makes it span like the Fetch button */
-    max-width: 400px;
-    margin: 10px auto;
-    display: block;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+    width: 100%; /* Spans the same width as the Fetch button */
+    transition: background-color 0.3s ease;
 }
 
 #goToProfileBtn:hover {
-    background-color: #218838;
-    transform: scale(1.02);
+    background-color: #218838 !important;
 }
 
 /* === Responsive Styles === */

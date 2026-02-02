@@ -614,26 +614,13 @@
         wrapper.style.display = "block";
         wrapper.style.textAlign = "center";
       }
-
-      // 2. Trigger the Pop-up
-      Swal.fire({
-        title: "Registration Required",
-        text: "You don't have an active or paid registration for this week. Would you like to go to your profile to register now?",
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonColor: "#28a745",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, Go to Profile",
-        cancelButtonText: "Not now"
-      }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
-        }
-      });
     }
 
     function hideProfileRedirect() {
       document.getElementById("goToProfileWrapper").style.display = "none";
+      if (wrapper) {
+        wrapper.style.display = "none";
+      }
     }
 
 
