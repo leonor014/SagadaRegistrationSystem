@@ -598,7 +598,18 @@
       }
     }
 
+    function showProfileRedirect() {
+      document.getElementById("goToProfileWrapper").style.display = "block";
+    }
+
+    function hideProfileRedirect() {
+      document.getElementById("goToProfileWrapper").style.display = "none";
+    }
+
+
     async function fetchDetails() {
+      hideProfileRedirect();
+
       document.getElementById("error").textContent = "";
       document.getElementById("touristList").innerHTML = "";
       allTourists = [];
@@ -642,8 +653,10 @@
               // Expired check
               if (today > expiryDate) {
                 document.getElementById("error").textContent =
-                  "This registration has expired (valid for 7 days only).";
+                  "Your registration has expired. Please update your profile and book a new visit.";
                 document.getElementById("touristDetails").style.display = "none";
+                showProfileRedirect();
+
                 foundValid = false;
                 return;
               }
@@ -682,13 +695,16 @@
           if (foundValid && allTourists.length > 0) {
             renderTablePage(1);
             document.getElementById("touristDetails").style.display = "block";
+            hideProfileRedirect();
           } else {
             document.getElementById("touristDetails").style.display = "none";
           }
 
         } else {
-          document.getElementById("error").textContent = "Registration number not found.";
+          document.getElementById("error").textContent =
+            "You are not registered or have not paid yet. Please complete your profile before booking a visit.";
           document.getElementById("touristDetails").style.display = "none";
+          showProfileRedirect();
         }
       } catch (error) {
         document.getElementById("error").textContent = "Error fetching data: " + error.message;
@@ -887,6 +903,10 @@
       const userId = localStorage.getItem("userId");
       const userName = localStorage.getItem("userName");
       const isUserValid = userValidated && userEmail && userId && userName;
+
+      document.getElementById("goToProfileBtn")?.addEventListener("click", () => {
+        window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
+      });
 
       // === REDIRECT TO LOGIN PAGE ===
       const goToLogin = () => {
