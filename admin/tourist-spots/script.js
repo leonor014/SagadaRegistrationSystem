@@ -115,7 +115,7 @@ const loadTouristSpots = async () => {
   try {
     const user = auth.currentUser;
     const touristSpotsQuery = query(
-      collection(db, "tourist-spots"),
+      collection(db, "tourist-spots-name"),
       orderBy("name", "asc")
     );
 
@@ -468,7 +468,7 @@ window.addEventListener("DOMContentLoaded", () => {
         if (qrCode) {
           updateData.qrCode = qrCode;
         }
-        await setDoc(doc(db, "tourist-spots-name", id), updateData, { merge: true });
+        await setDoc(doc(db, "tourist-spots", id), updateData, { merge: true });
         Swal.fire("Success!", "Tourist Spot updated successfully.", "success");
         document.getElementById("editModal").style.visibility = "hidden";
         document.body.classList.remove("modal-open");
@@ -617,7 +617,7 @@ window.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        const newSpotRef = doc(collection(db, "tourist-spots-name"));
+        const newSpotRef = doc(collection(db, "tourist-spots"));
         await setDoc(newSpotRef, {
           name,
           description,
