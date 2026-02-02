@@ -625,11 +625,6 @@
       }
     }
 
-    
-
-
-
-
     async function fetchDetails() {
       hideProfileRedirect();
 
@@ -971,6 +966,14 @@
           if (mobileLogoutBtn) mobileLogoutBtn.style.display = isMobile ? "block" : "none";
           if (desktopLoginBtn) desktopLoginBtn.style.display = "none";
           if (mobileLoginBtn) mobileLoginBtn.style.display = "none";
+
+          // NEW: Automatically try to load registrations if they haven't been fetched yet
+          if (!areRegistrationsFetched) {
+            populateRegistrationDropdown(userEmail).then(() => {
+              areRegistrationsFetched = true;
+              enableControlsIfReady();
+            });
+          }
         } else {
           // USER IS NOT LOGGED IN
           if (desktopLoginBtn) desktopLoginBtn.style.display = isMobile ? "none" : "block";
@@ -978,6 +981,8 @@
           if (mobileLogoutBtn) mobileLogoutBtn.style.display = "none";
           if (mobileProfile) mobileProfile.style.display = "none";
           if (desktopProfile) desktopProfile.style.display = "none";
+
+          
         }
       }
 
