@@ -619,11 +619,15 @@
     }
 
     function hideProfileRedirect() {
-      document.getElementById("goToProfileWrapper").style.display = "none";
+      const wrapper = document.getElementById("goToProfileWrapper");
       if (wrapper) {
         wrapper.style.display = "none";
       }
     }
+
+    
+
+
 
 
     async function fetchDetails() {
