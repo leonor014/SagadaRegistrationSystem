@@ -625,10 +625,30 @@
       selectedTourists.clear(); // Clear previous selections
       let regNumber = document.getElementById("registrationNumber").value.trim();
 
+      //if (!regNumber) {
+        //document.getElementById("error").textContent = "Please enter a registration number.";
+        //return;
+      //}
+
       if (!regNumber) {
-        document.getElementById("error").textContent = "Please enter a registration number.";
+        const select = document.getElementById("registrationNumber");
+
+        // If dropdown explicitly says no valid registrations
+        if (select.options.length === 1 &&
+            select.options[0].textContent.includes("No valid registrations")) {
+
+          document.getElementById("error").textContent =
+            "You are not registered or have not paid yet. Please complete your profile before booking a visit.";
+          showProfileRedirect();
+          return;
+        }
+
+        document.getElementById("error").textContent =
+          "Please enter a registration number.";
+        hideProfileRedirect();
         return;
       }
+
 
       try {
         const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
