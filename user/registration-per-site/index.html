@@ -643,6 +643,7 @@
         document.getElementById("error").textContent = "Please select a registration number.";
         return;
       }
+      
 
       try {
         const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
@@ -729,13 +730,6 @@
           } else {
             document.getElementById("touristDetails").style.display = "none";
           }
-
-        } else {
-          document.getElementById("error").textContent =
-            "You are not registered or have not paid yet. Please complete your profile before booking a visit.";
-          document.getElementById("touristDetails").style.display = "none";
-          showProfileRedirect();
-        }
       } catch (error) {
         document.getElementById("error").textContent = "Error fetching data: " + error.message;
         document.getElementById("touristDetails").style.display = "none";
