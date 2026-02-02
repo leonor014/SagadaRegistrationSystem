@@ -634,27 +634,28 @@
         const select = document.getElementById("registrationNumber");
 
         // If dropdown explicitly says no valid registrations
-        if (select.options.length === 1 &&
-            select.options[0].textContent.includes("No valid registrations")) {
-
-          document.getElementById("error").textContent =
-            "You are not registered or have not paid yet. Please complete your profile before booking a visit.";
-          showProfileRedirect();
+        if (select.options.length <= 1) {
+          document.getElementById("error").textContent = 
+            "No active registration found. You must register and pay before checking in.";
+          showProfileRedirect(); // Show the button here
           return;
         }
-
-        document.getElementById("error").textContent =
-          "Please enter a registration number.";
-        hideProfileRedirect();
+        document.getElementById("error").textContent = "Please select a registration number.";
         return;
       }
-
 
       try {
         const q = query(collection(db, "registrations"), where("registrationNumber", "==", regNumber));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
+          // SCENARIO: Not registered or hasn't paid
+          document.getElementById("error").textContent = 
+            "Registration not found. Please complete your profile and settle the fee to book a visit.";
+          showProfileRedirect();
+          return;
+        }
+
           let foundValid = false;
 
           querySnapshot.forEach(docSnap => {
