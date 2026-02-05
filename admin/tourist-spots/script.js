@@ -11,6 +11,7 @@ import {
   getDoc,
   getDocs,
   query,
+  where,
   orderBy,
   setDoc,
   deleteDoc,
@@ -115,7 +116,7 @@ const loadTouristSpots = async () => {
   try {
     const user = auth.currentUser;
     const touristSpotsQuery = query(
-      collection(db, "tourist-spots-name"),
+      collection(db, "tourist-spots"),
       orderBy("name", "asc")
     );
 
@@ -208,7 +209,7 @@ function attachEditDeleteListeners() {
     button.addEventListener("click", async (e) => {
       const id = e.currentTarget.dataset.id;
       try {
-        const touristSpotRef = doc(db, "tourist-spots-name", id);
+        const touristSpotRef = doc(db, "tourist-spots", id);
         const touristSpotSnap = await getDoc(touristSpotRef);
 
         if (touristSpotSnap.exists()) {
@@ -251,6 +252,8 @@ function attachEditDeleteListeners() {
         console.error("Error fetching tourist spot for edit:", error);
         Swal.fire("Error!", "Could not load tourist spot data.", "error");
       }
+    
+
     });
   });
 
@@ -268,13 +271,42 @@ function attachEditDeleteListeners() {
 
       if (result.isConfirmed) {
         try {
-          await deleteDoc(doc(db, "tourist-spots-name", id));
+          await deleteDoc(doc(db, "tourist-spots", id));
           Swal.fire("Deleted!", "Tourist Spot has been deleted.", "success");
         } catch (error) {
           console.error("Error deleting tourist spot:", error);
           Swal.fire("Error!", "Failed to delete tourist spot.", "error");
         }
       }
+    
+    //Add delete for tourist-spots-name
+    if (result.isConfirmed) {
+      try {
+        // 1. Get the name from the main doc before we delete it
+        const spotSnap = await getDoc(doc(db, "tourist-spots", id));
+        
+        if (spotSnap.exists()) {
+          const spotName = spotSnap.data().name;
+
+          // 2. Find and delete the matching record in tourist-spots-name
+          const nameQuery = query(collection(db, "tourist-spots-name"), where("name", "==", spotName));
+          const nameSnapshot = await getDocs(nameQuery);
+          
+          nameSnapshot.forEach(async (doc) => {
+            await deleteDoc(doc.ref);
+          });
+        }
+
+        // 3. Delete from the main collection
+        await deleteDoc(doc(db, "tourist-spots", id));
+
+        Swal.fire("Deleted!", "Record removed from both collections.", "success");
+      } catch (error) {
+        console.error("Delete error:", error);
+        Swal.fire("Error!", "Failed to delete.", "error");
+      }
+    }
+
     });
   });
 }
@@ -431,6 +463,36 @@ window.addEventListener("DOMContentLoaded", () => {
         Swal.fire("Missing Fields", "Please fill in all fields.", "warning");
         return;
       }
+
+      // Add edit function for tourist-spots-name
+      try {
+        // 1. Fetch old name to find the match in the other collection
+        const oldDocSnap = await getDoc(doc(db, "tourist-spots", id));
+        const oldName = oldDocSnap.exists() ? oldDocSnap.data().name : null;
+
+        // 2. Update main tourist-spots collection
+        const updateData = { name: mame, description, category, guideFee, shuttleFee };
+        if (image) updateData.image = image;
+        if (qrCode) updateData.qrCode = qrCode;
+    
+        await setDoc(doc(db, "tourist-spots", id), updateData, { merge: true });
+
+        // 3. Update tourist-spots-name collection manually
+        if (oldName) {
+          const q = query(collection(db, "tourist-spots-name"), where("name", "==", oldName));
+          const querySnapshot = await getDocs(q);
+      
+        querySnapshot.forEach(async (nameDoc) => {
+          // Since the admin now has the ID (nameDoc.id), we update it
+          await setDoc(doc(db, "tourist-spots-name", nameDoc.id), { name: newName }, { merge: true });
+        });
+      }
+
+      Swal.fire("Success!", "Updated in both collections.", "success");
+      // ... (close modal logic)
+    } catch (error) {
+      console.error("Update error:", error);
+    }
 
       const imageInput = document.getElementById("editTouristSpotImage");
       let image = null;
@@ -643,6 +705,45 @@ window.addEventListener("DOMContentLoaded", () => {
         submitBtn.disabled = false;
       }
     });
+
+
+  // Add tourist-spots-name
+  document
+    .getElementById("addTouristSpotForm")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.querySelector(
+        '#addTouristSpotForm button[type="submit"]'
+      );
+      submitBtn.disabled = true;
+
+      const name = document.getElementById("addTouristSpotName").value.trim();
+      
+      if (
+        !name
+      ) 
+
+      try {
+        const newSpotRef = doc(collection(db, "tourist-spots-name"));
+        await setDoc(newSpotRef, {
+          name,
+          createdAt: new Date(),
+        });
+
+        Swal.fire("Success!", "Tourist Spot added successfully.", "success");
+
+        document.getElementById("addTouristSpotForm").reset();
+        document.getElementById("addModal").style.visibility = "hidden";
+        
+      } catch (error) {
+        console.error("Error adding tourist spot:", error);
+        Swal.fire("Error!", "Failed to add tourist spot.", "error");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
 
   document
     .getElementById("categoryFilter")

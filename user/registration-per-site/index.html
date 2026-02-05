@@ -609,7 +609,25 @@
       }
     }
 
-    function showProfileRedirect() {
+    function showNoRegistrationAlert() {
+      showProfileRedirect(); // Show the inline button as backup
+  
+      Swal.fire({
+        icon: "error",
+        title: "No Valid Registration Found",
+        text: "You must complete your profile, book a visit, and pay the registration fee before checking in at a tourist site.",
+        showCancelButton: true,
+        confirmButtonText: "Go to Profile",
+        cancelButtonText: "Close",
+        confirmButtonColor: "#28a745",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/SagadaRegistrationSystem/user/profile/index.html";
+        }
+      });
+    }
+
+    /*function showProfileRedirect() {
       // 1. Show the inline button (like in your image)
       const wrapper = document.getElementById("goToProfileWrapper");
       if (wrapper) {
@@ -623,7 +641,7 @@
       if (wrapper) {
         wrapper.style.display = "none";
       }
-    }
+    }*/
 
     async function fetchDetails() {
       hideProfileRedirect();
@@ -1079,7 +1097,13 @@
               // Fetch registrations for user
               populateRegistrationDropdown(userEmail).then(() => {
                 areRegistrationsFetched = true; // mark registrations fetched
-                enableControlsIfReady(); // only now enable buttons
+                if (count > 0) {
+                  enableControlsIfReady(); // only now enable buttons
+                } else {
+                  // Registration count is 0, alert is already fired inside populateRegistrationDropdown
+                  const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
+                  if (fetchDetailsBtn) fetchDetailsBtn.disabled = true;
+                }
               });
 
               console.log("Site pre-selected from QR:", foundOption.value);
