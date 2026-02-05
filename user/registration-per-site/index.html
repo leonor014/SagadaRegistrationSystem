@@ -540,7 +540,7 @@
 
     async function populateRegistrationDropdown(userEmail) {
       const select = document.getElementById("registrationNumber");
-      if (!select) return;
+      if (!select) return 0;
 
       select.innerHTML = `<option value="">Select a registration</option>`;
 
@@ -602,6 +602,7 @@
         });
 
         select.disabled = false;
+        return registrations.length; // Return the actual count
 
       } catch (error) {
         console.error("Error loading registrations:", error);
@@ -1102,9 +1103,11 @@
                   enableControlsIfReady(); // only now enable buttons
                 } else {
                   // Registration count is 0, alert is already fired inside populateRegistrationDropdown
-                  //const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
-                  //if (fetchDetailsBtn) fetchDetailsBtn.disabled = true;
+                  const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
+                  if (fetchDetailsBtn) fetchDetailsBtn.disabled = true;
+                  
                   showNoRegistrationAlert();
+
                 }
               });
 
