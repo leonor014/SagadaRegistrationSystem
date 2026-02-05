@@ -606,6 +606,7 @@
       } catch (error) {
         console.error("Error loading registrations:", error);
         select.innerHTML = `<option value="">Failed to load registrations</option>`;
+        return 0;
       }
     }
 
@@ -1101,8 +1102,9 @@
                   enableControlsIfReady(); // only now enable buttons
                 } else {
                   // Registration count is 0, alert is already fired inside populateRegistrationDropdown
-                  const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
-                  if (fetchDetailsBtn) fetchDetailsBtn.disabled = true;
+                  //const fetchDetailsBtn = document.getElementById("fetchDetailsBtn");
+                  //if (fetchDetailsBtn) fetchDetailsBtn.disabled = true;
+                  showNoRegistrationAlert();
                 }
               });
 
