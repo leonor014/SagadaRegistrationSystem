@@ -508,27 +508,27 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       const qrInput = document.getElementById("editTouristSpotQRCode");
-      let qrCode = null;
+      const qrPreview = document.getElementById("editTouristSpotQRCodePreview");
 
-      if (qrInput.files.length > 0) {
-        qrCode = await handleImageUpload(qrInput.files[0]);
+      if (qrInput.files.length === 0 && (!qrPreview.src || qrPreview.style.display === "none")) {
+        Swal.fire("Error!", "Please upload QR code.", "error");
+        return;
       }
 
-      const updateData = {}
 
       try {
         const updateData = {
-          name,
-          description,
-          category,
-          guideFee,
-          shuttleFee,
+          name: document.getElementById("editTouristSpotName").value.trim(),
+          description: document.getElementById("editTouristSpotDescription").value.trim(),
+          category: document.getElementById("editTouristSpotCategory").value.trim(),
+          guideFee: document.getElementById("editTouristSpotGuideFee").value.trim(),
+          shuttleFee: document.getElementById("editTouristSpotShuttleFee").value.trim(),
         };
         if (image) {
           updateData.image = image;
         }
-        if (qrCode) {
-          updateData.qrCode = qrCode;
+        if (qrInput.files.length > 0) {
+          updateData.qrCode = await handleImageUpload(qrInput.files[0]);
         }
         await setDoc(doc(db, "tourist-spots", id), updateData, { merge: true });
         Swal.fire("Success!", "Tourist Spot updated successfully.", "success");
@@ -642,10 +642,16 @@ window.addEventListener("DOMContentLoaded", () => {
         .value.trim();
       const imageInput = document.getElementById("addTouristSpotImage");
       const qrInput = document.getElementById("addTouristSpotQRCode");
-      let qrCode = null;
+      //let qrCode = null;
 
-      if (qrInput.files.length > 0) {
+      /*if (qrInput.files.length > 0) {
         qrCode = await handleImageUpload(qrInput.files[0]);
+      }*/
+
+      // Check if QR Code file is missing
+      if (qrInput.files.length === 0) {
+        Swal.fire("Error!", "Please upload QR code.", "error");
+        return;
       }
 
       if (
@@ -673,6 +679,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       try {
         const user = auth.currentUser;
+        let qrCode = await handleImageUpload(qrInput.files[0]);
         if (!user) {
           Swal.fire("Error!", "User not authenticated.", "error");
           submitBtn.disabled = false;
